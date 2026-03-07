@@ -8,12 +8,10 @@ const dbConnect = require('./core/db/dbConnect.js');
 // Connect to MongoDB
 dbConnect();
 
-
-
 const app = express();
 app.use(express.json());
 
 // Use the router
-app.use(categoryRoutes);
+app.use("/api/v1/admin/categories",categoryRoutes);
 
 app.listen(3000, () => console.log('Server running on port 3000'));
