@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
@@ -8,12 +8,10 @@ const cartSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
       default: null,
-      sparse: true, // unique index but allows null (guest carts have no userId)
     },
     guestToken: {
       type: String,
       default: null,
-      sparse: true, // unique index but allows null (authenticated carts have no guestToken)
     },
   },
   {
@@ -29,7 +27,7 @@ cartSchema.index({ guestToken: 1 }, { unique: true, sparse: true });
 
 // Application-level: exactly one of userId or guestToken must be set
 cartSchema.pre('save', function (next) {
-  if ((this.userId == null) === (this.guestToken == null)) {
+  if ((this.userId === null || this.userId === undefined) === (this.guestToken === null || this.guestToken === undefined)) {
     return next(new Error('A cart must have either a userId or a guestToken, but not both.'));
   }
   next();
@@ -37,4 +35,4 @@ cartSchema.pre('save', function (next) {
 
 const Cart = mongoose.model('Cart', cartSchema);
 
-module.exports = Cart;
+export default Cart;

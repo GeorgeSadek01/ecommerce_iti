@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
@@ -46,6 +46,7 @@ const userSchema = new Schema(
     },
     googleId: {
       type: String,
+      unique: true,
       sparse: true, // allows null while still enforcing uniqueness for non-null values
       default: null,
     },
@@ -72,4 +73,4 @@ userSchema.pre(/^find/, function (next) {
 
 const User = mongoose.model('User', userSchema);
 
-module.exports = User;
+export default User;

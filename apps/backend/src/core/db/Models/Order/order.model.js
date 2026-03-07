@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
@@ -117,6 +117,9 @@ const orderSchema = new Schema(
   }
 );
 
+// Compound index for efficient per-user order queries filtered by status
+orderSchema.index({ userId: 1, status: 1 });
+
 const Order = mongoose.model('Order', orderSchema);
 
-module.exports = Order;
+export default Order;

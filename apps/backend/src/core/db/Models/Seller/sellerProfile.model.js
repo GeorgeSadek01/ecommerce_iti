@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
@@ -34,6 +34,7 @@ const sellerProfileSchema = new Schema(
         message: 'Status must be one of: pending, approved, suspended',
       },
       default: 'pending',
+      index: true,
     },
     totalEarnings: {
       type: mongoose.Types.Decimal128,
@@ -42,7 +43,7 @@ const sellerProfileSchema = new Schema(
     },
   },
   {
-    timestamps: { createdAt: true, updatedAt: false },
+    timestamps: true,
     toJSON: { getters: true },
     toObject: { getters: true },
   }
@@ -52,4 +53,4 @@ sellerProfileSchema.index({ storeName: 'text' });
 
 const SellerProfile = mongoose.model('SellerProfile', sellerProfileSchema);
 
-module.exports = SellerProfile;
+export default SellerProfile;
