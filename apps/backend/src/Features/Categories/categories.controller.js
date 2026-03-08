@@ -5,7 +5,6 @@
  * Controller skeleton — implement request validation, role guard, and calls to service.
  */
 // import * as categoryService from './categories.service.js';
-const { get } = require('node:http');
 const categoryService = require('./categories.service.js');
 module.exports = {
     createCategory: async (req, res) => {

@@ -1,4 +1,3 @@
-// middleware/checkCategoryExists.js
 const Category = require("../../core/db/Models/Product/category.model.js");
 const mongoose = require('mongoose');
 
@@ -20,4 +19,3 @@ const checkCategoryExists = async (req, res, next) => {
     }
 };
 module.exports = checkCategoryExists;
-//
