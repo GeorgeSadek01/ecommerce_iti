@@ -26,7 +26,6 @@ npm-debug.log*
 Thumbs.db
 
 # IDE
-.vscode/*
 !.vscode/extensions.json
 !.vscode/launch.json
 !.vscode/tasks.json
