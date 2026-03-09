@@ -1,12 +1,15 @@
-const cloudinary = require('../../core/utils/clouinary.js');
+const cloudinary = require('../../core/utils/cloudinary.js');
 const streamifier = require('streamifier');
 
 exports.uploadToCloudinary = (fileBuffer, folder) => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream({ folder }, (error, result) => {
-      if (result) resolve(result);
-      else reject(error);
+      if (error) reject(error);
+      else resolve(result);
     });
-    streamifier.createReadStream(fileBuffer).pipe(stream);
+    const readableStream = streamifier.createReadStream(fileBuffer);
+    readableStream.on('error', reject);
+    stream.on('error', reject);
+    readableStream.pipe(stream);
   });
 };

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-
+require('./category.model.js');
 const { Schema } = mongoose;
 
 const decimal128Getter = (v) => (v ? parseFloat(v.toString()) : null);

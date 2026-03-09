@@ -14,7 +14,18 @@ router.route('/:id')
 .put(checkProductExists, productController.update)
 .delete(checkProductExists, productController.delete);
 
-router.route('/:productId/images')
-.post(uploadImages, productImageController.uploadProductImages)
+//product images routes
+router.route('/:id/images')
+	.post(uploadImages, productImageController.uploadProductImages)
+	.get(productImageController.getProductImages);
 
+router.route('/:id/images/order')
+	.patch(productImageController.reorderImages);
+
+router.route('/:id/images/:imageId')
+	.delete(productImageController.deleteImage)
+	.patch(productImageController.updateImage);
+
+router.route('/:id/images/:imageId/primary')
+	.patch(productImageController.setPrimaryImage);
 module.exports = router;

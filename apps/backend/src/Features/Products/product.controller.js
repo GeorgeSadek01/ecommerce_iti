@@ -6,7 +6,7 @@ module.exports = {
             const newProduct = await productService.create(req.body);
             res.status(201).json({ message: "Product created successfully", product: newProduct });
         } catch (error) {
-            res.status(400).json({ message: error.message });
+            res.status(500).json({message: error.message });
         }
     },
     getOne: async (req, res) => {
