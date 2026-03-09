@@ -1,5 +1,5 @@
 # MongoDB
-MONGO_URI=mongodb://localhost:27017/ecommerce_dev
+MONGO_URI=mongodb://localhost:27017/SoldierStore
 
 # App
 PORT=4000
@@ -21,6 +21,7 @@ GOOGLE_CLIENT_SECRET=
 # Payment (Stripe)
 STRIPE_SECRET_KEY=
 STRIPE_PUBLISHABLE_KEY=
+STRIPE_WEBHOOK_KEY=
 
 # Cloudinary (images)
 CLOUDINARY_CLOUD_NAME=
@@ -42,6 +43,9 @@ S3_BUCKET_NAME=
 
 # Monitoring / errors
 SENTRY_DSN=
+
+CLIENT_URL_SUCCESS_PAYMENT=http://localhost:3000/success.html
+CLIENT_URL_FAILURE_PAYMENT=http://localhost:3000/failure.html
 
 # Notes:
 # - Replace placeholders with real secrets in production.
