@@ -3,7 +3,7 @@ import {
   sendOrderPlacedEmail,
   sendOrderProcessingEmail,
   sendOrderShippedEmail,
-} from '../utils/emailService.js';
+} from './emailService.js';
 
 /**
  * Notify a customer by email when their order is placed.
