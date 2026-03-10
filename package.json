@@ -1,4 +1,16 @@
 {
+  "name": "ecommerce",
+  "private": true,
+  "scripts": {
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend start",
+    "lint": "pnpm --filter backend lint",
+    "test": "pnpm --filter backend test --if-present",
+    "build": "pnpm --filter backend build --if-present"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=9.0.0"
   "scripts": {
     "format": "prettier --write ."
   },
