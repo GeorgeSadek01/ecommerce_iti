@@ -61,12 +61,19 @@ export const createRefreshToken = async (userId) => {
 /**
  * Rotate a refresh token: delete the old one, issue a new one.
  * Returns null if the old token was not found (already revoked/expired).
+ * The `expiresAt` check is enforced at the application level to close the
+ * race window where MongoDB's TTL index has not yet garbage-collected an
+ * expired token.
  *
  * @param {string} oldToken raw token value received from the client
  * @returns {Promise<{ newToken: string, userId: string } | null>}
  */
 export const rotateRefreshToken = async (oldToken) => {
+<<<<<<< copilot/sub-pr-4-one-more-time
+  const record = await RefreshToken.findOneAndDelete({ token: oldToken, expiresAt: { $gt: new Date() } });
+=======
   const record = await RefreshToken.findOneAndDelete({ token: hashToken(oldToken) });
+>>>>>>> Auth
   if (!record) return null;
 
   const newToken = await createRefreshToken(record.userId);
