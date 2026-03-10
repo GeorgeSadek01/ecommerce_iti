@@ -33,8 +33,20 @@ export const verifyAccessToken = (token) => jwt.verify(token, ACCESS_TOKEN_SECRE
 // ─── Refresh Token ────────────────────────────────────────────────────────────
 
 /**
+ * Compute the SHA-256 hex digest of a token string.
+ * Only the hash is persisted; the raw token is never stored.
+ *
+ * @param {string} token
+ * @returns {string} hex-encoded SHA-256 hash
+ */
+const hashToken = (token) => {
+  if (!token || typeof token !== 'string') throw new Error('hashToken: token must be a non-empty string');
+  return crypto.createHash('sha256').update(token).digest('hex');
+};
+
+/**
  * Create a cryptographically-random opaque refresh token,
- * persist it in the database and return the raw value.
+ * persist its SHA-256 hash in the database and return the raw value.
  *
  * @param {string} userId
  * @returns {Promise<string>} raw refresh token
@@ -42,7 +54,7 @@ export const verifyAccessToken = (token) => jwt.verify(token, ACCESS_TOKEN_SECRE
 export const createRefreshToken = async (userId) => {
   const token = crypto.randomBytes(64).toString('hex');
   const expiresAt = new Date(Date.now() + REFRESH_TOKEN_TTL_MS);
-  await RefreshToken.create({ userId, token, expiresAt });
+  await RefreshToken.create({ userId, token: hashToken(token), expiresAt });
   return token;
 };
 
@@ -50,11 +62,11 @@ export const createRefreshToken = async (userId) => {
  * Rotate a refresh token: delete the old one, issue a new one.
  * Returns null if the old token was not found (already revoked/expired).
  *
- * @param {string} oldToken
+ * @param {string} oldToken raw token value received from the client
  * @returns {Promise<{ newToken: string, userId: string } | null>}
  */
 export const rotateRefreshToken = async (oldToken) => {
-  const record = await RefreshToken.findOneAndDelete({ token: oldToken });
+  const record = await RefreshToken.findOneAndDelete({ token: hashToken(oldToken) });
   if (!record) return null;
 
   const newToken = await createRefreshToken(record.userId);
@@ -64,11 +76,11 @@ export const rotateRefreshToken = async (oldToken) => {
 /**
  * Revoke (delete) a refresh token by its raw value.
  *
- * @param {string} token
+ * @param {string} token raw token value received from the client
  * @returns {Promise<boolean>} true if a token was found and deleted
  */
 export const revokeRefreshToken = async (token) => {
-  const result = await RefreshToken.deleteOne({ token });
+  const result = await RefreshToken.deleteOne({ token: hashToken(token) });
   return result.deletedCount > 0;
 };
 
