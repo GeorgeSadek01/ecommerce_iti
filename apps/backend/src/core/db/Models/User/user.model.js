@@ -47,8 +47,7 @@ const userSchema = new Schema(
     googleId: {
       type: String,
       unique: true,
-      sparse: true, // allows null while still enforcing uniqueness for non-null values
-      default: null,
+      sparse: true, // allows the field to be missing while still enforcing uniqueness for present values
     },
     avatarUrl: {
       type: String,
