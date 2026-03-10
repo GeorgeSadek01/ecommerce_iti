@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
@@ -46,4 +46,4 @@ productImageSchema.index({ productId: 1, sortOrder: 1 });
 
 const ProductImage = mongoose.model('ProductImage', productImageSchema);
 
-module.exports = ProductImage;
+export default ProductImage;

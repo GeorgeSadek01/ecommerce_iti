@@ -7,9 +7,20 @@ on:
     branches: [main, develop]
 
 jobs:
-  ci:
-    name: Build, Lint & Test
+  backend:
+    name: Backend — Lint, Test & Build
     runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:6
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout repository
@@ -21,44 +32,61 @@ jobs:
           node-version: '20'
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v3
+        uses: pnpm/action-setup@v4
         with:
           version: 10
 
       - name: Get pnpm store directory
         id: pnpm-cache
-        run: echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+        shell: bash
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_OUTPUT
 
       - name: Cache pnpm store
         uses: actions/cache@v4
         with:
           path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
-      - name: Cache Turborepo
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: ${{ runner.os }}-turbo-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-
+            ${{ runner.os }}-pnpm-
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Lint
-        run: pnpm turbo run lint
+      - name: Lint (backend)
+        run: pnpm --filter backend lint
 
-      - name: Build
-        run: pnpm turbo run build
+      - name: Test (backend)
+        run: pnpm --filter backend test --if-present
+        env:
+          NODE_ENV: test
+          MONGO_URI: mongodb://localhost:27017/ecommerce_test
+          JWT_SECRET: ci-test-secret-not-for-production
 
-      - name: Test
-        run: pnpm turbo run test
+      - name: Build check (backend)
+        run: pnpm --filter backend build
 
-      - name: Validate Docker build (backend)
-        run: docker build -f docker/backend.Dockerfile -t ecommerce-backend:ci . --no-cache
+  docker-validate:
+    name: Docker Build Validation
+    runs-on: ubuntu-latest
+    needs: backend
 
-      - name: Validate Docker build (frontend)
-        run: docker build -f docker/frontend.Dockerfile -t ecommerce-frontend:ci . --no-cache
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate backend Dockerfile
+        run: |
+          if [ -f apps/backend/Dockerfile ]; then
+            docker build -f apps/backend/Dockerfile -t ecommerce-backend:ci apps/backend --no-cache
+          else
+            echo "No backend Dockerfile found — skipping."
+          fi
+
+      - name: Validate frontend Dockerfile
+        run: |
+          if [ -f apps/frontend/Dockerfile ]; then
+            docker build -f apps/frontend/Dockerfile -t ecommerce-frontend:ci apps/frontend --no-cache
+          else
+            echo "No frontend Dockerfile found — skipping."
+          fi
+

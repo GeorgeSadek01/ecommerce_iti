@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
@@ -38,6 +38,11 @@ const emailLogSchema = new Schema(
       default: Date.now,
       index: true,
     },
+    errorMessage: {
+      type: String,
+      default: null,
+      trim: true,
+    },
   },
   {
     timestamps: false,
@@ -46,4 +51,4 @@ const emailLogSchema = new Schema(
 
 const EmailLog = mongoose.model('EmailLog', emailLogSchema);
 
-module.exports = EmailLog;
+export default EmailLog;

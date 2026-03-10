@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
@@ -28,4 +28,4 @@ const refreshTokenSchema = new Schema(
 
 const RefreshToken = mongoose.model('RefreshToken', refreshTokenSchema);
 
-module.exports = RefreshToken;
+export default RefreshToken;
