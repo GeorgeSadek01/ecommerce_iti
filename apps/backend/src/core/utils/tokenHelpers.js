@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import RefreshToken from '../db/Models/User/refreshToken.model.js';
+import env from '../config/env.js';
 
 const ACCESS_TOKEN_SECRET = () => process.env.JWT_SECRET;
 const ACCESS_TOKEN_TTL = '15m';
@@ -117,10 +118,10 @@ export const verifyPurposeToken = (token, expectedPurpose) => {
 
 export const REFRESH_COOKIE_NAME = 'refreshToken';
 
-/** Options applied to the refresh-token HTTP-only cookie. */
-export const refreshCookieOptions = {
+/** Returns the options to apply to the refresh-token HTTP-only cookie. */
+export const getRefreshCookieOptions = () => ({
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
+  secure: env.isProd,
   sameSite: 'strict',
   maxAge: REFRESH_TOKEN_TTL_MS,
-};
+});
