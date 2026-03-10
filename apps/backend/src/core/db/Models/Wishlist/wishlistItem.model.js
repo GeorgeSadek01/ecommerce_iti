@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
@@ -31,4 +31,4 @@ wishlistItemSchema.index({ wishlistId: 1, productId: 1 }, { unique: true });
 
 const WishlistItem = mongoose.model('WishlistItem', wishlistItemSchema);
 
-module.exports = WishlistItem;
+export default WishlistItem;

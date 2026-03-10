@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const { Schema } = mongoose;
 
@@ -59,11 +59,28 @@ const promoCodeSchema = new Schema(
   }
 );
 
-// Validate that percentage discounts don't exceed 100
+// Validate discountValue > 0 and percentage discounts don't exceed 100
 promoCodeSchema.pre('save', function (next) {
-  if (this.discountType === 'percentage') {
-    const value = parseFloat(this.discountValue.toString());
-    if (value > 100) {
+  const value = parseFloat(this.discountValue.toString());
+  if (value <= 0) {
+    return next(new Error('Discount value must be greater than 0.'));
+  }
+  if (this.discountType === 'percentage' && value > 100) {
+    return next(new Error('Percentage discount cannot exceed 100%.'));
+  }
+  next();
+});
+
+promoCodeSchema.pre('findOneAndUpdate', function (next) {
+  const update = this.getUpdate();
+  const discountType = update.discountType ?? update.$set?.discountType;
+  const discountValue = update.discountValue ?? update.$set?.discountValue;
+  if (discountValue !== null && discountValue !== undefined) {
+    const value = parseFloat(discountValue.toString());
+    if (value <= 0) {
+      return next(new Error('Discount value must be greater than 0.'));
+    }
+    if (discountType === 'percentage' && value > 100) {
       return next(new Error('Percentage discount cannot exceed 100%.'));
     }
   }
@@ -72,4 +89,4 @@ promoCodeSchema.pre('save', function (next) {
 
 const PromoCode = mongoose.model('PromoCode', promoCodeSchema);
 
-module.exports = PromoCode;
+export default PromoCode;

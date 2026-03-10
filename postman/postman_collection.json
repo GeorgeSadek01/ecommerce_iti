@@ -1,0 +1,1066 @@
+{
+  "info": {
+    "name": "Ecommerce API",
+    "_postman_id": "ecommerce-api-collection-v1",
+    "description": "Complete API collection for the Ecommerce backend. Base URL: {{base_url}} (default: http://localhost:4000)\n\n**Auth flow:**\n1. POST /api/v1/auth/register\n2. GET  /api/v1/auth/confirm/:token  (token arrives by email)\n3. POST /api/v1/auth/login  → saves accessToken + refreshToken cookie\n4. Use `Authorization: Bearer {{token}}` on protected routes\n5. POST /api/v1/auth/refresh  → rotates tokens\n6. POST /api/v1/auth/logout",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:4000", "type": "string" },
+    { "key": "token",    "value": "",                      "type": "string" }
+  ],
+  "item": [
+
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            },
+            "description": "Returns `{ status: 'ok' }` when the server is running."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });",
+                  "pm.test('Body has status ok', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.status).to.eql('ok');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "name": "Auth",
+      "description": "Registration, email confirmation, login, token refresh and logout.",
+      "item": [
+
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"Password1\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "register"]
+            },
+            "description": "Create a new user account. A confirmation email is sent to the provided address.\n\n**Password rules:** min 8 chars, at least 1 uppercase letter, at least 1 number."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });",
+                  "pm.test('Response has user object', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.user).to.be.an('object');",
+                  "  pm.expect(json.data.user.email).to.exist;",
+                  "  pm.expect(json.data.user).to.not.have.property('passwordHash');",
+                  "});",
+                  "// Store userId for later requests",
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.user && json.data.user.id) {",
+                  "  pm.collectionVariables.set('userId', json.data.user.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Confirm Email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/confirm/{{confirmToken}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "confirm", "{{confirmToken}}"]
+            },
+            "description": "Confirm a user's email using the JWT token delivered by email.\n\nSet `confirmToken` collection variable to the token value from the link."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });",
+                  "pm.test('Body has success status', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.status).to.eql('success');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"Password1\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
+            },
+            "description": "Authenticate and obtain tokens.\n\n- **Response body:** `accessToken` (15 min JWT)\n- **Cookie:** `refreshToken` HTTP-only cookie (7 days)\n\nThe test script automatically saves `accessToken` to the `token` collection variable."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });",
+                  "pm.test('Response has accessToken', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.accessToken).to.be.a('string').and.to.have.length.above(0);",
+                  "});",
+                  "pm.test('Response has user object', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.user).to.be.an('object');",
+                  "  pm.expect(json.data.user.role).to.exist;",
+                  "});",
+                  "// Auto-save token for subsequent requests",
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.accessToken) {",
+                  "  pm.collectionVariables.set('token', json.data.accessToken);",
+                  "  console.log('Access token saved to collection variable: token');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "refresh"]
+            },
+            "description": "Rotate the refresh token and get a new access token.\n\nRequires `refreshToken` HTTP-only cookie (set automatically by Login).\nReturns a new `accessToken` and rotates the cookie."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });",
+                  "pm.test('New accessToken is returned', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.accessToken).to.be.a('string').and.to.have.length.above(0);",
+                  "});",
+                  "// Update saved token",
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.accessToken) {",
+                  "  pm.collectionVariables.set('token', json.data.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            },
+            "description": "Revoke the refresh token and clear the cookie.\n\nRequires `refreshToken` HTTP-only cookie."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });",
+                  "pm.test('Logout message present', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.status).to.eql('success');",
+                  "});",
+                  "// Clear token from collection",
+                  "pm.collectionVariables.set('token', '');"
+                ]
+              }
+            }
+          ]
+        }
+
+      ]
+    },
+
+    {
+      "name": "Products",
+      "description": "Product CRUD — routes not yet implemented. Requests are scaffolded based on the Product model.",
+      "item": [
+
+        {
+          "name": "List Products",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/products?page=1&limit=20&categoryId=&search=",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products"],
+              "query": [
+                { "key": "page",       "value": "1" },
+                { "key": "limit",      "value": "20" },
+                { "key": "categoryId", "value": "", "description": "Filter by category ObjectId" },
+                { "key": "search",     "value": "", "description": "Full-text search on product name" }
+              ]
+            },
+            "description": "Paginated list of active products. Public endpoint."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });",
+                  "pm.test('Returns array', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Get Product",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/products/{{productId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{productId}}"]
+            },
+            "description": "Get a single product by ID or slug. Public endpoint."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Create Product (Seller)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"categoryId\": \"{{categoryId}}\",\n  \"name\": \"Wireless Headphones Pro\",\n  \"description\": \"Premium noise-cancelling wireless headphones.\",\n  \"price\": 129.99,\n  \"discountedPrice\": 99.99,\n  \"stock\": 50\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/seller/products",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "seller", "products"]
+            },
+            "description": "Create a new product. Requires seller role."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });",
+                  "pm.test('Product has id', function () {",
+                  "  const json = pm.response.json();",
+                  "  pm.expect(json.data.product._id || json.data.product.id).to.exist;",
+                  "  pm.collectionVariables.set('productId', json.data.product._id || json.data.product.id);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Update Product (Seller)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 119.99,\n  \"stock\": 45,\n  \"isActive\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/seller/products/{{productId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "seller", "products", "{{productId}}"]
+            },
+            "description": "Partially update a product. Requires seller role and product ownership."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Delete Product (Seller)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/seller/products/{{productId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "seller", "products", "{{productId}}"]
+            },
+            "description": "Delete a product. Requires seller role and product ownership."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 or 204', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        }
+
+      ]
+    },
+
+    {
+      "name": "Categories",
+      "description": "Category management — routes scaffolded based on the Category model.",
+      "item": [
+
+        {
+          "name": "List Categories",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "categories"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Get Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/v1/categories/{{categoryId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "categories", "{{categoryId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Create Category (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Electronics\",\n  \"parentId\": null,\n  \"imageUrl\": \"https://example.com/electronics.jpg\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/categories",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "categories"]
+            },
+            "description": "Create a top-level or nested category. Requires admin role."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });",
+                  "const json = pm.response.json();",
+                  "if (json.data && (json.data._id || json.data.id)) {",
+                  "  pm.collectionVariables.set('categoryId', json.data._id || json.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+
+      ]
+    },
+
+    {
+      "name": "Cart",
+      "description": "Shopping cart — routes scaffolded based on the Cart & CartItem models.",
+      "item": [
+
+        {
+          "name": "Get My Cart",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/cart",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "cart"]
+            },
+            "description": "Retrieve the authenticated user's cart with all items."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Add Item to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": \"{{productId}}\",\n  \"quantity\": 2\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/cart/items",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "cart", "items"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 or 201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                  "});",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Update Cart Item Quantity",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 3\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/cart/items/{{cartItemId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "cart", "items", "{{cartItemId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Remove Item from Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/cart/items/{{cartItemId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "cart", "items", "{{cartItemId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 or 204', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Clear Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/cart",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "cart"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200 or 204', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        }
+
+      ]
+    },
+
+    {
+      "name": "Orders",
+      "description": "Order placement and management — scaffolded based on the Order model.",
+      "item": [
+
+        {
+          "name": "Place Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"addressId\": \"{{addressId}}\",\n  \"promoCode\": \"SAVE10\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "orders"]
+            },
+            "description": "Place an order from the current cart contents."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });",
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.order) {",
+                  "  pm.collectionVariables.set('orderId', json.data.order._id || json.data.order.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "List My Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "orders"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Get Order",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders/{{orderId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "orders", "{{orderId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"cancelled\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/orders/{{orderId}}/cancel",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "orders", "{{orderId}}", "cancel"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        }
+
+      ]
+    },
+
+    {
+      "name": "Payments",
+      "description": "Payment initiation and status — scaffolded based on the Payment model.",
+      "item": [
+
+        {
+          "name": "Create Payment Intent",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"provider\": \"stripe\",\n  \"currency\": \"USD\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "payments"]
+            },
+            "description": "Initiate a payment for an order. providers: `stripe` | `paypal`"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });",
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.payment) {",
+                  "  pm.collectionVariables.set('paymentId', json.data.payment._id || json.data.payment.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Get Payment Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/payments/{{paymentId}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "payments", "{{paymentId}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        }
+
+      ]
+    },
+
+    {
+      "name": "Seller Panel",
+      "description": "Seller-specific routes — requires role `seller`.",
+      "item": [
+
+        {
+          "name": "Get Seller Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/seller/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "seller", "profile"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Create Seller Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"storeName\": \"John's Tech Store\",\n  \"description\": \"Best tech products at affordable prices.\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/seller/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "seller", "profile"]
+            },
+            "description": "Create a seller profile for the authenticated user. One per user."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });",
+                  "const json = pm.response.json();",
+                  "if (json.data && json.data.profile) {",
+                  "  pm.collectionVariables.set('sellerProfileId', json.data.profile._id || json.data.profile.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "List Seller Orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/seller/orders?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "seller", "orders"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        }
+
+      ]
+    },
+
+    {
+      "name": "Admin Panel",
+      "description": "Admin-only routes — requires role `admin`.",
+      "item": [
+
+        {
+          "name": "List All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/users?page=1&limit=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "users"],
+              "query": [
+                { "key": "page",  "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        },
+
+        {
+          "name": "Approve Seller",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type",  "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/v1/admin/sellers/{{sellerProfileId}}/status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "admin", "sellers", "{{sellerProfileId}}", "status"]
+            },
+            "description": "Approve or suspend a seller profile. Status: `pending` | `approved` | `suspended`"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response time < 500ms', function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+                ]
+              }
+            }
+          ]
+        }
+
+      ]
+    }
+
+  ]
+}
