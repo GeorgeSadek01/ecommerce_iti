@@ -11,20 +11,19 @@ router.route('/' )
 
 router.route('/:id')
 .get(checkProductExists, productController.getOne)
-.put(checkProductExists, productController.update)
+.patch(checkProductExists, productController.update)
 .delete(checkProductExists, productController.delete);
 
 //product images routes
 router.route('/:id/images')
-	.post(uploadImages, productImageController.uploadProductImages)
-	.get(productImageController.getProductImages);
+	.post(checkProductExists,uploadImages, productImageController.uploadProductImages)
+	.get(checkProductExists, productImageController.getProductImages);
 
 router.route('/:id/images/order')
 	.patch(productImageController.reorderImages);
 
 router.route('/:id/images/:imageId')
 	.delete(productImageController.deleteImage)
-	.patch(productImageController.updateImage);
 
 router.route('/:id/images/:imageId/primary')
 	.patch(productImageController.setPrimaryImage);

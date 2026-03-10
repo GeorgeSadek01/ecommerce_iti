@@ -9,6 +9,14 @@ exports.createProductImage = async (productId, files) => {
     throw new Error('No files provided');
   }
 
+  // Enforce max 10 images per product
+  const existingCount = await ProductImage.countDocuments({ productId });
+  if (existingCount + files.length > 10) {
+    const err = new Error('Maximum 10 images allowed per product');
+    err.status = 400;
+    throw err;
+  }
+
   const hasPrimary = await ProductImage.findOne({ productId, isPrimary: true });
 
   const createdRecords = [];
@@ -120,10 +128,3 @@ exports.reorderImages = async (productId, imageIdOrder) => {
   await ProductImage.bulkWrite(bulkOps);
   return await ProductImage.find({ productId }).sort({ sortOrder: 1 }).lean();
 };
-
-// Update image metadata (e.g., isPrimary, sortOrder)
-exports.updateImage = async (imageId, data) => {
-  return await ProductImage.findByIdAndUpdate(imageId, data, { new: true });
-};
-
-

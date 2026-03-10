@@ -13,7 +13,7 @@ const upload = multer({
       cb(error, false);
     }
   }
-}).array('images', 5); // This executes the configuration
+}).array('images', 10); // This executes the configuration
 
 // The Wrapper Middleware
 const uploadImages = (req, res, next) => {

@@ -1,11 +1,4 @@
-const {
-    createProductImage,
-    getByProductId,
-    deleteImage,
-    setPrimary,
-    reorderImages,
-    updateImage
-} = require("./productImage.service.js");
+const productImageService = require('./productImage.service.js');
 
 // upload images
 module.exports.uploadProductImages = async (req, res) => {
@@ -17,11 +10,12 @@ module.exports.uploadProductImages = async (req, res) => {
             return res.status(400).json({ success: false, message: "No files uploaded" });
         }
 
-        const savedImages = await createProductImage(productId, req.files);
+        const savedImages = await productImageService.createProductImage(productId, req.files);
         res.status(201).json({ success: true, data: savedImages });
     } catch (err) {
-        console.error('Error uploading product images:', err);
-        res.status(500).json({ success: false, message: err.message });
+        console.error('Error uploading product images:', err.message || err);
+        const status = err.status || 500;
+        res.status(status).json({ success: false, message: err.message });
     }
 };
 
@@ -31,11 +25,12 @@ module.exports.getProductImages = async (req, res) => {
         const productId = req.params.productId || req.params.id;
         if (!productId) return res.status(400).json({ success: false, message: 'Product ID is required' });
 
-        const images = await getByProductId(productId);
+        const images = await productImageService.getByProductId(productId);
         res.status(200).json({ success: true, data: images });
     } catch (err) {
-        console.error('Error fetching product images:', err);
-        res.status(500).json({ success: false, message: err.message });
+        console.error('Error fetching product images:', err.message || err);
+        const status = err.status || 500;
+        res.status(status).json({ success: false, message: err.message });
     }
 };
 
@@ -46,12 +41,13 @@ module.exports.deleteImage = async (req, res) => {
         const { imageId } = req.params;
         if (!imageId) return res.status(400).json({ success: false, message: 'Image ID is required' });
 
-        const deleted = await deleteImage(productId, imageId);
+        const deleted = await productImageService.deleteImage(productId, imageId);
         if (!deleted) return res.status(404).json({ success: false, message: 'Image not found' });
         res.status(200).json({ success: true, data: deleted });
     } catch (err) {
-        console.error('Error deleting product image:', err);
-        res.status(500).json({ success: false, message: err.message });
+        console.error('Error deleting product image:', err.message || err);
+        const status = err.status || 500;
+        res.status(status).json({ success: false, message: err.message });
     }
 };
 
@@ -62,12 +58,13 @@ module.exports.setPrimaryImage = async (req, res) => {
         const { imageId } = req.params;
         if (!imageId) return res.status(400).json({ success: false, message: 'Image ID is required' });
 
-        const updated = await setPrimary(productId, imageId);
+        const updated = await productImageService.setPrimary(productId, imageId);
         if (!updated) return res.status(404).json({ success: false, message: 'Image not found' });
         res.status(200).json({ success: true, data: updated });
     } catch (err) {
-        console.error('Error setting primary image:', err);
-        res.status(500).json({ success: false, message: err.message });
+        console.error('Error setting primary image:', err.message || err);
+        const status = err.status || 500;
+        res.status(status).json({ success: false, message: err.message });
     }
 };
 
@@ -78,23 +75,11 @@ module.exports.reorderImages = async (req, res) => {
         const { order } = req.body; // expected: [imageId, imageId, ...]
         if (!Array.isArray(order)) return res.status(400).json({ success: false, message: 'Invalid order payload' });
 
-        const images = await reorderImages(productId, order);
+        const images = await productImageService.reorderImages(productId, order);
         res.status(200).json({ success: true, data: images });
     } catch (err) {
-        console.error('Error reordering images:', err);
-        res.status(500).json({ success: false, message: err.message });
-    }
-};
-
-// update image metadata
-module.exports.updateImage = async (req, res) => {
-    try {
-        const { imageId } = req.params;
-        const updated = await updateImage(imageId, req.body);
-        if (!updated) return res.status(404).json({ success: false, message: 'Image not found' });
-        res.status(200).json({ success: true, data: updated });
-    } catch (err) {
-        console.error('Error updating image:', err);
-        res.status(500).json({ success: false, message: err.message });
+        console.error('Error reordering images:', err.message || err);
+        const status = err.status || 500;
+        res.status(status).json({ success: false, message: err.message });
     }
 };
