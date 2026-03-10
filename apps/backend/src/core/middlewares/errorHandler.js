@@ -41,6 +41,7 @@ const errorHandler = (err, req, res, _next) => {
     return res.status(statusCode).json({
       status: err.status ?? 'error',
       message,
+      ...(err.errors && { errors: err.errors }),
       stack: err.stack,
     });
   }
@@ -48,6 +49,7 @@ const errorHandler = (err, req, res, _next) => {
   res.status(statusCode).json({
     status: err.status ?? 'error',
     message,
+    ...(err.errors && { errors: err.errors }),
   });
 };
 
