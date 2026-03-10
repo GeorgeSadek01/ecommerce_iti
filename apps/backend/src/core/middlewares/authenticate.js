@@ -8,7 +8,7 @@ import User from '../../core/db/Models/User/user.model.js';
  * Attaches the authenticated user object to `req.user` on success.
  * Responds with 401 if the token is missing, invalid, or expired.
  */
-const authenticate = async (req, res, next) => {
+const authenticate = async (req, _res, next) => {
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader?.startsWith('Bearer ')) {

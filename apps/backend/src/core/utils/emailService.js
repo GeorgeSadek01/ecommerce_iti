@@ -246,7 +246,7 @@ export const sendOrderShippedEmail = ({ userId, email, firstName, orderId, track
       html: `
         <h2>Your order is on its way, ${escapeHtml(firstName)}!</h2>
         <p>Order <strong>#${orderId}</strong> has been shipped.</p>
-        ${trackingNumber ? `<p><strong>Tracking number:</strong> ${trackingNumber}</p>` : ''}
+        ${trackingNumber ? `<p><strong>Tracking number:</strong> ${escapeHtml(trackingNumber)}</p>` : ''}
         <p><a href="${orderLink}">View order details</a></p>
       `,
     },
