@@ -9,7 +9,7 @@ import {
 } from '../Services/auth.service.js';
 import {
   REFRESH_COOKIE_NAME,
-  refreshCookieOptions,
+  getRefreshCookieOptions,
 } from '../../../core/utils/tokenHelpers.js';
 
 // ─── POST /auth/register ──────────────────────────────────────────────────────
@@ -36,7 +36,7 @@ export const loginHandler = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
   const { accessToken, refreshToken, user } = await login({ email, password });
 
-  res.cookie(REFRESH_COOKIE_NAME, refreshToken, refreshCookieOptions);
+  res.cookie(REFRESH_COOKIE_NAME, refreshToken, getRefreshCookieOptions());
   sendSuccess(res, 200, 'Login successful.', { accessToken, user });
 });
 
@@ -46,7 +46,7 @@ export const refreshHandler = asyncHandler(async (req, res) => {
   const oldToken = req.cookies?.[REFRESH_COOKIE_NAME];
   const { accessToken, newRefreshToken } = await refreshTokens(oldToken);
 
-  res.cookie(REFRESH_COOKIE_NAME, newRefreshToken, refreshCookieOptions);
+  res.cookie(REFRESH_COOKIE_NAME, newRefreshToken, getRefreshCookieOptions());
   sendSuccess(res, 200, 'Token refreshed.', { accessToken });
 });
 
@@ -58,7 +58,7 @@ export const logoutHandler = asyncHandler(async (req, res) => {
 
   // Spread the same options used when setting the cookie (minus maxAge) so
   // the browser matches the cookie's path/domain and actually deletes it.
-  const { maxAge: _dropped, ...clearOptions } = refreshCookieOptions;
+  const { maxAge: _dropped, ...clearOptions } = getRefreshCookieOptions();
   res.clearCookie(REFRESH_COOKIE_NAME, clearOptions);
   sendSuccess(res, 200, 'Logged out successfully.');
 });
