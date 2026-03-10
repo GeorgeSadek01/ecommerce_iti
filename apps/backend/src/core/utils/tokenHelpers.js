@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import RefreshToken from '../db/Models/User/refreshToken.model.js';
 import env from '../config/env.js';
 
-const ACCESS_TOKEN_SECRET = () => process.env.JWT_SECRET;
+const ACCESS_TOKEN_SECRET = env.JWT_SECRET;
 const ACCESS_TOKEN_TTL = '15m';
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
 const CONFIRM_TOKEN_TTL = '24h';
@@ -17,7 +17,7 @@ const CONFIRM_TOKEN_TTL = '24h';
  * @returns {string} signed JWT
  */
 export const signAccessToken = (payload) =>
-  jwt.sign({ sub: payload.id, role: payload.role }, ACCESS_TOKEN_SECRET(), {
+  jwt.sign({ sub: payload.id, role: payload.role }, ACCESS_TOKEN_SECRET, {
     expiresIn: ACCESS_TOKEN_TTL,
   });
 
@@ -28,7 +28,7 @@ export const signAccessToken = (payload) =>
  * @param {string} token
  * @returns {object} decoded payload
  */
-export const verifyAccessToken = (token) => jwt.verify(token, ACCESS_TOKEN_SECRET());
+export const verifyAccessToken = (token) => jwt.verify(token, ACCESS_TOKEN_SECRET);
 
 // ─── Refresh Token ────────────────────────────────────────────────────────────
 
@@ -100,7 +100,7 @@ export const revokeRefreshToken = async (token) => {
  * @returns {string} signed JWT
  */
 export const signEmailToken = (payload) =>
-  jwt.sign({ sub: payload.id, email: payload.email, purpose: 'email-confirm' }, ACCESS_TOKEN_SECRET(), {
+  jwt.sign({ sub: payload.id, email: payload.email, purpose: 'email-confirm' }, ACCESS_TOKEN_SECRET, {
     expiresIn: CONFIRM_TOKEN_TTL,
   });
 
@@ -111,7 +111,7 @@ export const signEmailToken = (payload) =>
  * @returns {string} signed JWT
  */
 export const signPasswordResetToken = (payload) =>
-  jwt.sign({ sub: payload.id, email: payload.email, purpose: 'password-reset' }, ACCESS_TOKEN_SECRET(), {
+  jwt.sign({ sub: payload.id, email: payload.email, purpose: 'password-reset' }, ACCESS_TOKEN_SECRET, {
     expiresIn: '1h',
   });
 
@@ -124,7 +124,7 @@ export const signPasswordResetToken = (payload) =>
  * @returns {object} decoded payload
  */
 export const verifyPurposeToken = (token, expectedPurpose) => {
-  const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET());
+  const decoded = jwt.verify(token, ACCESS_TOKEN_SECRET);
   if (decoded.purpose !== expectedPurpose) {
     const err = new Error('Invalid token purpose.');
     err.name = 'JsonWebTokenError';
