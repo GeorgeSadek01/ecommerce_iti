@@ -1,14 +1,15 @@
 import 'dotenv/config';
+import env from './core/config/env.js';
 import app from './app.js';
 import dbConnect from './core/db/dbConnect.js';
 
-const PORT = process.env.PORT || 4000;
+const PORT = env.PORT;
 
 const start = async () => {
   await dbConnect();
 
   app.listen(PORT, () => {
-    console.log(`Server running in ${process.env.NODE_ENV ?? 'development'} mode on port ${PORT}`);
+    console.log(`Server running in ${env.NODE_ENV} mode on port ${PORT}`);
   });
 };
 
