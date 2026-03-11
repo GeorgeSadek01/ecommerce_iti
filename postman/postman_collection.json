@@ -43,15 +43,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/auth/register",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "register"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "register"]
             },
             "body": {
               "mode": "raw",
@@ -87,16 +80,8 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/api/v1/auth/confirm/{{token}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "confirm",
-                "{{token}}"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "confirm", "{{token}}"]
             }
           },
           "event": [
@@ -128,15 +113,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/auth/login",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "login"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "login"]
             },
             "body": {
               "mode": "raw",
@@ -177,15 +155,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/auth/refresh",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "refresh"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "refresh"]
             },
             "body": {
               "mode": "raw",
@@ -226,15 +197,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/auth/logout",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "auth",
-                "logout"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "auth", "logout"]
             },
             "body": {
               "mode": "raw",
@@ -279,14 +243,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/categories/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "categories"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "categories"]
             },
             "body": {
               "mode": "raw",
@@ -327,14 +285,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/categories/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "categories"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "categories"]
             }
           },
           "event": [
@@ -366,14 +318,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/categories/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "categories"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "categories"]
             }
           },
           "event": [
@@ -409,14 +355,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/categories/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "categories"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "categories"]
             },
             "body": {
               "mode": "raw",
@@ -457,14 +397,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/categories/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "categories"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "categories"]
             }
           },
           "event": [
@@ -496,15 +430,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/categories/{{id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "categories",
-                "{{id}}"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "categories", "{{id}}"]
             }
           },
           "event": [
@@ -540,15 +467,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/categories/{{id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "categories",
-                "{{id}}"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "categories", "{{id}}"]
             },
             "body": {
               "mode": "raw",
@@ -589,15 +509,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/categories/{{id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "categories",
-                "{{id}}"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "categories", "{{id}}"]
             }
           },
           "event": [
@@ -633,15 +546,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/payment/checkout",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "payment",
-                "checkout"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "payment", "checkout"]
             },
             "body": {
               "mode": "raw",
@@ -686,15 +592,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/payment/webhook",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "payment",
-                "webhook"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "payment", "webhook"]
             },
             "body": {
               "mode": "raw",
@@ -739,14 +638,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products"]
             },
             "body": {
               "mode": "raw",
@@ -787,14 +680,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products"]
             }
           },
           "event": [
@@ -826,14 +713,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products"]
             }
           },
           "event": [
@@ -869,14 +750,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products"]
             },
             "body": {
               "mode": "raw",
@@ -917,14 +792,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products"]
             }
           },
           "event": [
@@ -960,14 +829,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products"]
             },
             "body": {
               "mode": "raw",
@@ -1008,14 +871,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products"]
             }
           },
           "event": [
@@ -1047,15 +904,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/{{id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products",
-                "{{id}}"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{id}}"]
             }
           },
           "event": [
@@ -1091,15 +941,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/{{id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products",
-                "{{id}}"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{id}}"]
             },
             "body": {
               "mode": "raw",
@@ -1140,15 +983,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/{{id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products",
-                "{{id}}"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{id}}"]
             }
           },
           "event": [
@@ -1184,15 +1020,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/{{id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products",
-                "{{id}}"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{id}}"]
             },
             "body": {
               "mode": "raw",
@@ -1233,15 +1062,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/{{id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products",
-                "{{id}}"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{id}}"]
             }
           },
           "event": [
@@ -1277,15 +1099,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/{{id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products",
-                "{{id}}"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{id}}"]
             },
             "body": {
               "mode": "raw",
@@ -1330,16 +1145,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/{{id}}/images",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products",
-                "{{id}}",
-                "images"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{id}}", "images"]
             },
             "body": {
               "mode": "raw",
@@ -1380,16 +1187,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/{{id}}/images",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products",
-                "{{id}}",
-                "images"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{id}}", "images"]
             }
           },
           "event": [
@@ -1425,16 +1224,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/{{id}}/images",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products",
-                "{{id}}",
-                "images"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{id}}", "images"]
             },
             "body": {
               "mode": "raw",
@@ -1475,16 +1266,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/{{id}}/images",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products",
-                "{{id}}",
-                "images"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{id}}", "images"]
             }
           },
           "event": [
@@ -1520,16 +1303,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/{{id}}/images",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products",
-                "{{id}}",
-                "images"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{id}}", "images"]
             },
             "body": {
               "mode": "raw",
@@ -1574,17 +1349,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/{{id}}/images/order",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products",
-                "{{id}}",
-                "images",
-                "order"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{id}}", "images", "order"]
             },
             "body": {
               "mode": "raw",
@@ -1625,17 +1391,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/{{id}}/images/order",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products",
-                "{{id}}",
-                "images",
-                "order"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{id}}", "images", "order"]
             }
           },
           "event": [
@@ -1671,17 +1428,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/{{id}}/images/order",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products",
-                "{{id}}",
-                "images",
-                "order"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{id}}", "images", "order"]
             },
             "body": {
               "mode": "raw",
@@ -1722,17 +1470,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/{{id}}/images/{{imageId}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products",
-                "{{id}}",
-                "images",
-                "{{imageId}}"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{id}}", "images", "{{imageId}}"]
             }
           },
           "event": [
@@ -1768,17 +1507,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/{{id}}/images/{{imageId}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products",
-                "{{id}}",
-                "images",
-                "{{imageId}}"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{id}}", "images", "{{imageId}}"]
             },
             "body": {
               "mode": "raw",
@@ -1823,18 +1553,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/api/v1/products/{{id}}/images/{{imageId}}/primary",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "products",
-                "{{id}}",
-                "images",
-                "{{imageId}}",
-                "primary"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["api", "v1", "products", "{{id}}", "images", "{{imageId}}", "primary"]
             },
             "body": {
               "mode": "raw",
@@ -1879,9 +1599,7 @@
             ],
             "url": {
               "raw": "{{base_url}}/",
-              "host": [
-                "{{base_url}}"
-              ],
+              "host": ["{{base_url}}"],
               "path": []
             },
             "body": {
@@ -1923,9 +1641,7 @@
             ],
             "url": {
               "raw": "{{base_url}}/",
-              "host": [
-                "{{base_url}}"
-              ],
+              "host": ["{{base_url}}"],
               "path": []
             }
           },
@@ -1958,9 +1674,7 @@
             ],
             "url": {
               "raw": "{{base_url}}/",
-              "host": [
-                "{{base_url}}"
-              ],
+              "host": ["{{base_url}}"],
               "path": []
             }
           },
@@ -1997,9 +1711,7 @@
             ],
             "url": {
               "raw": "{{base_url}}/",
-              "host": [
-                "{{base_url}}"
-              ],
+              "host": ["{{base_url}}"],
               "path": []
             },
             "body": {
@@ -2041,9 +1753,7 @@
             ],
             "url": {
               "raw": "{{base_url}}/",
-              "host": [
-                "{{base_url}}"
-              ],
+              "host": ["{{base_url}}"],
               "path": []
             }
           },
@@ -2076,12 +1786,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/{{id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "{{id}}"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["{{id}}"]
             }
           },
           "event": [
@@ -2117,12 +1823,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/{{id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "{{id}}"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["{{id}}"]
             },
             "body": {
               "mode": "raw",
@@ -2163,12 +1865,8 @@
             ],
             "url": {
               "raw": "{{base_url}}/{{id}}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "{{id}}"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["{{id}}"]
             }
           },
           "event": [
@@ -2200,12 +1898,8 @@
             "header": [],
             "url": {
               "raw": "{{base_url}}/health",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "health"
-              ]
+              "host": ["{{base_url}}"],
+              "path": ["health"]
             }
           },
           "event": [

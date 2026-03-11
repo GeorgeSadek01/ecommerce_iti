@@ -47,7 +47,7 @@ export const create = async (data) => {
   }
 
   const slug = slugify(data.name, { lower: true });
-  
+
   // Ensure slug uniqueness
   let uniqueSlug = slug;
   let slugSuffix = 1;
@@ -74,7 +74,7 @@ export const getById = async (id) => {
 
 export const getAll = async (options = {}) => {
   const { sellerId, page = 1, limit = 10, search } = options;
-  
+
   const query = {};
   if (sellerId) {
     query.sellerId = sellerId;
@@ -85,7 +85,8 @@ export const getAll = async (options = {}) => {
 
   const skip = (page - 1) * limit;
   const total = await productModel.countDocuments(query);
-  const products = await productModel.find(query)
+  const products = await productModel
+    .find(query)
     .populate('categoryId')
     .limit(limit)
     .skip(skip)
@@ -154,7 +155,7 @@ export const update = async (id, data) => {
 
   if (updateData.name) {
     let slug = slugify(updateData.name, { lower: true });
-    
+
     // Ensure slug uniqueness (exclude current product from check)
     let uniqueSlug = slug;
     let slugSuffix = 1;
@@ -162,7 +163,7 @@ export const update = async (id, data) => {
       uniqueSlug = `${slug}-${slugSuffix}`;
       slugSuffix++;
     }
-    
+
     updateData.slug = uniqueSlug;
   }
 

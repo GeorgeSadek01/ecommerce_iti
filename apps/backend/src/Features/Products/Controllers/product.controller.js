@@ -39,7 +39,7 @@ export const getAll = asyncHandler(async (req, res) => {
 
 export const update = asyncHandler(async (req, res) => {
   const product = await productService.getById(req.params.id);
-  
+
   // Check ownership: only owner or admin can update
   if (req.user.role !== 'admin' && product.sellerId?.toString() !== req.user.id?.toString()) {
     throw new AppError('You do not have permission to update this product', 403);
@@ -53,7 +53,7 @@ export const update = asyncHandler(async (req, res) => {
 
 export const deleteProduct = asyncHandler(async (req, res) => {
   const product = await productService.getById(req.params.id);
-  
+
   // Check ownership: only owner or admin can delete
   if (req.user.role !== 'admin' && product.sellerId?.toString() !== req.user.id?.toString()) {
     throw new AppError('You do not have permission to delete this product', 403);

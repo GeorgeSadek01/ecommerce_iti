@@ -64,8 +64,14 @@ const env = {
   STRIPE_SECRET_KEY: optional('STRIPE_SECRET_KEY'),
   STRIPE_PUBLISHABLE_KEY: optional('STRIPE_PUBLISHABLE_KEY'),
   STRIPE_WEBHOOK_KEY: requiredInProd('STRIPE_WEBHOOK_KEY'),
-  CLIENT_URL_SUCCESS_PAYMENT: optional('CLIENT_URL_SUCCESS_PAYMENT', `${optional('FRONTEND_URL', 'http://localhost:4200')}/success.html`),
-  CLIENT_URL_FAILURE_PAYMENT: optional('CLIENT_URL_FAILURE_PAYMENT', `${optional('FRONTEND_URL', 'http://localhost:4200')}/failure.html`),
+  CLIENT_URL_SUCCESS_PAYMENT: optional(
+    'CLIENT_URL_SUCCESS_PAYMENT',
+    `${optional('FRONTEND_URL', 'http://localhost:4200')}/success.html`
+  ),
+  CLIENT_URL_FAILURE_PAYMENT: optional(
+    'CLIENT_URL_FAILURE_PAYMENT',
+    `${optional('FRONTEND_URL', 'http://localhost:4200')}/failure.html`
+  ),
 
   // ─── Google OAuth ──────────────────────────────────────────────────────
   GOOGLE_CLIENT_ID: optional('GOOGLE_CLIENT_ID'),
