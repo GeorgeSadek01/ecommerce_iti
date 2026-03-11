@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-require('./category.model.js');
+import mongoose from 'mongoose';
+import './category.model.js';
 const { Schema } = mongoose;
 
 const decimal128Getter = (v) => (v ? parseFloat(v.toString()) : null);
@@ -129,8 +129,7 @@ const validatePriceUpdate = async function (next) {
       if (discountedVal !== null && discountedVal !== undefined) {
         const discountedPrice = parseFloat(discountedVal.toString());
         if (discountedPrice <= 0) return next(new Error('Discounted price must be greater than 0'));
-        if (discountedPrice >= price)
-          return next(new Error('Discounted price must be less than the original price'));
+        if (discountedPrice >= price) return next(new Error('Discounted price must be less than the original price'));
       }
     }
 
