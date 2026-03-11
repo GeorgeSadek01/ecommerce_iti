@@ -40,5 +40,26 @@ module.exports = {
         } catch (error) {
             res.status(500).json({ message: error.message });
         }
+    },
+    search: async (req, res) => {
+        try {
+            const filters = {
+                search: req.query.search,
+                category: req.query.category,
+                minPrice: req.query.minPrice ? parseFloat(req.query.minPrice) : undefined,
+                maxPrice: req.query.maxPrice ? parseFloat(req.query.maxPrice) : undefined,
+                sort: req.query.sort || 'newest',
+                page: req.query.page || 1,
+                limit: req.query.limit || 10,
+            };
+    
+            const result = await productService.search(filters);
+            res.status(200).json({
+                message: "Products retrieved successfully",
+                ...result,
+            });
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
     }
 }

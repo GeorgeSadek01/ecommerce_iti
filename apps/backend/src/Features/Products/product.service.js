@@ -1,5 +1,7 @@
 const productModel = require("../../core/db/Models/Product/product.model.js");
 const slugify = require("slugify");
+const { calculatePagination, getPaginationMetadata } = require("../../core/utils/pagination.js");
+
 module.exports = {
     create: async (data) => {
         if (!data.name || typeof data.name !== 'string') {
@@ -132,5 +134,77 @@ module.exports = {
     },
     delete: async (id) => {
         return await productModel.findByIdAndDelete(id);
+    },
+    // Advanced search with filtering, sorting, and pagination
+    search: async (filters) => {
+        const {
+            search,
+            category,
+            minPrice,
+            maxPrice,
+            sort = 'newest',
+            page = 1,
+            limit = 10,
+        } = filters;
+
+        // Build query object
+        const query = { isActive: true };
+
+        // Full-text search on name and description
+        if (search && search.trim()) {
+            query.$text = { $search: search.trim() };
+        }
+
+        // Filter by category
+        if (category) {
+            query.categoryId = category;
+        }
+
+        // Price range filter
+        if (minPrice !== undefined || maxPrice !== undefined) {
+            query.price = {};
+            if (minPrice !== undefined) {
+                query.price.$gte = minPrice;
+            }
+            if (maxPrice !== undefined) {
+                query.price.$lte = maxPrice;
+            }
+        }
+
+        // Calculate pagination
+        const { skip, limit: pageLimit } = calculatePagination(page, limit);
+
+        // Build sort object
+        let sortObj = { createdAt: -1 }; // Default: newest first
+        if (sort === 'price_asc') {
+            sortObj = { price: 1 };
+        } else if (sort === 'price_desc') {
+            sortObj = { price: -1 };
+        } else if (sort === 'name_asc') {
+            sortObj = { name: 1 };
+        } else if (sort === 'name_desc') {
+            sortObj = { name: -1 };
+        } else if (sort === 'rating') {
+            sortObj = { averageRating: -1, reviewCount: -1 };
+        }
+
+        // Execute query
+        const products = await productModel
+            .find(query)
+            .populate('categoryId', 'name slug')
+            .sort(sortObj)
+            .skip(skip)
+            .limit(pageLimit)
+            .lean();
+
+        const total = await productModel.countDocuments(query);
+
+        // Get pagination metadata
+        const pagination = getPaginationMetadata(total, page, pageLimit);
+
+        return {
+            data: products,
+            pagination,
+        };
     }
 };
