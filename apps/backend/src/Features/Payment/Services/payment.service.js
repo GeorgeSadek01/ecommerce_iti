@@ -24,8 +24,23 @@ export const createCheckoutSession = async (userId, addressId) => {
   let subtotal = 0;
 
   const orderItems = cartItems.map((item) => {
-    const price = parseFloat(item.priceSnapshot);
+    // Validate priceSnapshot before using it
+    const priceSnapshot = item.priceSnapshot;
+    if (priceSnapshot === null || priceSnapshot === undefined || priceSnapshot === '') {
+      console.error(`Invalid priceSnapshot for item ${item._id}`);
+      throw new AppError('Invalid price data in cart', 400);
+    }
+
+    const price = parseFloat(priceSnapshot);
+    if (!Number.isFinite(price) || price < 0) {
+      console.error(`Invalid priceSnapshot value for item ${item._id}: ${priceSnapshot}`);
+      throw new AppError('Invalid price data in cart', 400);
+    }
+
     const lineTotal = price * item.quantity;
+    if (!Number.isFinite(lineTotal)) {
+      throw new AppError('Invalid line total calculation', 400);
+    }
     subtotal += lineTotal;
 
     return {
@@ -46,26 +61,37 @@ export const createCheckoutSession = async (userId, addressId) => {
     total: subtotal,
   });
 
-  const session = await stripe.checkout.sessions.create({
-    mode: 'payment',
-    payment_method_types: ['card'],
-    line_items: orderItems.map((item) => ({
-      price_data: {
-        currency: 'usd',
-        product_data: {
-          name: item.productNameSnapshot,
+  let session;
+  try {
+    session = await stripe.checkout.sessions.create({
+      mode: 'payment',
+      payment_method_types: ['card'],
+      line_items: orderItems.map((item) => ({
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: item.productNameSnapshot,
+          },
+          unit_amount: Math.round(item.priceSnapshot * 100),
         },
-        unit_amount: Math.round(item.priceSnapshot * 100),
+        quantity: item.quantity,
+      })),
+      success_url: `${env.CLIENT_URL_SUCCESS_PAYMENT}`,
+      cancel_url: `${env.CLIENT_URL_FAILURE_PAYMENT}`,
+      metadata: {
+        orderId: order._id.toString(),
+        userId: userId.toString(),
       },
-      quantity: item.quantity,
-    })),
-    success_url: `${env.CLIENT_URL_SUCCESS_PAYMENT}`,
-    cancel_url: `${env.CLIENT_URL_FAILURE_PAYMENT}`,
-    metadata: {
-      orderId: order._id.toString(),
-      userId: userId.toString(),
-    },
-  });
+    });
+  } catch (error) {
+    // Rollback: delete the order if Stripe session creation fails
+    try {
+      await Order.deleteOne({ _id: order._id });
+    } catch (cleanupErr) {
+      console.error('Failed to cleanup order after Stripe error:', cleanupErr);
+    }
+    throw error;
+  }
 
   return session;
 };
@@ -78,6 +104,17 @@ export const handleSuccessfulPayment = async (session) => {
 
   if (!order) {
     throw new AppError('Order not found', 404);
+  }
+
+  // Check if payment already exists (idempotency)
+  const existingPayment = await Payment.findOne({
+    provider: 'stripe',
+    providerTransactionId: session.payment_intent,
+  });
+
+  if (existingPayment) {
+    console.log(`Payment already processed for transaction ${session.payment_intent}`);
+    return;
   }
 
   order.status = 'processing';

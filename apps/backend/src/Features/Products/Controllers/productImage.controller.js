@@ -40,7 +40,9 @@ export const getProductImages = asyncHandler(async (req, res) => {
 export const deleteImage = asyncHandler(async (req, res) => {
   const productId = req.params.productId || req.params.id;
   const { imageId } = req.params;
-
+  if (!productId) {
+    throw new AppError('Product ID is required', 400);
+  }
   if (!imageId) {
     throw new AppError('Image ID is required', 400);
   }
@@ -54,7 +56,9 @@ export const deleteImage = asyncHandler(async (req, res) => {
 export const setPrimaryImage = asyncHandler(async (req, res) => {
   const productId = req.params.productId || req.params.id;
   const { imageId } = req.params;
-
+  if (!productId) {
+    throw new AppError('Product ID is required', 400);
+  }
   if (!imageId) {
     throw new AppError('Image ID is required', 400);
   }
@@ -69,8 +73,28 @@ export const reorderImages = asyncHandler(async (req, res) => {
   const productId = req.params.productId || req.params.id;
   const { order } = req.body;
 
+  if (!productId) {
+    throw new AppError('Product ID is required', 400);
+  }
+
   if (!Array.isArray(order)) {
-    throw new AppError('Invalid order payload', 400);
+    throw new AppError('Invalid order payload: must be an array', 400);
+  }
+
+  if (order.length === 0) {
+    throw new AppError('Order array cannot be empty', 400);
+  }
+
+  // Check each element is a valid string/id
+  const invalidElements = order.filter((id) => !id || typeof id !== 'string');
+  if (invalidElements.length > 0) {
+    throw new AppError('Order array contains invalid IDs', 400);
+  }
+
+  // Check for duplicates
+  const uniqueIds = new Set(order);
+  if (uniqueIds.size !== order.length) {
+    throw new AppError('Order array contains duplicate IDs', 400);
   }
 
   const images = await productImageService.reorderImages(productId, order);

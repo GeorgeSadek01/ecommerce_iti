@@ -7,9 +7,21 @@ import AppError from '../../../core/utils/AppError.js';
 const updateDescendantsAncestors = async (parentId, newAncestors) => {
   const children = await Category.find({ parentId: parentId });
 
+  if (children.length === 0) return;
+
+  // Build bulk update operations for all direct children
+  const bulkOps = children.map((child) => ({
+    updateOne: {
+      filter: { _id: child._id },
+      update: { $set: { ancestors: [...newAncestors, parentId] } },
+    },
+  }));
+
+  await Category.bulkWrite(bulkOps);
+
+  // Recursively update descendants
   for (const child of children) {
     const childNewAncestors = [...newAncestors, parentId];
-    await Category.findByIdAndUpdate(child._id, { ancestors: childNewAncestors });
     await updateDescendantsAncestors(child._id, childNewAncestors);
   }
 };
@@ -17,8 +29,14 @@ const updateDescendantsAncestors = async (parentId, newAncestors) => {
 // ─── Create Category ──────────────────────────────────────────────────────────
 
 export const create = async (data) => {
-  // Generate the slug
-  const slug = slugify(data.name, { lower: true });
+  // Generate the slug with uniqueness check
+  let slug = slugify(data.name, { lower: true });
+  let slugSuffix = 1;
+  while (await Category.findOne({ slug })) {
+    slug = `${slugify(data.name, { lower: true })}-${slugSuffix}`;
+    slugSuffix++;
+  }
+
   let ancestors = [];
 
   // Business Rule: Check if parent exists if parentId is provided
@@ -30,9 +48,16 @@ export const create = async (data) => {
     ancestors = [...parent.ancestors, parent._id];
   }
 
-  // Save to DB
-  const category = new Category({ ...data, slug, ancestors });
-  return await category.save();
+  // Save to DB with error handling
+  try {
+    const category = new Category({ ...data, slug, ancestors });
+    return await category.save();
+  } catch (error) {
+    if (error.code === 11000) {
+      throw new AppError('Category with this slug already exists', 400);
+    }
+    throw error;
+  }
 };
 
 // ─── Get All Categories ───────────────────────────────────────────────────────
@@ -61,7 +86,8 @@ export const update = async (id, data) => {
 
   // Handle Parent Change
   if (data.parentId !== undefined) {
-    if (data.parentId === id) {
+    // Check self-parent using string comparison
+    if (data.parentId && String(data.parentId) === String(id)) {
       throw new AppError('A category cannot be its own parent', 400);
     }
     if (data.parentId === null) {
@@ -70,6 +96,10 @@ export const update = async (id, data) => {
       const parent = await Category.findById(data.parentId);
       if (!parent) {
         throw new AppError('Parent category not found', 404);
+      }
+      // Check for cycle: parent cannot be a descendant of current category
+      if (parent.ancestors.some((ancestorId) => String(ancestorId) === String(id))) {
+        throw new AppError('Cannot set a descendant as parent', 400);
       }
       data.ancestors = [...parent.ancestors, parent._id];
     }
@@ -112,7 +142,8 @@ export const deleteCategory = async (id) => {
     throw new AppError('Category not found', 404);
   }
 
-  await Category.findByIdAndDelete(id);
+  // Delete descendants first, then the parent
   await Category.deleteMany({ ancestors: id });
+  await Category.findByIdAndDelete(id);
   return true;
 };

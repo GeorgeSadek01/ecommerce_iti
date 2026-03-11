@@ -47,7 +47,16 @@ export const create = async (data) => {
   }
 
   const slug = slugify(data.name, { lower: true });
-  const newProduct = new productModel({ ...data, slug });
+  
+  // Ensure slug uniqueness
+  let uniqueSlug = slug;
+  let slugSuffix = 1;
+  while (await productModel.findOne({ slug: uniqueSlug })) {
+    uniqueSlug = `${slug}-${slugSuffix}`;
+    slugSuffix++;
+  }
+
+  const newProduct = new productModel({ ...data, slug: uniqueSlug });
   return await newProduct.save();
 };
 
@@ -63,8 +72,34 @@ export const getById = async (id) => {
 
 // ─── Get All Products ─────────────────────────────────────────────────────────
 
-export const getAll = async () => {
-  return await productModel.find().populate('categoryId');
+export const getAll = async (options = {}) => {
+  const { sellerId, page = 1, limit = 10, search } = options;
+  
+  const query = {};
+  if (sellerId) {
+    query.sellerId = sellerId;
+  }
+  if (search) {
+    query.name = { $regex: search, $options: 'i' };
+  }
+
+  const skip = (page - 1) * limit;
+  const total = await productModel.countDocuments(query);
+  const products = await productModel.find(query)
+    .populate('categoryId')
+    .limit(limit)
+    .skip(skip)
+    .sort({ createdAt: -1 });
+
+  return {
+    products,
+    pagination: {
+      total,
+      page,
+      limit,
+      pages: Math.ceil(total / limit),
+    },
+  };
 };
 
 // ─── Update Product ───────────────────────────────────────────────────────────
@@ -118,7 +153,17 @@ export const update = async (id, data) => {
   }
 
   if (updateData.name) {
-    updateData.slug = slugify(updateData.name, { lower: true });
+    let slug = slugify(updateData.name, { lower: true });
+    
+    // Ensure slug uniqueness (exclude current product from check)
+    let uniqueSlug = slug;
+    let slugSuffix = 1;
+    while (await productModel.findOne({ slug: uniqueSlug, _id: { $ne: id } })) {
+      uniqueSlug = `${slug}-${slugSuffix}`;
+      slugSuffix++;
+    }
+    
+    updateData.slug = uniqueSlug;
   }
 
   const updatedProduct = await productModel.findByIdAndUpdate(id, updateData, { new: true });

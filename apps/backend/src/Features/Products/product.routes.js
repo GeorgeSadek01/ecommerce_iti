@@ -65,6 +65,7 @@ router
     productIdValidator,
     reorderImagesValidator,
     validateRequest,
+    checkProductExists,
     productImageController.reorderImages
   );
 
@@ -76,6 +77,7 @@ router
     productIdValidator,
     imageIdValidator,
     validateRequest,
+    checkProductExists,
     productImageController.deleteImage
   );
 
@@ -87,6 +89,7 @@ router
     productIdValidator,
     imageIdValidator,
     validateRequest,
+    checkProductExists,
     productImageController.setPrimaryImage
   );
 export default router;

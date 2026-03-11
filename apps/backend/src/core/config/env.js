@@ -26,6 +26,14 @@ const optionalNumber = (key, defaultValue) => {
   return Number.isNaN(parsed) ? defaultValue : parsed;
 };
 
+const requiredInProd = (key) => {
+  const value = process.env[key];
+  if (!value && process.env.NODE_ENV === 'production') {
+    throw new Error(`Missing required environment variable in production: ${key}`);
+  }
+  return value || '';
+};
+
 const env = {
   // ─── App ───────────────────────────────────────────────────────────────
   NODE_ENV: optional('NODE_ENV', 'development'),
@@ -55,9 +63,9 @@ const env = {
   // ─── Stripe ────────────────────────────────────────────────────────────
   STRIPE_SECRET_KEY: optional('STRIPE_SECRET_KEY'),
   STRIPE_PUBLISHABLE_KEY: optional('STRIPE_PUBLISHABLE_KEY'),
-  STRIPE_WEBHOOK_KEY: optional('STRIPE_WEBHOOK_KEY'),
-  CLIENT_URL_SUCCESS_PAYMENT: optional('CLIENT_URL_SUCCESS_PAYMENT', 'http://localhost:3000/success.html'),
-  CLIENT_URL_FAILURE_PAYMENT: optional('CLIENT_URL_FAILURE_PAYMENT', 'http://localhost:3000/failure.html'),
+  STRIPE_WEBHOOK_KEY: requiredInProd('STRIPE_WEBHOOK_KEY'),
+  CLIENT_URL_SUCCESS_PAYMENT: optional('CLIENT_URL_SUCCESS_PAYMENT', `${optional('FRONTEND_URL', 'http://localhost:4200')}/success.html`),
+  CLIENT_URL_FAILURE_PAYMENT: optional('CLIENT_URL_FAILURE_PAYMENT', `${optional('FRONTEND_URL', 'http://localhost:4200')}/failure.html`),
 
   // ─── Google OAuth ──────────────────────────────────────────────────────
   GOOGLE_CLIENT_ID: optional('GOOGLE_CLIENT_ID'),

@@ -36,7 +36,7 @@ export const createProductImage = async (productId, files) => {
           url: cld.url,
           cloudinaryPublicId: cld.publicId,
           isPrimary: !hasPrimary && index === 0,
-          sortOrder: index,
+          sortOrder: existingCount + index,
         });
         createdRecords.push(record);
       } catch (dbErr) {
@@ -94,7 +94,12 @@ export const deleteImage = async (productId, imageId) => {
     throw new AppError('Image not found', 404);
   }
 
-  if (productId && record.productId.toString() !== productId.toString()) {
+  // Validate productId is provided and check ownership
+  if (!productId) {
+    throw new AppError('Product ID is required', 400);
+  }
+
+  if (record.productId.toString() !== productId.toString()) {
     throw new AppError('Image does not belong to the specified product', 403);
   }
 

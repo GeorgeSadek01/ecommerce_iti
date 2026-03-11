@@ -23,7 +23,7 @@ export const createProductValidator = [
     .isFloat({ min: 0 })
     .withMessage('Discounted price must be a non-negative number.')
     .custom((value, { req }) => {
-      if (value && req.body.price && parseFloat(value) >= parseFloat(req.body.price)) {
+      if (value !== undefined && value !== null && value !== '' && req.body.price && parseFloat(value) >= parseFloat(req.body.price)) {
         throw new Error('Discounted price must be less than the original price.');
       }
       return true;
@@ -67,7 +67,23 @@ export const updateProductValidator = [
 
   body('price').optional().isFloat({ min: 0 }).withMessage('Price must be a non-negative number.'),
 
-  body('discountedPrice').optional().isFloat({ min: 0 }).withMessage('Discounted price must be a non-negative number.'),
+  body('discountedPrice').optional().isFloat({ min: 0 }).withMessage('Discounted price must be a non-negative number.')
+    .custom(async (value, { req }) => {
+      if (value !== undefined && value !== null && value !== '') {
+        let priceToCompare = req.body.price ? parseFloat(req.body.price) : null;
+        
+        // If price is not being updated, we would need the existing product price
+        // This assumes the controller will set req.existingProduct or similar
+        if (!priceToCompare && req.existingProduct && req.existingProduct.price) {
+          priceToCompare = parseFloat(req.existingProduct.price);
+        }
+        
+        if (priceToCompare && parseFloat(value) >= priceToCompare) {
+          throw new Error('Discounted price must be less than the original price.');
+        }
+      }
+      return true;
+    }),
 
   body('stock').optional().isInt({ min: 0 }).withMessage('Stock must be a non-negative integer.'),
 
@@ -79,6 +95,7 @@ export const updateProductValidator = [
   body('slug').not().exists().withMessage('Cannot update slug field.'),
   body('averageRating').not().exists().withMessage('Cannot update averageRating field.'),
   body('reviewCount').not().exists().withMessage('Cannot update reviewCount field.'),
+];
 ];
 
 // ─── Product ID Validator ─────────────────────────────────────────────────────

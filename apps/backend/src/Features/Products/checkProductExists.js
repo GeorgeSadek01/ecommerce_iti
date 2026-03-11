@@ -11,6 +11,7 @@ const checkProductExists = async (req, res, next) => {
     if (!product) {
       return res.status(404).json({ message: 'Product not found: No record matches this ID.' });
     }
+    req.product = product; // Attach product for use in next middleware/controller
     next();
   } catch (error) {
     return res.status(500).json({ message: 'Server error during existence check' });

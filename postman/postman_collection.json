@@ -15,6 +15,16 @@
       "key": "token",
       "value": "",
       "type": "string"
+    },
+    {
+      "key": "id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "imageId",
+      "value": "",
+      "type": "string"
     }
   ],
   "item": [
