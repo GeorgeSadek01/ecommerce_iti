@@ -8,12 +8,15 @@ const cartSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
       default: null,
-      sparse: true, // unique index but allows null (guest carts have no userId)
+      ////////////////// Edit this in the model ///////////////
+      // FIX 1: removed sparse:true here — was creating a duplicate index
+      // The schema.index() below already handles this correctly
+      
     },
     guestToken: {
       type: String,
       default: null,
-      sparse: true, // unique index but allows null (authenticated carts have no guestToken)
+      //  removed sparse:true here — same reason as above
     },
   },
   {
@@ -28,11 +31,12 @@ cartSchema.index({ userId: 1 }, { unique: true, sparse: true });
 cartSchema.index({ guestToken: 1 }, { unique: true, sparse: true });
 
 // Application-level: exactly one of userId or guestToken must be set
-cartSchema.pre('save', function (next) {
+// FIX 2: Mongoose v8 — pre-save via create() receives no next argument
+// Changed from next(error) pattern to throw which works in all cases
+cartSchema.pre('save', function () {
   if ((this.userId == null) === (this.guestToken == null)) {
-    return next(new Error('A cart must have either a userId or a guestToken, but not both.'));
+    throw new Error('A cart must have either a userId or a guestToken, but not both.');
   }
-  next();
 });
 
 const Cart = mongoose.model('Cart', cartSchema);
