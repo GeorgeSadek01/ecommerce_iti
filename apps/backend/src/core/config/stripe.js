@@ -1,5 +1,11 @@
-const Stripe = require('stripe');
+import Stripe from 'stripe';
+import env from './env.js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+// Validate that Stripe secret key is configured
+if (!env.STRIPE_SECRET_KEY) {
+  throw new Error('STRIPE_SECRET_KEY environment variable is required for payment processing.');
+}
 
-module.exports = stripe;
+const stripe = new Stripe(env.STRIPE_SECRET_KEY);
+
+export default stripe;

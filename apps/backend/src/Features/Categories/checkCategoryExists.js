@@ -1,5 +1,5 @@
-const Category = require('../../core/db/Models/Product/category.model.js');
-const mongoose = require('mongoose');
+import Category from '../../core/db/Models/Product/category.model.js';
+import mongoose from 'mongoose';
 
 const checkCategoryExists = async (req, res, next) => {
   const { id } = req.params;
@@ -18,4 +18,4 @@ const checkCategoryExists = async (req, res, next) => {
     return res.status(500).json({ message: 'Server error during existence check' });
   }
 };
-module.exports = checkCategoryExists;
+export default checkCategoryExists;

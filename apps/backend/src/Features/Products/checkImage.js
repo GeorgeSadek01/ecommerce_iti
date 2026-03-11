@@ -1,4 +1,4 @@
-const multer = require('multer');
+import multer from 'multer';
 
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -12,7 +12,7 @@ const upload = multer({
       error.code = 'INVALID_FILE';
       cb(error, false);
     }
-  }
+  },
 }).array('images', 10); // This executes the configuration
 
 // The Wrapper Middleware
@@ -22,13 +22,13 @@ const uploadImages = (req, res, next) => {
       // If there is an error (Multer or custom), send response and STOP
       return res.status(400).json({
         success: false,
-        message: err.message || 'File upload error'
+        message: err.message || 'File upload error',
       });
     }
-    
+
     // IF NO ERROR, move to the next function (the Controller)
     next();
   });
 };
 
-module.exports = uploadImages;
+export default uploadImages;

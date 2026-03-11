@@ -153,7 +153,7 @@ const options = {
     ],
   },
   // Scan all route files for JSDoc @swagger annotations
-  apis: ['./src/Features/**/*.routes.js', './src/Features/**/*.controller.js'],
+  apis: ['./src/features/**/*.routes.js', './src/features/**/*.controller.js'],
 };
 
 const swaggerSpec = swaggerJSDoc(options);
