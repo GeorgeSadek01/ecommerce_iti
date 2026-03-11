@@ -55,6 +55,9 @@ const env = {
   // ─── Stripe ────────────────────────────────────────────────────────────
   STRIPE_SECRET_KEY: optional('STRIPE_SECRET_KEY'),
   STRIPE_PUBLISHABLE_KEY: optional('STRIPE_PUBLISHABLE_KEY'),
+  STRIPE_WEBHOOK_KEY: optional('STRIPE_WEBHOOK_KEY'),
+  CLIENT_URL_SUCCESS_PAYMENT: optional('CLIENT_URL_SUCCESS_PAYMENT', 'http://localhost:3000/success.html'),
+  CLIENT_URL_FAILURE_PAYMENT: optional('CLIENT_URL_FAILURE_PAYMENT', 'http://localhost:3000/failure.html'),
 
   // ─── Google OAuth ──────────────────────────────────────────────────────
   GOOGLE_CLIENT_ID: optional('GOOGLE_CLIENT_ID'),

@@ -1,16 +1,42 @@
 // * Card 11 — Category CRUD (Admin)
 // * POST/GET/PATCH/DELETE /admin/categories. Support parent category (self-referencing). Slug generation.
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const categoryController = require('./categories.controller.js');
-const checkCategoryExists = require('./checkCategoryExists.js');
+import * as categoryController from './Controllers/categories.controller.js';
+import checkCategoryExists from './checkCategoryExists.js';
+import validateRequest from '../../core/middlewares/validateRequest.js';
+import authenticate from '../../core/middlewares/authenticate.js';
+import authorize from '../../core/utils/authorize.js';
+import {
+  createCategoryValidator,
+  updateCategoryValidator,
+  categoryIdValidator,
+} from './Validators/categories.validators.js';
 
-router.route('/').post(categoryController.createCategory).get(categoryController.getCategories);
+router
+  .route('/')
+  .post(authenticate, authorize('admin'), createCategoryValidator, validateRequest, categoryController.createCategory)
+  .get(categoryController.getCategories);
 
 router
   .route('/:id')
-  .get(checkCategoryExists, categoryController.getOneCategory)
-  .patch(checkCategoryExists, categoryController.updateCategory)
-  .delete(checkCategoryExists, categoryController.deleteCategory);
+  .get(categoryIdValidator, validateRequest, checkCategoryExists, categoryController.getOneCategory)
+  .patch(
+    authenticate,
+    authorize('admin'),
+    categoryIdValidator,
+    updateCategoryValidator,
+    validateRequest,
+    checkCategoryExists,
+    categoryController.updateCategory
+  )
+  .delete(
+    authenticate,
+    authorize('admin'),
+    categoryIdValidator,
+    validateRequest,
+    checkCategoryExists,
+    categoryController.deleteCategory
+  );
 
-module.exports = router;
+export default router;

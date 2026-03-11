@@ -1,22 +1,24 @@
-const stripe = require('../../core/config/stripe');
-const Cart = require('../../core/db/Models/Cart/cart.model');
-const CartItem = require('../../core/db/Models/Cart/cartItem.model');
-const Order = require('../../core/db/Models/Order/order.model');
-const Payment = require('../../core/db/Models/Payment/payment.model');
-const Product = require('../../core/db/Models/Product/product.model');
+import stripe from '../../../core/config/stripe.js';
+import env from '../../../core/config/env.js';
+import Cart from '../../../core/db/Models/Cart/cart.model.js';
+import CartItem from '../../../core/db/Models/Cart/cartItem.model.js';
+import Order from '../../../core/db/Models/Order/order.model.js';
+import Payment from '../../../core/db/Models/Payment/payment.model.js';
+import AppError from '../../../core/utils/AppError.js';
 
-exports.createCheckoutSession = async (userId, addressId) => {
+// ─── Create Checkout Session ──────────────────────────────────────────────────
+
+export const createCheckoutSession = async (userId, addressId) => {
   const cart = await Cart.findOne({ userId });
 
   if (!cart) {
-    console.log(await Cart.find({}));
-    throw new Error('Cart not found');
+    throw new AppError('Cart not found', 404);
   }
 
   const cartItems = await CartItem.find({ cartId: cart._id }).populate('productId');
 
   if (!cartItems.length) {
-    throw new Error('Cart is empty');
+    throw new AppError('Cart is empty', 400);
   }
 
   let subtotal = 0;
@@ -25,8 +27,6 @@ exports.createCheckoutSession = async (userId, addressId) => {
     const price = parseFloat(item.priceSnapshot);
     const lineTotal = price * item.quantity;
     subtotal += lineTotal;
-
-    console.log(item);
 
     return {
       productId: item.productId._id,
@@ -38,8 +38,6 @@ exports.createCheckoutSession = async (userId, addressId) => {
     };
   });
 
-  console.log(orderItems);
-
   const order = await Order.create({
     userId,
     addressId,
@@ -50,9 +48,7 @@ exports.createCheckoutSession = async (userId, addressId) => {
 
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
-
     payment_method_types: ['card'],
-
     line_items: orderItems.map((item) => ({
       price_data: {
         currency: 'usd',
@@ -63,10 +59,8 @@ exports.createCheckoutSession = async (userId, addressId) => {
       },
       quantity: item.quantity,
     })),
-
-    success_url: `${process.env.CLIENT_URL_SUCCESS_PAYMENT}`,
-    cancel_url: `${process.env.CLIENT_URL_FAILURE_PAYMENT}`,
-
+    success_url: `${env.CLIENT_URL_SUCCESS_PAYMENT}`,
+    cancel_url: `${env.CLIENT_URL_FAILURE_PAYMENT}`,
     metadata: {
       orderId: order._id.toString(),
       userId: userId.toString(),
@@ -76,14 +70,17 @@ exports.createCheckoutSession = async (userId, addressId) => {
   return session;
 };
 
-exports.handleSuccessfulPayment = async (session) => {
+// ─── Handle Successful Payment ────────────────────────────────────────────────
+
+export const handleSuccessfulPayment = async (session) => {
   const orderId = session.metadata.orderId;
   const order = await Order.findById(orderId);
 
-  if (!order) return;
+  if (!order) {
+    throw new AppError('Order not found', 404);
+  }
 
   order.status = 'processing';
-
   await order.save();
 
   await Payment.create({

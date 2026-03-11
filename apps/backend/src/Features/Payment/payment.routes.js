@@ -1,22 +1,14 @@
-const express = require('express');
+import express from 'express';
 
 const router = express.Router();
 
-const paymentController = require('./payment.controller');
+import paymentController from './Controllers/payment.controller.js';
+import authenticate from '../../core/middlewares/authenticate.js';
+import validateRequest from '../../core/middlewares/validateRequest.js';
+import { checkoutValidator } from './Validators/payment.validators.js';
 
-router.post(
-  '/checkout',
-  // [TODO] : this will be deleted later after authentication
-  (req, res, next) => {
-    req.user = {
-      id: '69aed580cd7b0eaf31af3c25',
-    };
-
-    next();
-  },
-  paymentController.checkout
-);
+router.post('/checkout', authenticate, checkoutValidator, validateRequest, paymentController.checkout);
 
 router.post('/webhook', express.raw({ type: 'application/json' }), paymentController.webhook);
 
-module.exports = router;
+export default router;

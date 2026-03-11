@@ -8,8 +8,18 @@ import { globalLimiter } from './core/middlewares/rateLimiter.js';
 import errorHandler from './core/middlewares/errorHandler.js';
 import AppError from './core/utils/AppError.js';
 import swaggerSpec from './core/config/swagger.js';
+import authenticate from './core/middlewares/authenticate.js';
+import authorize from './core/utils/authorize.js';
 
-import authRoutes from './Features/Auth/auth.routes.js';
+// Import routes
+import authRoutes from './features/auth/auth.routes.js';
+import categoryRoutes from './features/categories/categories.routes.js';
+import productRoutes from './features/products/product.routes.js';
+import paymentRoutes from './features/payment/payment.routes.js';
+import cartRoutes from './features/cart/cart.routes.js';
+import orderRoutes from './features/orders/orders.routes.js';
+import adminPanelRoutes from './features/adminPanel/adminPanel.routes.js';
+import sellerPanelRoutes from './features/sellerPanel/sellerPanel.routes.js';
 
 const app = express();
 
@@ -17,9 +27,7 @@ const app = express();
 app.use(helmet());
 
 // ─── CORS ──────────────────────────────────────────────────────────────────
-const allowedOrigins = (process.env.FRONTEND_URL ?? 'http://localhost:4200')
-  .split(',')
-  .map((o) => o.trim());
+const allowedOrigins = (process.env.FRONTEND_URL ?? 'http://localhost:4200').split(',').map((o) => o.trim());
 
 app.use(
   cors({
@@ -57,6 +65,13 @@ if (process.env.NODE_ENV !== 'production') {
 
 // ─── API routes ────────────────────────────────────────────────────────────
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/categories', categoryRoutes);
+app.use('/api/v1/products', productRoutes);
+app.use('/api/v1/payment', paymentRoutes);
+app.use('/api/v1/cart', authenticate, cartRoutes);
+app.use('/api/v1/orders', authenticate, orderRoutes);
+app.use('/api/v1/admin', authenticate, authorize('admin'), adminPanelRoutes);
+app.use('/api/v1/seller', authenticate, authorize('seller', 'admin'), sellerPanelRoutes);
 
 // ─── 404 handler ───────────────────────────────────────────────────────────
 app.all('*', (req, _res, next) => {

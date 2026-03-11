@@ -1,30 +1,92 @@
-const Router = require('express').Router;
-const productController = require('./product.controller.js');
-const productImageController = require('./productImage.controller.js');
-const checkProductExists = require('./checkProductExists.js');
-const uploadImages=require('./checkImage.js');
+import { Router } from 'express';
+import * as productController from './Controllers/product.controller.js';
+import * as productImageController from './Controllers/productImage.controller.js';
+import checkProductExists from './checkProductExists.js';
+import uploadImages from './checkImage.js';
+import validateRequest from '../../core/middlewares/validateRequest.js';
+import authenticate from '../../core/middlewares/authenticate.js';
+import authorize from '../../core/utils/authorize.js';
+import {
+  createProductValidator,
+  updateProductValidator,
+  productIdValidator,
+  uploadImagesValidator,
+  imageIdValidator,
+  reorderImagesValidator,
+} from './Validators/products.validators.js';
 const router = Router();
 
-router.route('/' )
-.post(productController.create)
-.get(productController.getAll)
+router
+  .route('/')
+  .post(authenticate, authorize('seller', 'admin'), createProductValidator, validateRequest, productController.create)
+  .get(productController.getAll);
 
-router.route('/:id')
-.get(checkProductExists, productController.getOne)
-.patch(checkProductExists, productController.update)
-.delete(checkProductExists, productController.delete);
+router
+  .route('/:id')
+  .get(productIdValidator, validateRequest, checkProductExists, productController.getOne)
+  .patch(
+    authenticate,
+    authorize('seller', 'admin'),
+    productIdValidator,
+    updateProductValidator,
+    validateRequest,
+    checkProductExists,
+    productController.update
+  )
+  .delete(
+    authenticate,
+    authorize('seller', 'admin'),
+    productIdValidator,
+    validateRequest,
+    checkProductExists,
+    productController.deleteProduct
+  );
 
 //product images routes
-router.route('/:id/images')
-	.post(checkProductExists,uploadImages, productImageController.uploadProductImages)
-	.get(checkProductExists, productImageController.getProductImages);
+router
+  .route('/:id/images')
+  .post(
+    authenticate,
+    authorize('seller', 'admin'),
+    productIdValidator,
+    uploadImagesValidator,
+    validateRequest,
+    checkProductExists,
+    uploadImages,
+    productImageController.uploadProductImages
+  )
+  .get(productIdValidator, validateRequest, checkProductExists, productImageController.getProductImages);
 
-router.route('/:id/images/order')
-	.patch(productImageController.reorderImages);
+router
+  .route('/:id/images/order')
+  .patch(
+    authenticate,
+    authorize('seller', 'admin'),
+    productIdValidator,
+    reorderImagesValidator,
+    validateRequest,
+    productImageController.reorderImages
+  );
 
-router.route('/:id/images/:imageId')
-	.delete(productImageController.deleteImage)
+router
+  .route('/:id/images/:imageId')
+  .delete(
+    authenticate,
+    authorize('seller', 'admin'),
+    productIdValidator,
+    imageIdValidator,
+    validateRequest,
+    productImageController.deleteImage
+  );
 
-router.route('/:id/images/:imageId/primary')
-	.patch(productImageController.setPrimaryImage);
-module.exports = router;
+router
+  .route('/:id/images/:imageId/primary')
+  .patch(
+    authenticate,
+    authorize('seller', 'admin'),
+    productIdValidator,
+    imageIdValidator,
+    validateRequest,
+    productImageController.setPrimaryImage
+  );
+export default router;
