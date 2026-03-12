@@ -67,7 +67,7 @@ userSchema.pre(/^find/, function (next) {
   if (!this.getOptions().includeDeleted) {
     this.where({ isDeleted: false });
   }
-  next();
+  // next();
 });
 
 const User = mongoose.model('User', userSchema);
