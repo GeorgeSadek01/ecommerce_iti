@@ -76,8 +76,7 @@ app.use('/api/v1/payment', paymentRoutes);
 // app.use('/api/v1/cart', authenticate, cartRoutes);
 // app.use('/api/v1/orders', authenticate, orderRoutes);
 // app.use('/api/v1/admin', authenticate, authorize('admin'), adminPanelRoutes);
-app.use('/api/v1/seller', sellerPanelRoutes);
-
+app.use('/api/v1/seller', authenticate, authorize('seller', 'admin'), sellerPanelRoutes);
 // ─── 404 handler ───────────────────────────────────────────────────────────
 app.all('*any', (req, _res, next) => {
   next(new AppError(`Cannot find ${req.method} ${req.originalUrl} on this server.`, 404));

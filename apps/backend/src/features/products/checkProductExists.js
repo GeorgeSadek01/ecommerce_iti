@@ -13,7 +13,7 @@ const checkProductExists = async (req, res, next) => {
     }
     req.product = product; // Attach product for use in next middleware/controller
     next();
-  } catch (error) {
+  } catch {
     return res.status(500).json({ message: 'Server error during existence check' });
   }
 };
