@@ -21,7 +21,12 @@ import paymentRoutes from './features/payment/payment.routes.js';
 // import adminPanelRoutes from './features/adminPanel/adminPanel.routes.js';
 // import sellerPanelRoutes from './features/sellerPanel/sellerPanel.routes.js';
 
+import { webhook } from './features/payment/Controllers/payment.controller.js';
+
 const app = express();
+
+// webhook must be before all routes
+app.post('/api/v1/payment/webhook', express.raw({ type: 'application/json' }), webhook);
 
 // ─── Security headers ──────────────────────────────────────────────────────
 app.use(helmet());

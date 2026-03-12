@@ -53,9 +53,10 @@ const orderSchema = new Schema(
       index: true,
     },
     addressId: {
-      type: Schema.Types.ObjectId,
-      ref: 'Address',
-      required: [true, 'Address ID is required'],
+      type: String,
+      // type: Schema.Types.ObjectId,
+      // ref: 'Address',
+      // required: [true, 'Address ID is required'],
     },
     promoCodeId: {
       type: Schema.Types.ObjectId,
@@ -108,6 +109,24 @@ const orderSchema = new Schema(
       type: Date,
       default: Date.now,
       index: true,
+    },
+    sessionURL: {
+      type: String,
+      default: null,
+    },
+    payingMethod: {
+      type: String,
+      enum: {
+        values: ['cash-on-delivery', 'credit'],
+        message: 'Paything metod either on-delivery or credit',
+      },
+      default: 'on-delivery',
+      required: [true, 'Paying method is required'],
+    },
+    isPaied: {
+      type: Boolean,
+      required: [true, 'Is this order paied or not. isPaieed required'],
+      default: false,
     },
   },
   {
