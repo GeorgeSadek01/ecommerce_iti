@@ -3,7 +3,7 @@ const productController = require('./product.controller.js');
 const productImageController = require('./productImage.controller.js');
 const checkProductExists = require('./checkProductExists.js');
 const uploadImages=require('./checkImage.js');
-const { validateProductSearch, handleValidationErrors } = require('./Validators/products.validators.js');
+const { validateProductSearch, handleValidationErrors,validateStockUpdate } = require('./Validators/products.validators.js');
 const router = Router();
 // CRUD routes for products
 router.route('/' )
@@ -33,5 +33,13 @@ router.route('/:id/images/:imageId')
 // Set primary image route
 router.route('/:id/images/:imageId/primary')
 	.patch(checkProductExists, productImageController.setPrimaryImage);
+// Stock management route
+router.patch(
+	'/:id/stock',
+	checkProductExists,
+	validateStockUpdate,
+	handleValidationErrors,
+	productController.updateProductStock
+);
 
 module.exports = router;
