@@ -12,7 +12,6 @@ import {
   productIdValidator,
   uploadImagesValidator,
   imageIdValidator,
-  reorderImagesValidator,
 } from './Validators/products.validators.js';
 const router = Router();
 
@@ -56,18 +55,6 @@ router
     productImageController.uploadProductImages
   )
   .get(productIdValidator, validateRequest, checkProductExists, productImageController.getProductImages);
-
-router
-  .route('/:id/images/order')
-  .patch(
-    authenticate,
-    authorize('seller', 'admin'),
-    productIdValidator,
-    reorderImagesValidator,
-    validateRequest,
-    checkProductExists,
-    productImageController.reorderImages
-  );
 
 router
   .route('/:id/images/:imageId')
