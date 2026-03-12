@@ -3,8 +3,10 @@
   "version": "1.0.0",
   "description": "MEAN E-Commerce Platform - Backend API",
   "type": "module",
-  "main": "src/server.js",
-  "scripts": {},
+  "main": "apps/backend/src/server.js",
+  "scripts": {
+    "dev": "npx nodemon app/backend/src/server.js"
+  },
   "engines": {
     "node": ">=18.0.0"
   },
