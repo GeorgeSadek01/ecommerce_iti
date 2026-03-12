@@ -10,7 +10,11 @@ import {
   resetPasswordValidator,
   updateUserProfileValidator,
 } from './Validators/auth.validators.js';
-import { createAddressValidator, updateAddressValidator } from './Validators/address.validators.js';
+import {
+  createAddressValidator,
+  updateAddressValidator,
+  addressIdParamValidator,
+} from './Validators/address.validators.js';
 import {
   registerHandler,
   confirmEmailHandler,
@@ -390,7 +394,7 @@ router.get('/addresses', authenticate, getAllAddressesHandler);
  *       404:
  *         description: Address not found
  */
-router.get('/addresses/:id', authenticate, getAddressByIdHandler);
+router.get('/addresses/:id', authenticate, addressIdParamValidator, validateRequest, getAddressByIdHandler);
 
 /**
  * @swagger
@@ -423,7 +427,13 @@ router.get('/addresses/:id', authenticate, getAddressByIdHandler);
  *       404:
  *         description: Address not found
  */
-router.patch('/addresses/:id', authenticate, updateAddressValidator, validateRequest, updateAddressHandler);
+router.patch(
+  '/addresses/:id',
+  authenticate,
+  [...addressIdParamValidator, ...updateAddressValidator],
+  validateRequest,
+  updateAddressHandler
+);
 
 /**
  * @swagger
@@ -444,6 +454,6 @@ router.patch('/addresses/:id', authenticate, updateAddressValidator, validateReq
  *       404:
  *         description: Address not found
  */
-router.delete('/addresses/:id', authenticate, deleteAddressHandler);
+router.delete('/addresses/:id', authenticate, addressIdParamValidator, validateRequest, deleteAddressHandler);
 
 export default router;

@@ -1,4 +1,4 @@
-import { body } from 'express-validator';
+import { body, param } from 'express-validator';
 
 export const createAddressValidator = [
   body('street').trim().notEmpty().withMessage('Street is required.'),
@@ -27,3 +27,5 @@ export const updateAddressValidator = [
 
   body('isDefault').optional().isBoolean().withMessage('isDefault must be a boolean.'),
 ];
+
+export const addressIdParamValidator = [param('id').isMongoId().withMessage('Invalid address ID format.')];

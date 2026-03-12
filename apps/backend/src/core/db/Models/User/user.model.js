@@ -63,11 +63,11 @@ const userSchema = new Schema(
 userSchema.index({ role: 1 });
 
 // Soft-delete query helper — filters out deleted users by default
-userSchema.pre(/^find/, function (next) {
+userSchema.pre(/^find/, function (_next) {
   if (!this.getOptions().includeDeleted) {
     this.where({ isDeleted: false });
   }
-  // next();
+  // Removed call to next() to allow query to continue
 });
 
 const User = mongoose.model('User', userSchema);

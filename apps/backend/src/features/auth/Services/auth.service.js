@@ -267,17 +267,32 @@ export const resetPassword = async (token, newPassword) => {
 /**
  * Update user profile information.
  * Users cannot change their role.
+ * Email changes require password confirmation and re-verification.
  *
  * @param {string} userId
- * @param {{ firstName?: string, lastName?: string, email?: string }} updates
+ * @param {{ firstName?: string, lastName?: string, email?: string, confirmPassword?: string }} updates
  * @returns {Promise<object>} Updated user
  */
 export const updateUserProfile = async (userId, updates) => {
-  const user = await User.findById(userId);
+  const user = await User.findById(userId).select('+passwordHash');
   if (!user) throw new AppError('User not found.', 404);
 
   // Check if email is being changed and if it's already taken
   if (updates.email && updates.email !== user.email) {
+    // Require password confirmation for email changes (security best practice)
+    if (!updates.confirmPassword) {
+      throw new AppError('Password confirmation is required to change email address.', 400);
+    }
+
+    // Verify password (skip for OAuth users who don't have passwords)
+    if (user.passwordHash) {
+      const isMatch = await bcrypt.compare(updates.confirmPassword, user.passwordHash);
+      if (!isMatch) {
+        throw new AppError('Password is incorrect.', 401);
+      }
+    }
+
+    // Check if new email is already in use
     const emailExists = await User.findOne({ email: updates.email });
     if (emailExists) {
       throw new AppError('Email is already in use.', 409);

@@ -107,6 +107,12 @@ export const updateUserProfileValidator = [
     .isEmail()
     .withMessage('Please provide a valid email address.'),
 
-  // Prevent role changes
+  // confirmPassword is only required when changing email (validated in service layer)
+  body('confirmPassword').optional().notEmpty().withMessage('Password cannot be empty if provided.'),
+
+  // Prevent role and password changes via this endpoint
   body('role').not().exists().withMessage('Role cannot be modified.'),
+  body('password').not().exists().withMessage('Use /change-password endpoint to change your password.'),
+  body('newPassword').not().exists().withMessage('Use /change-password endpoint to change your password.'),
+  body('currentPassword').not().exists().withMessage('Use /change-password endpoint to change your password.'),
 ];

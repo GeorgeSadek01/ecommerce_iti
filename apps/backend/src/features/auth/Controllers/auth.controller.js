@@ -1,4 +1,4 @@
-import { sendFail, sendSuccess } from '../../../core/utils/apiResponse.js';
+import { sendSuccess } from '../../../core/utils/apiResponse.js';
 import asyncHandler from '../../../core/utils/asyncHandler.js';
 import {
   register,
@@ -107,9 +107,9 @@ export const resetPasswordHandler = asyncHandler(async (req, res) => {
 
 export const updateUserProfileHandler = asyncHandler(async (req, res) => {
   const userId = req.user.id; // From authenticate middleware
-  const { firstName, lastName, email } = req.body;
+  const { firstName, lastName, email, confirmPassword } = req.body;
 
-  const user = await updateUserProfile(userId, { firstName, lastName, email });
+  const user = await updateUserProfile(userId, { firstName, lastName, email, confirmPassword });
 
   sendSuccess(res, 200, 'Profile updated successfully.', { user });
 });

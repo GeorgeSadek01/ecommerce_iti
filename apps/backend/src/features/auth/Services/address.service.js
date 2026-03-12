@@ -119,6 +119,15 @@ export const updateAddress = async (userId, addressId, updates) => {
     await Address.updateMany({ userId, isDefault: true, _id: { $ne: addressId } }, { isDefault: false });
   }
 
+  // Prevent unsetting the only default address
+  if (updates.isDefault === false && address.isDefault) {
+    const otherAddressCount = await Address.countDocuments({ userId, _id: { $ne: addressId } });
+    if (otherAddressCount === 0) {
+      throw new AppError('Cannot unset default on the only address.', 400);
+    }
+    // Alternatively, auto-promote another address here
+  }
+
   // Update fields
   if (updates.street) address.street = updates.street;
   if (updates.city) address.city = updates.city;
@@ -126,7 +135,6 @@ export const updateAddress = async (userId, addressId, updates) => {
   if (updates.country) address.country = updates.country;
   if (updates.zipCode) address.zipCode = updates.zipCode;
   if (updates.isDefault !== undefined) address.isDefault = updates.isDefault;
-
   await address.save();
 
   return {
