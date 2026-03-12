@@ -1,0 +1,84 @@
+{
+    "name": "Ecommerce — Local Dev",
+    "values": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:4000",
+            "type": "default",
+            "enabled": true
+        },
+        {
+            "key": "base_url",
+            "value": "http://localhost:4000",
+            "type": "default",
+            "enabled": true
+        },
+        {
+            "key": "token",
+            "value": "",
+            "type": "default",
+            "enabled": true
+        },
+        {
+            "key": "confirmToken",
+            "value": "",
+            "type": "default",
+            "enabled": true
+        },
+        {
+            "key": "userId",
+            "value": "",
+            "type": "default",
+            "enabled": true
+        },
+        {
+            "key": "productId",
+            "value": "",
+            "type": "default",
+            "enabled": true
+        },
+        {
+            "key": "categoryId",
+            "value": "",
+            "type": "default",
+            "enabled": true
+        },
+        {
+            "key": "orderId",
+            "value": "",
+            "type": "default",
+            "enabled": true
+        },
+        {
+            "key": "cartItemId",
+            "value": "",
+            "type": "default",
+            "enabled": true
+        },
+        {
+            "key": "addressId",
+            "value": "",
+            "type": "default",
+            "enabled": true
+        },
+        {
+            "key": "paymentId",
+            "value": "",
+            "type": "default",
+            "enabled": true
+        },
+        {
+            "key": "sellerProfileId",
+            "value": "",
+            "type": "default",
+            "enabled": true
+        },
+        {
+            "key": "imageId",
+            "value": "",
+            "type": "default",
+            "enabled": true
+        }
+    ],
+    "_postman_variable_scope": "environment"
+}
