@@ -16,12 +16,17 @@ import authRoutes from './features/auth/auth.routes.js';
 import categoryRoutes from './features/categories/categories.routes.js';
 import productRoutes from './features/products/product.routes.js';
 import paymentRoutes from './features/payment/payment.routes.js';
-import cartRoutes from './features/cart/cart.routes.js';
-import orderRoutes from './features/orders/orders.routes.js';
-import adminPanelRoutes from './features/adminPanel/adminPanel.routes.js';
-import sellerPanelRoutes from './features/sellerPanel/sellerPanel.routes.js';
+// import cartRoutes from './features/cart/cart.routes.js';
+// import orderRoutes from './features/orders/orders.routes.js';
+// import adminPanelRoutes from './features/adminPanel/adminPanel.routes.js';
+// import sellerPanelRoutes from './features/sellerPanel/sellerPanel.routes.js';
+
+import { webhook } from './features/payment/Controllers/payment.controller.js';
 
 const app = express();
+
+// webhook must be before all routes
+app.post('/api/v1/payment/webhook', express.raw({ type: 'application/json' }), webhook);
 
 // ─── Security headers ──────────────────────────────────────────────────────
 app.use(helmet());
@@ -68,13 +73,13 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/payment', paymentRoutes);
-app.use('/api/v1/cart', authenticate, cartRoutes);
-app.use('/api/v1/orders', authenticate, orderRoutes);
-app.use('/api/v1/admin', authenticate, authorize('admin'), adminPanelRoutes);
-app.use('/api/v1/seller', authenticate, authorize('seller', 'admin'), sellerPanelRoutes);
+// app.use('/api/v1/cart', authenticate, cartRoutes);
+// app.use('/api/v1/orders', authenticate, orderRoutes);
+// app.use('/api/v1/admin', authenticate, authorize('admin'), adminPanelRoutes);
+// app.use('/api/v1/seller', authenticate, authorize('seller', 'admin'), sellerPanelRoutes);
 
 // ─── 404 handler ───────────────────────────────────────────────────────────
-app.all('*', (req, _res, next) => {
+app.all('*any', (req, _res, next) => {
   next(new AppError(`Cannot find ${req.method} ${req.originalUrl} on this server.`, 404));
 });
 

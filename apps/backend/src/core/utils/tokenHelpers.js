@@ -69,11 +69,8 @@ export const createRefreshToken = async (userId) => {
  * @returns {Promise<{ newToken: string, userId: string } | null>}
  */
 export const rotateRefreshToken = async (oldToken) => {
-<<<<<<< copilot/sub-pr-4-one-more-time
-  const record = await RefreshToken.findOneAndDelete({ token: oldToken, expiresAt: { $gt: new Date() } });
-=======
-  const record = await RefreshToken.findOneAndDelete({ token: hashToken(oldToken) });
->>>>>>> Auth
+  const record = await RefreshToken.findOneAndDelete({ token: oldToken, expiresAt: { $gt: new Date() } }); // only generate access token when old refresh token matches the sent one and it is already not expired
+
   if (!record) return null;
 
   const newToken = await createRefreshToken(record.userId);

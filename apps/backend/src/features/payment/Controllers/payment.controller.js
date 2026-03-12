@@ -8,6 +8,31 @@ import stripe from '../../../core/config/stripe.js';
 import env from '../../../core/config/env.js';
 import * as paymentService from '../Services/payment.service.js';
 
+// ─── POST /payment/place-order ───────────────────────────────────────────────────
+
+export const placeOrder = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const { addressId } = req.body;
+
+  const order = await paymentService.placeOrder(userId, addressId);
+
+  sendSuccess(res, 201, 'Order created successfully', {
+    status: 'success',
+    data: {
+      order,
+    },
+  });
+});
+
+// ─── POST /payment/confirm-order ───────────────────────────────────────────────────
+export const confirmOrder = asyncHandler(async (req, res) => {
+  const { orderId } = req.params;
+
+  const order = await paymentService.confirmOrder(orderId);
+
+  sendSuccess(res, 200, 'Order confirmed and shipped successfully', { order });
+});
+
 // ─── POST /payment/checkout ───────────────────────────────────────────────────
 
 export const checkout = asyncHandler(async (req, res) => {

@@ -13,7 +13,7 @@ const emailLogSchema = new Schema(
     type: {
       type: String,
       enum: {
-        values: ['confirmation', 'password-reset', 'order-placed', 'order-shipped'],
+        values: ['confirmation', 'password-reset', 'order-processing', 'order-placed', 'order-shipped'],
         message: 'Type must be one of: confirmation, password-reset, order-placed, order-shipped',
       },
       required: [true, 'Email type is required'],

@@ -14,10 +14,10 @@
  *   node seed.js --fresh   ← drops all collections before seeding
  */
 
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 // ─── Hardcode your connection string here ────────────────────────────────────
-const MONGODB_URI = 'mongodb://localhost:27017/SoldierStore';
+const MONGODB_URI = 'mongodb://localhost:27017/SoldierStore?replicaSet=rs0';
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ─── Inline Model Definitions ────────────────────────────────────────────────
@@ -82,7 +82,7 @@ const Category = mongoose.model('Category', categorySchema);
 // -- Product
 const productSchema = new Schema(
   {
-    sellerId: { type: Schema.Types.ObjectId, ref: 'SellerProfile', required: true, index: true },
+    sellerProfileId: { type: Schema.Types.ObjectId, ref: 'SellerProfile', required: true, index: true },
     categoryId: { type: Schema.Types.ObjectId, ref: 'Category', required: true, index: true },
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
@@ -335,7 +335,7 @@ async function seed() {
   const products = await Product.insertMany([
     // TechStore Pro — Audio
     {
-      sellerId: sellerProfile1._id,
+      sellerProfileId: sellerProfile1._id,
       categoryId: catAudio._id,
       name: 'Sony WH-1000XM5 Wireless Headphones',
       slug: 'sony-wh-1000xm5-wireless',
@@ -348,7 +348,7 @@ async function seed() {
       reviewCount: 1850,
     },
     {
-      sellerId: sellerProfile1._id,
+      sellerProfileId: sellerProfile1._id,
       categoryId: catAudio._id,
       name: 'Apple AirPods Pro (2nd Generation)',
       slug: 'apple-airpods-pro-2nd-gen',
@@ -361,7 +361,7 @@ async function seed() {
       reviewCount: 3420,
     },
     {
-      sellerId: sellerProfile1._id,
+      sellerProfileId: sellerProfile1._id,
       categoryId: catAudio._id,
       name: 'Anker Soundcore Q45 Headphones',
       slug: 'anker-soundcore-q45',
@@ -375,7 +375,7 @@ async function seed() {
     },
     // TechStore Pro — Laptops
     {
-      sellerId: sellerProfile1._id,
+      sellerProfileId: sellerProfile1._id,
       categoryId: catLaptops._id,
       name: 'Apple MacBook Air M3 13"',
       slug: 'apple-macbook-air-m3-13',
@@ -388,7 +388,7 @@ async function seed() {
       reviewCount: 720,
     },
     {
-      sellerId: sellerProfile1._id,
+      sellerProfileId: sellerProfile1._id,
       categoryId: catLaptops._id,
       name: 'Dell XPS 15 (2024)',
       slug: 'dell-xps-15-2024',
@@ -402,7 +402,7 @@ async function seed() {
     },
     // Fashion Hub — Men's Clothing
     {
-      sellerId: sellerProfile2._id,
+      sellerProfileId: sellerProfile2._id,
       categoryId: catMensClothing._id,
       name: 'Classic Slim-Fit Chinos',
       slug: 'classic-slim-fit-chinos',
@@ -415,7 +415,7 @@ async function seed() {
       reviewCount: 890,
     },
     {
-      sellerId: sellerProfile2._id,
+      sellerProfileId: sellerProfile2._id,
       categoryId: catMensClothing._id,
       name: 'Premium Oxford Shirt',
       slug: 'premium-oxford-shirt',
@@ -429,7 +429,7 @@ async function seed() {
     },
     // Fashion Hub — Women's Clothing
     {
-      sellerId: sellerProfile2._id,
+      sellerProfileId: sellerProfile2._id,
       categoryId: catWomensClothing._id,
       name: 'Floral Wrap Midi Dress',
       slug: 'floral-wrap-midi-dress',
@@ -443,7 +443,7 @@ async function seed() {
     },
     // Home Goods Co. — Kitchen (pending seller)
     {
-      sellerId: sellerProfile3._id,
+      sellerProfileId: sellerProfile3._id,
       categoryId: catKitchen._id,
       name: 'Ninja Foodi 9-in-1 Pressure Cooker',
       slug: 'ninja-foodi-9-in-1-pressure-cooker',
@@ -456,7 +456,7 @@ async function seed() {
       reviewCount: 2200,
     },
     {
-      sellerId: sellerProfile3._id,
+      sellerProfileId: sellerProfile3._id,
       categoryId: catFitness._id,
       name: 'Resistance Bands Set (5-Pack)',
       slug: 'resistance-bands-set-5-pack',
