@@ -101,7 +101,7 @@ productSchema.pre('save', function (next) {
       return next(new Error('Discounted price must be less than the original price'));
     }
   }
-  next();
+  // next();
 });
 
 // Shared validator used by save and all update query middleware. For update

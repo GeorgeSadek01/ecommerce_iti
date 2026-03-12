@@ -9,9 +9,7 @@ import {
   revokeRefreshToken,
   verifyPurposeToken,
 } from '../../../core/utils/tokenHelpers.js';
-import {
-  sendConfirmationEmail,
-} from '../../../core/utils/emailService.js';
+import { sendConfirmationEmail } from '../../../core/utils/emailService.js';
 
 const SALT_ROUNDS = 12;
 
@@ -41,8 +39,9 @@ export const register = async ({ firstName, lastName, email, password }) => {
 
   const confirmToken = signEmailToken({ id: user._id.toString(), email: user.email });
   // Fire-and-forget — registration does not fail if email delivery fails
-  sendConfirmationEmail({ userId: user._id.toString(), email: user.email, token: confirmToken })
-    .catch((err) => console.error('[Auth] Confirmation email error:', err.message));
+  sendConfirmationEmail({ userId: user._id.toString(), email: user.email, token: confirmToken }).catch((err) =>
+    console.error('[Auth] Confirmation email error:', err.message)
+  );
 
   return {
     user: {
@@ -89,9 +88,7 @@ export const login = async ({ email, password }) => {
 
   // Use constant-time comparison even when user is not found to prevent
   // timing-based user enumeration attacks
-  const isMatch = user
-    ? await bcrypt.compare(password, user.passwordHash)
-    : await bcrypt.compare(password, DUMMY_HASH);
+  const isMatch = user ? await bcrypt.compare(password, user.passwordHash) : await bcrypt.compare(password, DUMMY_HASH);
 
   if (!user || !isMatch) {
     throw new AppError('Invalid email or password.', 401);
@@ -150,5 +147,7 @@ export const refreshTokens = async (oldRefreshToken) => {
 export const logout = async (refreshToken) => {
   if (refreshToken) {
     await revokeRefreshToken(refreshToken);
+  } else {
+    throw new AppError('There is no logged in user', 400);
   }
 };

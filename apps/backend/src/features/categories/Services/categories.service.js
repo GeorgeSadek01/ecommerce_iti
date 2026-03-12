@@ -69,7 +69,7 @@ export const getAll = async () => {
 // ─── Get Category By ID ───────────────────────────────────────────────────────
 
 export const getById = async (id) => {
-  const category = await Category.findById(id).populate('parentId', 'name');
+  const category = await Category.findById(id).populate('parentId', 'name').populate('ancestors', 'name');
   if (!category) {
     throw new AppError('Category not found', 404);
   }
