@@ -1,14 +1,38 @@
 import { Router } from 'express';
 import { authLimiter } from '../../core/middlewares/rateLimiter.js';
 import validateRequest from '../../core/middlewares/validateRequest.js';
-import { registerValidator, loginValidator } from './Validators/auth.validators.js';
+import authenticate from '../../core/middlewares/authenticate.js';
+import {
+  registerValidator,
+  loginValidator,
+  changePasswordValidator,
+  forgotPasswordValidator,
+  resetPasswordValidator,
+  updateUserProfileValidator,
+} from './Validators/auth.validators.js';
+import {
+  createAddressValidator,
+  updateAddressValidator,
+  addressIdParamValidator,
+} from './Validators/address.validators.js';
 import {
   registerHandler,
   confirmEmailHandler,
   loginHandler,
   refreshHandler,
   logoutHandler,
+  changePasswordHandler,
+  forgotPasswordHandler,
+  resetPasswordHandler,
+  updateUserProfileHandler,
 } from './Controllers/auth.controller.js';
+import {
+  createAddressHandler,
+  getAllAddressesHandler,
+  getAddressByIdHandler,
+  updateAddressHandler,
+  deleteAddressHandler,
+} from './Controllers/address.controller.js';
 
 const router = Router();
 
@@ -189,5 +213,247 @@ router.post('/refresh', refreshHandler);
  *         $ref: '#/components/responses/TooManyRequests'
  */
 router.post('/logout', logoutHandler);
+
+// ─── Password Management Routes ───────────────────────────────────────────────
+
+/**
+ * @swagger
+ * /auth/change-password:
+ *   post:
+ *     summary: Change password for authenticated user
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword: { type: string }
+ *               newPassword: { type: string, minLength: 8 }
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *       401:
+ *         description: Current password is incorrect
+ */
+router.post('/change-password', authenticate, changePasswordValidator, validateRequest, changePasswordHandler);
+
+/**
+ * @swagger
+ * /auth/forgot-password:
+ *   post:
+ *     summary: Request a password reset email
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email: { type: string, format: email }
+ *     responses:
+ *       200:
+ *         description: Password reset email sent if account exists
+ */
+router.post('/forgot-password', forgotPasswordValidator, validateRequest, forgotPasswordHandler);
+
+/**
+ * @swagger
+ * /auth/reset-password:
+ *   post:
+ *     summary: Reset password using token from email
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - newPassword
+ *             properties:
+ *               token: { type: string }
+ *               newPassword: { type: string, minLength: 8 }
+ *     responses:
+ *       200:
+ *         description: Password reset successfully
+ *       401:
+ *         description: Invalid or expired token
+ */
+router.post('/reset-password', resetPasswordValidator, validateRequest, resetPasswordHandler);
+
+// ─── Profile Management Routes (require authentication) ───────────────────────
+
+/**
+ * @swagger
+ * /auth/profile:
+ *   patch:
+ *     summary: Update user profile
+ *     description: Update user's profile information. Cannot change role.
+ *     tags: [User Profile]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               firstName: { type: string, maxLength: 50 }
+ *               lastName: { type: string, maxLength: 50 }
+ *               email: { type: string, format: email }
+ *     responses:
+ *       200:
+ *         description: Profile updated successfully
+ *       401:
+ *         description: Unauthorized
+ *       409:
+ *         description: Email already in use
+ */
+router.patch('/profile', authenticate, updateUserProfileValidator, validateRequest, updateUserProfileHandler);
+
+// ─── Address Management Routes (require authentication) ───────────────────────
+
+/**
+ * @swagger
+ * /auth/addresses:
+ *   post:
+ *     summary: Create a new address for the authenticated user
+ *     tags: [User Addresses]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - street
+ *               - city
+ *               - state
+ *               - country
+ *               - zipCode
+ *             properties:
+ *               street: { type: string, example: "123 Main St" }
+ *               city: { type: string, example: "New York" }
+ *               state: { type: string, example: "NY" }
+ *               country: { type: string, example: "USA" }
+ *               zipCode: { type: string, example: "10001" }
+ *               isDefault: { type: boolean, example: false }
+ *     responses:
+ *       201:
+ *         description: Address created successfully
+ *       401:
+ *         description: Unauthorized
+ */
+router.post('/addresses', authenticate, createAddressValidator, validateRequest, createAddressHandler);
+
+/**
+ * @swagger
+ * /auth/addresses:
+ *   get:
+ *     summary: Get all addresses for the authenticated user
+ *     tags: [User Addresses]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Addresses retrieved successfully
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/addresses', authenticate, getAllAddressesHandler);
+
+/**
+ * @swagger
+ * /auth/addresses/{id}:
+ *   get:
+ *     summary: Get a specific address by ID
+ *     tags: [User Addresses]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Address retrieved successfully
+ *       404:
+ *         description: Address not found
+ */
+router.get('/addresses/:id', authenticate, addressIdParamValidator, validateRequest, getAddressByIdHandler);
+
+/**
+ * @swagger
+ * /auth/addresses/{id}:
+ *   patch:
+ *     summary: Update an address
+ *     tags: [User Addresses]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               street: { type: string }
+ *               city: { type: string }
+ *               state: { type: string }
+ *               country: { type: string }
+ *               zipCode: { type: string }
+ *               isDefault: { type: boolean }
+ *     responses:
+ *       200:
+ *         description: Address updated successfully
+ *       404:
+ *         description: Address not found
+ */
+router.patch(
+  '/addresses/:id',
+  authenticate,
+  [...addressIdParamValidator, ...updateAddressValidator],
+  validateRequest,
+  updateAddressHandler
+);
+
+/**
+ * @swagger
+ * /auth/addresses/{id}:
+ *   delete:
+ *     summary: Delete an address
+ *     tags: [User Addresses]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200:
+ *         description: Address deleted successfully
+ *       404:
+ *         description: Address not found
+ */
+router.delete('/addresses/:id', authenticate, addressIdParamValidator, validateRequest, deleteAddressHandler);
 
 export default router;

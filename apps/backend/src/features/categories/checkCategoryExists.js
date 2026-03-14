@@ -14,7 +14,7 @@ const checkCategoryExists = async (req, res, next) => {
       return res.status(404).json({ message: 'Category not found: No record matches this ID.' });
     }
     next();
-  } catch (error) {
+  } catch {
     return res.status(500).json({ message: 'Server error during existence check' });
   }
 };
