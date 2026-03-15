@@ -118,9 +118,9 @@ const orderSchema = new Schema(
       type: String,
       enum: {
         values: ['cash-on-delivery', 'credit'],
-        message: 'Paything metod either on-delivery or credit',
+        message: 'Paything metod either cash-on-delivery or credit',
       },
-      default: 'on-delivery',
+      default: 'cash-on-delivery',
       required: [true, 'Paying method is required'],
     },
     isPaied: {
