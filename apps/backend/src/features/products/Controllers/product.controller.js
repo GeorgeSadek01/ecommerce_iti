@@ -62,3 +62,63 @@ export const deleteProduct = asyncHandler(async (req, res) => {
   await productService.deleteProduct(req.params.id);
   sendSuccess(res, 200, 'Product deleted successfully');
 });
+// ─── PATCH /seller/products/:id/stock ──────────────────────────────────────────────
+export const search = asyncHandler( async(req, res) => {
+        try {
+            const filters = {
+                search: req.query.search,
+                category: req.query.category,
+                minPrice: req.query.minPrice ? parseFloat(req.query.minPrice) : undefined,
+                maxPrice: req.query.maxPrice ? parseFloat(req.query.maxPrice) : undefined,
+                sort: req.query.sort || 'newest',
+                page: req.query.page || 1,
+                limit: req.query.limit || 10,
+            };
+    
+            const result = await productService.search(filters);
+            if (result.data.length === 0) {
+            return res.status(200).json({
+                success: true,
+                message: "We couldn't find any products matching your search.",
+                data: [],
+                pagination: result.pagination
+            });
+        }
+            res.status(200).json({
+                        success: true,
+                        message: "Products retrieved successfully",
+                        data: result.data,
+                        pagination: result.pagination
+                    });
+    }catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+// ─── PATCH /seller/products/:id/stock ──────────────────────────────────────────────
+export const updateProductStock = asyncHandler(async (req, res) => {
+    try {
+        // req.product is provided by your checkProductExists middleware
+        const productId = req.params.id;
+        const { quantity, mode } = req.body;
+
+        const updatedProduct = await productService.updateStock(productId, quantity, mode);
+
+        res.status(200).json({
+            success: true,
+            message: "Stock updated successfully",
+            data: {
+                id: updatedProduct._id,
+                name: updatedProduct.name,
+                stock: updatedProduct.stock,
+                isLowStock: updatedProduct.stock <= (updatedProduct.lowStockThreshold || 5)
+            }
+        });
+    } catch (err) {
+        res.status(400).json({
+            success: false,
+            message: err.message
+        });
+    }
+});
+
+
