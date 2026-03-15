@@ -33,7 +33,7 @@ const promoCodeSchema = new Schema(
     },
     usageLimit: {
       type: Number,
-      default: null, // null means unlimited
+      default: null,
       min: [1, 'Usage limit must be at least 1'],
     },
     usageCount: {
@@ -51,6 +51,32 @@ const promoCodeSchema = new Schema(
       default: true,
       index: true,
     },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: [true, 'Creator is required'],
+      index: true,
+    },
+    scope: {
+      type: String,
+      enum: {
+        values: ['general', 'seller-all', 'product-specific'],
+        message: 'Scope must be: general, seller-all, or product-specific',
+      },
+      required: [true, 'Scope is required'],
+    },
+    sellerId: {
+      type: Schema.Types.ObjectId,
+      ref: 'SellerProfile',
+      default: null,
+      index: true,
+    },
+    productId: {
+      type: Schema.Types.ObjectId,
+      ref: 'Product',
+      default: null,
+      index: true,
+    },
   },
   {
     timestamps: true,
@@ -59,34 +85,5 @@ const promoCodeSchema = new Schema(
   }
 );
 
-// Validate discountValue > 0 and percentage discounts don't exceed 100
-promoCodeSchema.pre('save', function (next) {
-  const value = parseFloat(this.discountValue.toString());
-  if (value <= 0) {
-    return next(new Error('Discount value must be greater than 0.'));
-  }
-  if (this.discountType === 'percentage' && value > 100) {
-    return next(new Error('Percentage discount cannot exceed 100%.'));
-  }
-  next();
-});
-
-promoCodeSchema.pre('findOneAndUpdate', function (next) {
-  const update = this.getUpdate();
-  const discountType = update.discountType ?? update.$set?.discountType;
-  const discountValue = update.discountValue ?? update.$set?.discountValue;
-  if (discountValue !== null && discountValue !== undefined) {
-    const value = parseFloat(discountValue.toString());
-    if (value <= 0) {
-      return next(new Error('Discount value must be greater than 0.'));
-    }
-    if (discountType === 'percentage' && value > 100) {
-      return next(new Error('Percentage discount cannot exceed 100%.'));
-    }
-  }
-  next();
-});
-
 const PromoCode = mongoose.model('PromoCode', promoCodeSchema);
-
 export default PromoCode;
