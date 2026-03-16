@@ -277,7 +277,7 @@ export const restoreAdminSeller = async (sellerId) => {
   const userId = sellerProfile.userId?._id || sellerProfile.userId;
   if (userId) {
     const user = await User.findById(userId).setOptions({ includeDeleted: true });
-    if (user && !user.isDeleted) {
+    if (user && !user.isDeleted && sellerProfile.status !== 'pending') {
       user.role = 'seller';
       await user.save();
     }
