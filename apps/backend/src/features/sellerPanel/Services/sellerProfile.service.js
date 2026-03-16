@@ -130,7 +130,7 @@ export const getSellerProfiles = async (query) => {
  * @returns {Promise<object>}
  */
 export const getSellerProfileById = async (sellerProfileId) => {
-  const sellerProfile = await SellerProfile.findById(sellerProfileId);
+  const sellerProfile = await SellerProfile.findOne({ _id: sellerProfileId, status: 'approved' });
 
   if (!sellerProfile) {
     throw new AppError('Seller profile not found.', 404);
