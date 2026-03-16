@@ -1,7 +1,3 @@
-/**
- * Card 11 — Category CRUD (Admin)
- * POST/GET/PATCH/DELETE /admin/categories. Support parent category (self-referencing). Slug generation.
- */
 import { sendSuccess } from '../../../core/utils/apiResponse.js';
 import asyncHandler from '../../../core/utils/asyncHandler.js';
 import * as categoryService from '../Services/categories.service.js';
@@ -39,4 +35,44 @@ export const updateCategory = asyncHandler(async (req, res) => {
 export const deleteCategory = asyncHandler(async (req, res) => {
   await categoryService.deleteCategory(req.params.id);
   sendSuccess(res, 200, 'Category and all its sub-categories deleted successfully');
+});
+//////////////////////////
+// ─── POST /admin/categories/:id/image ─────────────────────────────────────────
+export const uploadCategoryImage = asyncHandler(async (req, res) => {
+    const categoryId = req.params.categoryId || req.params.id;
+   // Call service to handle Cloudinary upload and DB update
+    const updatedCategory = await categoryService.createCategoryImage(
+        categoryId,
+        req.files || req.file
+    );
+
+    // The cloudinaryPublicId is inside updatedCategory.image
+    sendSuccess(res, 200, 'Category image uploaded successfully', {
+        category: {
+            id: updatedCategory._id,
+            name: updatedCategory.name,
+            image: updatedCategory.image
+        }
+    });
+});
+// ─── GET /admin/categories/:id/image ─────────────────────────────────────────
+export const getCategoryImage = asyncHandler(async (req, res) => {
+    const categoryId = req.params.categoryId || req.params.id;
+
+    const image = await categoryService.getCategoryImage(categoryId);
+
+    sendSuccess(res, 200, 'Category image retrieved successfully', { image });
+});
+// ─── PATCH /admin/categories/:id/image ─────────────────────────────────────────
+export const updateCategoryImage = asyncHandler(async (req, res) => {
+    const updatedCategory = await categoryService.updateCategoryImage(
+        req.params.id,
+        req.files || req.file
+    );
+    sendSuccess(res, 200, 'Category image updated successfully', { category: updatedCategory });
+});
+// ─── DELETE /admin/categories/:id/image ─────────────────────────────────────────
+export const deleteCategoryImage = asyncHandler(async (req, res) => {
+    await categoryService.deleteCategoryImage(req.params.id);
+    sendSuccess(res, 200, 'Category image deleted successfully');
 });

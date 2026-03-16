@@ -138,23 +138,3 @@ export const setPrimary = async (productId, imageId) => {
 
   return updated;
 };
-
-// ─── Reorder Images ───────────────────────────────────────────────────────────
-
-export const reorderImages = async (productId, imageIdOrder) => {
-  if (!productId || !Array.isArray(imageIdOrder)) {
-    throw new AppError('Invalid reorder payload', 400);
-  }
-
-  const bulkOps = imageIdOrder.map((imageId, idx) => ({
-    updateOne: {
-      filter: { _id: imageId, productId },
-      update: { $set: { sortOrder: idx } },
-    },
-  }));
-
-  if (bulkOps.length === 0) return [];
-
-  await ProductImage.bulkWrite(bulkOps);
-  return await ProductImage.find({ productId }).sort({ sortOrder: 1 }).lean();
-};

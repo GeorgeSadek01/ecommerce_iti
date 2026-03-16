@@ -12,14 +12,22 @@ import {
   productIdValidator,
   uploadImagesValidator,
   imageIdValidator,
+  validateProductSearch,
+  validateStockUpdate
 } from './Validators/products.validators.js';
-const router = Router();
+import { handleValidationErrors } from './handleValidationErrors.js';
 
+const router = Router();
+/// ─── Product Routes ─────────────────────────────────────────────────────────
 router
   .route('/')
   .post(authenticate, authorize('seller', 'admin'), createProductValidator, validateRequest, productController.create)
   .get(productController.getAll);
 
+  // Search should come before anything that might interpret 'search' as an ID
+router.route('/search')
+.get(validateProductSearch, handleValidationErrors, productController.search)
+// ─── Get, Update, Delete Product by ID ───────────────────────────────────────
 router
   .route('/:id')
   .get(productIdValidator, validateRequest, checkProductExists, productController.getOne)
@@ -55,7 +63,7 @@ router
     productImageController.uploadProductImages
   )
   .get(productIdValidator, validateRequest, checkProductExists, productImageController.getProductImages);
-
+// ─── Delete Product Image & Set Primary Image ───────────────────────────────
 router
   .route('/:id/images/:imageId')
   .delete(
@@ -67,7 +75,7 @@ router
     checkProductExists,
     productImageController.deleteImage
   );
-
+/// Set primary image
 router
   .route('/:id/images/:imageId/primary')
   .patch(
@@ -79,4 +87,14 @@ router
     checkProductExists,
     productImageController.setPrimaryImage
   );
+// ─── Update Product Stock ─────────────────────────────────────────────────
+router.patch(
+	'/:id/stock',
+  authenticate,
+  authorize('seller', 'admin'),
+	validateStockUpdate,
+	handleValidationErrors,
+	checkProductExists,
+	productController.updateProductStock
+);
 export default router;
