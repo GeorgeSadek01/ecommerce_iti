@@ -83,9 +83,15 @@ export const getAdminUsers = async (query) => {
 
   const includeDeleted = parseOptionalBoolean(query.includeDeleted) === true;
 
+  // Ensure count query matches soft-delete behavior of find middleware
+  const countFilters = { ...filters };
+  if (!includeDeleted && countFilters.isDeleted === undefined) {
+    countFilters.isDeleted = false;
+  }
+
   const [users, total] = await Promise.all([
     User.find(filters).setOptions({ includeDeleted }).sort({ createdAt: -1 }).skip(skip).limit(limit),
-    User.countDocuments(filters).setOptions({ includeDeleted }),
+    User.countDocuments(countFilters).setOptions({ includeDeleted }),
   ]);
 
   return {
