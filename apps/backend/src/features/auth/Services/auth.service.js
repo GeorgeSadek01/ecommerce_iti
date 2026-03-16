@@ -203,12 +203,23 @@ export const loginWithGoogle = async ({ idToken }) => {
     throw new AppError('Google email must be verified to continue.', 401);
   }
 
-  let user = await User.findOne({ googleId });
+  // Include soft-deleted users in the lookup to avoid duplicate-key errors on unique indexes.
+  let user = await User.findOne({ googleId }, null, { includeDeleted: true });
+
+  // If the Google-linked account exists but is soft-deleted, reject instead of recreating.
+  if (user && (user.deletedAt || user.isDeleted)) {
+    throw new AppError('This Google account is associated with a deleted user. Please contact support.', 409);
+  }
 
   if (!user) {
-    const existingByEmail = await User.findOne({ email });
+    const existingByEmail = await User.findOne({ email }, null, { includeDeleted: true });
 
     if (existingByEmail) {
+      // If the email belongs to a soft-deleted account, reject instead of creating a new one.
+      if (existingByEmail.deletedAt || existingByEmail.isDeleted) {
+        throw new AppError('This email is associated with a deleted user. Please contact support.', 409);
+      }
+
       if (existingByEmail.googleId && existingByEmail.googleId !== googleId) {
         throw new AppError('This email is already linked to a different Google account.', 409);
       }
