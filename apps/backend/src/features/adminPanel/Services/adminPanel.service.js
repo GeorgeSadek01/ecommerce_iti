@@ -179,6 +179,11 @@ export const getAdminSellers = async (query) => {
 
   const includeDeleted = parseOptionalBoolean(query.includeDeleted) === true;
 
+  const countFilters = { ...filters };
+  if (!includeDeleted && typeof countFilters.isDeleted === 'undefined') {
+    countFilters.isDeleted = false;
+  }
+
   const [sellers, total] = await Promise.all([
     SellerProfile.find(filters)
       .setOptions({ includeDeleted })
@@ -186,7 +191,7 @@ export const getAdminSellers = async (query) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit),
-    SellerProfile.countDocuments(filters).setOptions({ includeDeleted }),
+    SellerProfile.countDocuments(countFilters),
   ]);
 
   return {
