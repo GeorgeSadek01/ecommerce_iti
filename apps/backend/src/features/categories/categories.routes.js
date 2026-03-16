@@ -4,6 +4,7 @@ import express from 'express';
 const router = express.Router();
 import * as categoryController from './Controllers/categories.controller.js';
 import checkCategoryExists from './checkCategoryExists.js';
+import uploadImages from './checkImage.js';
 import validateRequest from '../../core/middlewares/validateRequest.js';
 import authenticate from '../../core/middlewares/authenticate.js';
 import authorize from '../../core/utils/authorize.js';
@@ -33,10 +34,36 @@ router
   .delete(
     authenticate,
     authorize('admin'),
-    categoryIdValidator,
+    //categoryIdValidator,
     validateRequest,
     checkCategoryExists,
     categoryController.deleteCategory
   );
-
+//category images routes
+router
+  .route('/:id/images')
+  .post(
+    authenticate,
+    authorize('admin'),
+    validateRequest,
+    checkCategoryExists,
+    uploadImages,
+    categoryController.uploadCategoryImage
+  )
+  .get( validateRequest, checkCategoryExists, categoryController.getCategoryImage)
+  .patch(
+  authenticate,
+  authorize('admin'),
+  validateRequest,
+  checkCategoryExists,
+  uploadImages,
+  categoryController.updateCategoryImage
+  )
+  .delete(
+  authenticate,
+  authorize('admin'),
+  validateRequest,
+  checkCategoryExists,
+  categoryController.deleteCategoryImage
+);
 export default router;

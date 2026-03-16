@@ -32,9 +32,20 @@ const categorySchema = new Schema(
         ref: 'Category',
       },
     ],
-    imageUrl: {
-      type: String,
-      default: null,
+    image: {
+      type: {
+        url: {
+          type: String,
+          required: [true, 'Category image URL is required'],
+          trim: true,
+        },
+        cloudinaryPublicId: {
+          type: String,
+          required: [true, 'Cloudinary public ID is required'],
+          trim: true,
+        }
+      },
+      required: false
     },
     isActive: {
       type: Boolean,
