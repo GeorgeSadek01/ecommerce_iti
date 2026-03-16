@@ -106,7 +106,7 @@ export const getMySellerProfile = async (userId) => {
  */
 export const getSellerProfiles = async (query) => {
   const { page, limit, skip } = getPaginationParams(query);
-  const filters = { status: 'approved' };
+  const filters = { status: 'approved', isDeleted: false };
 
   if (query.status && ACTIVE_SELLER_STATUSES.includes(query.status)) {
     filters.status = query.status;
