@@ -43,7 +43,7 @@
             "method": "POST",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"Azim\",\n  \"lastName\": \"Rabie\",\n  \"email\": \"abdorabie14@gmail.com\",\n  \"password\": \"secret123_A\"\n}",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -94,7 +94,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"secret123\"\n}",
+                  "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"{{userEmail}}\",\n  \"password\": \"{{userPassword}}\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
