@@ -1319,8 +1319,8 @@
                     {
                       "key": "images",
                       "value": [
-                        "file:///home/abdulazim/Main/ITI-46/ITI-Labs/Angular/lab_05/public/images/p1.png",
-                        "file:///home/abdulazim/Main/ITI-46/ITI-Labs/Angular/lab_05/public/images/p2.png"
+                        "{{productImage1}}",
+                        "{{productImage2}}"
                       ],
                       "type": "file",
                       "disabled": false
