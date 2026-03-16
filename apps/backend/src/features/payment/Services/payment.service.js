@@ -2,10 +2,11 @@ import mongoose from 'mongoose';
 import stripe from '../../../core/config/stripe.js';
 import env from '../../../core/config/env.js';
 import Order from '../../../core/db/Models/Order/order.model.js';
+import PromoCode from '../../../core/db/Models/Promo/promoCode.model.js';
 import Payment from '../../../core/db/Models/Payment/payment.model.js';
 import AppError from '../../../core/utils/AppError.js';
 import { sendOrderProcessingEmail } from '../../../core/utils/emailService.js';
-import { bringOrderItems, getUserEmailInfo } from '../order/Services/order.service.js';
+import { bringOrderItems, getUserEmailInfo, applyPromoCode } from '../../orders/services/order.service.js';
 
 // ─── Create Checkout Session ──────────────────────────────────────────────────
 

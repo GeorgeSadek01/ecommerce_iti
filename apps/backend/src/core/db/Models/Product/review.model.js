@@ -28,10 +28,10 @@ const reviewSchema = new Schema(
       maxlength: [2000, 'Comment cannot exceed 2000 characters'],
       default: null,
     },
-    isVerifiedPurchase: {
-      type: Boolean,
-      default: false,
-    },
+    // isVerifiedPurchase: {
+    //   type: Boolean,
+    //   default: false,
+    // },
   },
   {
     timestamps: { createdAt: true, updatedAt: false },

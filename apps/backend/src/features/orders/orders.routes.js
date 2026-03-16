@@ -15,11 +15,13 @@ const router = express.Router();
 
 router.use(authenticate);
 
-router.post('/place-order', placeOrder); // any auth user
+router.post('/place-order', authorize('customer', 'seller'), placeOrder); // any auth user
 router.get('/', authorize('admin'), getAllOrders); // admin only
 router.get('/:id', getOrder); // own order or admin
 router.patch('/:id', authorize('admin'), updateOrder); // admin only
 router.patch('/:id/cancel', cancelOrder); // own order or admin
 router.patch('/:id/confirm', authorize('admin'), confirmOrder); // admin only
+router.get('/user/:id', getUserOrders);
+router.get('/my-orders', getUserOrders);
 
 export default router;
