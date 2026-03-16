@@ -99,18 +99,14 @@ export const getMySellerProfile = async (userId) => {
 
 /**
  * Get paginated list of sellers (public endpoint).
- * By default, returns approved sellers only.
+ * Returns only approved sellers.
  *
- * @param {{ page?: number|string, limit?: number|string, search?: string, status?: string }} query
+ * @param {{ page?: number|string, limit?: number|string, search?: string }} query
  * @returns {Promise<{ sellers: object[], pagination: object }>}
  */
 export const getSellerProfiles = async (query) => {
   const { page, limit, skip } = getPaginationParams(query);
   const filters = { status: 'approved', isDeleted: false };
-
-  if (query.status && ACTIVE_SELLER_STATUSES.includes(query.status)) {
-    filters.status = query.status;
-  }
 
   if (query.search) {
     filters.storeName = { $regex: query.search.trim(), $options: 'i' };
