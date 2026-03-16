@@ -8,8 +8,6 @@ import { globalLimiter } from './core/middlewares/rateLimiter.js';
 import errorHandler from './core/middlewares/errorHandler.js';
 import AppError from './core/utils/AppError.js';
 import swaggerSpec from './core/config/swagger.js';
-import authenticate from './core/middlewares/authenticate.js';
-import authorize from './core/utils/authorize.js';
 
 // Import routes
 import authRoutes from './features/auth/auth.routes.js';
@@ -18,7 +16,7 @@ import productRoutes from './features/products/product.routes.js';
 import paymentRoutes from './features/payment/payment.routes.js';
 // import cartRoutes from './features/cart/cart.routes.js';
 // import orderRoutes from './features/orders/orders.routes.js';
-// import adminPanelRoutes from './features/adminPanel/adminPanel.routes.js';
+import adminPanelRoutes from './features/adminPanel/adminPanel.routes.js';
 import sellerPanelRoutes from './features/sellerPanel/sellerPanel.routes.js';
 import promoCodeRoutes from './features/promoCode/promoCode.routes.js';
 
@@ -76,8 +74,8 @@ app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/payment', paymentRoutes);
 // app.use('/api/v1/cart', authenticate, cartRoutes);
 // app.use('/api/v1/orders', authenticate, orderRoutes);
-// app.use('/api/v1/admin', authenticate, authorize('admin'), adminPanelRoutes);
-app.use('/api/v1/seller', authenticate, authorize('seller', 'admin'), sellerPanelRoutes);
+app.use('/api/v1/admin', adminPanelRoutes);
+app.use('/api/v1/seller', sellerPanelRoutes);
 app.use('/api/v1/promo-codes', promoCodeRoutes);
 
 // ─── 404 handler ───────────────────────────────────────────────────────────
