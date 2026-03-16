@@ -211,10 +211,16 @@ export const updateAdminSellerStatus = async (sellerId, status) => {
   sellerProfile.status = status;
   await sellerProfile.save();
 
-  if (sellerProfile.userId && sellerProfile.userId._id) {
-    const user = await User.findById(sellerProfile.userId._id).setOptions({ includeDeleted: true });
+  const userId = sellerProfile.userId?._id || sellerProfile.userId;
+  if (userId) {
+    const user = await User.findById(userId).setOptions({ includeDeleted: true });
     if (user) {
-      user.role = status === 'approved' ? 'seller' : user.role;
+      if (status === 'approved') {
+        user.role = 'seller';
+      } else if (user.role === 'seller') {
+        // Revoke seller privileges when status is not approved
+        user.role = 'customer';
+      }
       await user.save();
     }
   }
