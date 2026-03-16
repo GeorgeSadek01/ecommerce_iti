@@ -207,8 +207,8 @@ export const changePassword = async (userId, { currentPassword, newPassword }) =
  * @returns {Promise<void>}
  */
 export const forgotPassword = async (email) => {
-  const user = await User.findOne({ email });
-
+  const user = await User.findOne({ email }).select('+passwordHash');
+  console.log(user);
   // Don't reveal whether user exists - return success either way
   if (!user) {
     return;
@@ -216,11 +216,13 @@ export const forgotPassword = async (email) => {
 
   // Users who signed up with Google OAuth don't have a password to reset
   if (!user.passwordHash) {
+    console.log('user signed with google');
     return;
   }
 
   const resetToken = signPasswordResetToken({ id: user._id.toString(), email: user.email });
 
+  console.log('FORGET APSSWORD : ', resetToken);
   // Fire-and-forget — don't fail the request if email delivery fails
   sendPasswordResetEmail({ userId: user._id.toString(), email: user.email, token: resetToken }).catch((err) =>
     console.error('[Auth] Password reset email error:', err.message)
