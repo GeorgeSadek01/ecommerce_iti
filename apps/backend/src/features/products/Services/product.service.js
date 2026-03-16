@@ -157,7 +157,7 @@ export const update = async (id, data) => {
   }
 
   if (updateData.name) {
-    let slug = slugify(updateData.name, { lower: true });
+    const slug = slugify(updateData.name, { lower: true });
 
     // Ensure slug uniqueness (exclude current product from check)
     let uniqueSlug = slug;

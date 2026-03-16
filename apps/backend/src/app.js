@@ -19,7 +19,8 @@ import paymentRoutes from './features/payment/payment.routes.js';
 // import cartRoutes from './features/cart/cart.routes.js';
 // import orderRoutes from './features/orders/orders.routes.js';
 // import adminPanelRoutes from './features/adminPanel/adminPanel.routes.js';
-// import sellerPanelRoutes from './features/sellerPanel/sellerPanel.routes.js';
+import sellerPanelRoutes from './features/sellerPanel/sellerPanel.routes.js';
+import promoCodeRoutes from './features/promoCode/promoCode.routes.js';
 
 import { webhook } from './features/payment/Controllers/payment.controller.js';
 
@@ -76,7 +77,8 @@ app.use('/api/v1/payment', paymentRoutes);
 // app.use('/api/v1/cart', authenticate, cartRoutes);
 // app.use('/api/v1/orders', authenticate, orderRoutes);
 // app.use('/api/v1/admin', authenticate, authorize('admin'), adminPanelRoutes);
-// app.use('/api/v1/seller', authenticate, authorize('seller', 'admin'), sellerPanelRoutes);
+app.use('/api/v1/seller', authenticate, authorize('seller', 'admin'), sellerPanelRoutes);
+app.use('/api/v1/promo-codes', promoCodeRoutes);
 
 // ─── 404 handler ───────────────────────────────────────────────────────────
 app.all('*any', (req, _res, next) => {
