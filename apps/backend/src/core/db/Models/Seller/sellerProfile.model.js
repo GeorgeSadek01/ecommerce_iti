@@ -62,7 +62,7 @@ sellerProfileSchema.index({ storeName: 1 }, { unique: true, partialFilterExpress
 sellerProfileSchema.index({ storeName: 'text' });
 sellerProfileSchema.index({ status: 1, isDeleted: 1, createdAt: -1 });
 
-sellerProfileSchema.pre(/^find/, function (_next) {
+sellerProfileSchema.pre(/^find/, function () {
   if (!this.getOptions().includeDeleted) {
     this.where({ isDeleted: false });
   }
