@@ -32,6 +32,26 @@ export const registerValidator = [
     .withMessage('Password must contain at least one uppercase letter.')
     .matches(/[0-9]/)
     .withMessage('Password must contain at least one number.'),
+
+  body('role').optional().isIn(['customer', 'seller']).withMessage('role must be either customer or seller.'),
+
+  body('sellerProfile').optional().isObject().withMessage('sellerProfile must be an object when provided.'),
+
+  body('sellerProfile.storeName')
+    .if(body('role').equals('seller'))
+    .trim()
+    .notEmpty()
+    .withMessage('sellerProfile.storeName is required when role is seller.')
+    .isLength({ max: 100 })
+    .withMessage('sellerProfile.storeName cannot exceed 100 characters.'),
+
+  body('sellerProfile.description')
+    .optional()
+    .trim()
+    .isLength({ max: 1000 })
+    .withMessage('sellerProfile.description cannot exceed 1000 characters.'),
+
+  body('sellerProfile.logoUrl').optional().trim().isURL().withMessage('sellerProfile.logoUrl must be a valid URL.'),
 ];
 
 export const loginValidator = [
@@ -43,6 +63,15 @@ export const loginValidator = [
     .withMessage('Please provide a valid email address.'),
 
   body('password').notEmpty().withMessage('Password is required.'),
+];
+
+export const googleAuthValidator = [
+  body('idToken')
+    .trim()
+    .notEmpty()
+    .withMessage('Google idToken is required.')
+    .isString()
+    .withMessage('Google idToken must be a string.'),
 ];
 
 export const changePasswordValidator = [

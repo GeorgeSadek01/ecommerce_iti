@@ -4,6 +4,7 @@ import {
   register,
   confirmEmail,
   login,
+  loginWithGoogle,
   refreshTokens,
   logout,
   changePassword,
@@ -16,8 +17,8 @@ import { REFRESH_COOKIE_NAME, getRefreshCookieOptions } from '../../../core/util
 // ─── POST /auth/register ──────────────────────────────────────────────────────
 
 export const registerHandler = asyncHandler(async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
-  const result = await register({ firstName, lastName, email, password });
+  const { firstName, lastName, email, password, role, sellerProfile } = req.body;
+  const result = await register({ firstName, lastName, email, password, role, sellerProfile });
   sendSuccess(res, 201, 'Registration successful. Please check your email to confirm your account.', {
     user: result.user,
   });
@@ -39,6 +40,16 @@ export const loginHandler = asyncHandler(async (req, res) => {
 
   res.cookie(REFRESH_COOKIE_NAME, refreshToken, getRefreshCookieOptions());
   sendSuccess(res, 200, 'Login successful.', { accessToken, user });
+});
+
+// ─── POST /auth/google ────────────────────────────────────────────────────────
+
+export const googleAuthHandler = asyncHandler(async (req, res) => {
+  const { idToken } = req.body;
+  const { accessToken, refreshToken, user } = await loginWithGoogle({ idToken });
+
+  res.cookie(REFRESH_COOKIE_NAME, refreshToken, getRefreshCookieOptions());
+  sendSuccess(res, 200, 'Google login successful.', { accessToken, user });
 });
 
 // ─── POST /auth/refresh ───────────────────────────────────────────────────────

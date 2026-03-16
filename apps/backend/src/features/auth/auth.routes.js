@@ -5,6 +5,7 @@ import authenticate from '../../core/middlewares/authenticate.js';
 import {
   registerValidator,
   loginValidator,
+  googleAuthValidator,
   changePasswordValidator,
   forgotPasswordValidator,
   resetPasswordValidator,
@@ -19,6 +20,7 @@ import {
   registerHandler,
   confirmEmailHandler,
   loginHandler,
+  googleAuthHandler,
   refreshHandler,
   logoutHandler,
   changePasswordHandler,
@@ -155,6 +157,8 @@ router.get('/confirm/:token', confirmEmailHandler);
  *         $ref: '#/components/responses/TooManyRequests'
  */
 router.post('/login', loginValidator, validateRequest, loginHandler);
+
+router.post('/google', googleAuthValidator, validateRequest, googleAuthHandler);
 
 /**
  * @swagger
