@@ -66,7 +66,8 @@ export const softDeleteAdminUserHandler = asyncHandler(async (req, res) => {
 });
 
 export const restoreAdminUserHandler = asyncHandler(async (req, res) => {
-  const result = await restoreAdminUser(req.params.id);
+  const restoreUserRole = req.query.restoreUserRole === 'true' || req.query.restoreUserRole === true;
+  const result = await restoreAdminUser(req.params.id, { restoreUserRole });
   sendSuccess(res, 200, 'User restored successfully.', result);
 });
 

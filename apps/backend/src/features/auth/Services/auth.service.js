@@ -342,7 +342,8 @@ export const changePassword = async (userId, { currentPassword, newPassword }) =
  * @returns {Promise<void>}
  */
 export const forgotPassword = async (email) => {
-  const user = await User.findOne({ email });
+  // Select passwordHash explicitly (field has select: false in schema)
+  const user = await User.findOne({ email }).select('+passwordHash');
 
   // Don't reveal whether user exists - return success either way
   if (!user) {

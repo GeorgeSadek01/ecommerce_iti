@@ -157,7 +157,9 @@ export const softDeleteAdminUser = async (userId, actorUserId) => {
   return { user: serializeUser(user) };
 };
 
-export const restoreAdminUser = async (userId) => {
+export const restoreAdminUser = async (userId, options = {}) => {
+  const { restoreUserRole = false } = options;
+
   const user = await findUserOrThrow(userId);
 
   if (!user.isDeleted) {
@@ -167,7 +169,30 @@ export const restoreAdminUser = async (userId) => {
   user.isDeleted = false;
   await user.save();
 
-  return { user: serializeUser(user) };
+  // Restore seller profiles that were soft-deleted when the user was deleted
+  const sellerProfiles = await SellerProfile.find({ userId: user._id }).setOptions({ includeDeleted: true });
+  const restoredSellers = [];
+
+  for (const sp of sellerProfiles) {
+    if (sp.isDeleted) {
+      sp.isDeleted = false;
+      sp.deletedAt = null;
+      if (sp.status === 'suspended') sp.status = 'pending';
+      await sp.save();
+      restoredSellers.push(sp);
+    }
+  }
+
+  // Optionally restore the user's seller role
+  if (restoreUserRole) {
+    // Only promote to 'seller' if not admin
+    if (user.role !== 'admin') {
+      user.role = 'seller';
+      await user.save();
+    }
+  }
+
+  return { user: serializeUser(user), restoredSellers: restoredSellers.map(serializeSeller) };
 };
 
 export const getAdminSellers = async (query) => {
@@ -270,7 +295,7 @@ export const restoreAdminSeller = async (sellerId) => {
   sellerProfile.isDeleted = false;
   sellerProfile.deletedAt = null;
   if (sellerProfile.status === 'suspended') {
-    sellerProfile.status = 'pending';
+    sellerProfile.status = 'approved';
   }
   await sellerProfile.save();
 
@@ -280,6 +305,8 @@ export const restoreAdminSeller = async (sellerId) => {
     if (user && !user.isDeleted && sellerProfile.status !== 'pending') {
       user.role = 'seller';
       await user.save();
+      sellerProfile.userId = user;
+      await sellerProfile.save();
     }
   }
 

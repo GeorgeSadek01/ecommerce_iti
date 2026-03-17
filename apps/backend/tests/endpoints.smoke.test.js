@@ -13,10 +13,7 @@ const rootDir = path.resolve(process.cwd());
 const appFilePath = path.join(rootDir, 'apps', 'backend', 'src', 'app.js');
 const appSource = fs.readFileSync(appFilePath, 'utf8');
 
-const stripComments = (source) =>
-  source
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^\s*\/\/.*$/gm, '');
+const stripComments = (source) => source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 
 const normalizePath = (value) => {
   const normalized = value.replace(/\/+/g, '/').replace(/\/$/, '');
