@@ -65,7 +65,10 @@ export const create = async (data) => {
 // ─── Get All Categories ───────────────────────────────────────────────────────
 
 export const getAll = async () => {
-  return await Category.find().populate('parentId', 'name');
+export const getAll = async () => {
+  const categories = await Category.find().populate('parentId', 'name');
+  return categories;
+};
 };
 
 // ─── Get Category By ID ───────────────────────────────────────────────────────
@@ -158,16 +161,19 @@ export const createCategoryImage = async (categoryId, files) => {
   // }
 
   // Even if files is an array from middleware, we only take the first one for a category cover
-   const file = Array.isArray(files) ? files[0] : files;
+  const file = Array.isArray(files) ? files[0] : files;
 
-   const category = await Category.findById(categoryId);
+  const category = await Category.findById(categoryId);
   // if (!category) {
   //   throw new AppError('Category not found', 404);
   // }
   // 2. CHECK: If image already exists, block the upload
-    if (category.image && category.image.cloudinaryPublicId) {
-        throw new AppError('This category already has an image. Please delete the current image before uploading a new one.', 400);
-    }
+  if (category.image && category.image.cloudinaryPublicId) {
+    throw new AppError(
+      'This category already has an image. Please delete the current image before uploading a new one.',
+      400
+    );
+  }
 
   let cld;
   try {
@@ -199,67 +205,67 @@ export const createCategoryImage = async (categoryId, files) => {
 // ─── Get Image By Category ID ─────────────────────────────────────────────────
 
 export const getCategoryImage = async (categoryId) => {
-    if (!categoryId) throw new AppError('Category ID is required', 400);
+  if (!categoryId) throw new AppError('Category ID is required', 400);
 
-    const category = await Category.findById(categoryId).select('image');
-    
-    if (!category) {
-        throw new AppError('Category not found', 404);
-    }
+  const category = await Category.findById(categoryId).select('image');
 
-    if (!category.image || !category.image.url) {
-        throw new AppError('No image found for this category', 404);
-    }
+  if (!category) {
+    throw new AppError('Category not found', 404);
+  }
 
-    return category.image;
+  if (!category.image || !category.image.url) {
+    throw new AppError('No image found for this category', 404);
+  }
+
+  return category.image;
 };
 // --- UPDATE IMAGE ---
 export const updateCategoryImage = async (categoryId, files) => {
-    const file = Array.isArray(files) ? files[0] : files;
-    if (!file) throw new AppError('No image file provided', 400);
+  const file = Array.isArray(files) ? files[0] : files;
+  if (!file) throw new AppError('No image file provided', 400);
 
-    const category = await Category.findById(categoryId);
-    if (!category) throw new AppError('Category not found', 404);
+  const category = await Category.findById(categoryId);
+  if (!category) throw new AppError('Category not found', 404);
 
-    let cld;
-    try {
-        // 1. Upload new image to Cloudinary
-        cld = await uploadBuffer(file.buffer, { folder: `categories/${categoryId}` });
+  let cld;
+  try {
+    // 1. Upload new image to Cloudinary
+    cld = await uploadBuffer(file.buffer, { folder: `categories/${categoryId}` });
 
-        // 2. If an old image exists, delete it from Cloudinary
-        if (category.image?.cloudinaryPublicId) {
-            await deleteByPublicId(category.image.cloudinaryPublicId);
-        }
-
-        // 3. Update database with new info
-        category.image = {
-            url: cld.url,
-            cloudinaryPublicId: cld.publicId,
-        };
-
-        await category.save();
-        return category;
-    } catch (err) {
-        if (cld?.publicId) await deleteByPublicId(cld.publicId);
-        throw err;
+    // 2. If an old image exists, delete it from Cloudinary
+    if (category.image?.cloudinaryPublicId) {
+      await deleteByPublicId(category.image.cloudinaryPublicId);
     }
+
+    // 3. Update database with new info
+    category.image = {
+      url: cld.url,
+      cloudinaryPublicId: cld.publicId,
+    };
+
+    await category.save();
+    return category;
+  } catch (err) {
+    if (cld?.publicId) await deleteByPublicId(cld.publicId);
+    throw err;
+  }
 };
 
 // --- DELETE IMAGE ---
 export const deleteCategoryImage = async (categoryId) => {
-    const category = await Category.findById(categoryId);
-    if (!category) throw new AppError('Category not found', 404);
+  const category = await Category.findById(categoryId);
+  if (!category) throw new AppError('Category not found', 404);
 
-    if (!category.image?.cloudinaryPublicId) {
-        throw new AppError('Category has no image to delete', 404);
-    }
+  if (!category.image?.cloudinaryPublicId) {
+    throw new AppError('Category has no image to delete', 404);
+  }
 
-    // 1. Delete from Cloudinary
-    await deleteByPublicId(category.image.cloudinaryPublicId);
+  // 1. Delete from Cloudinary
+  await deleteByPublicId(category.image.cloudinaryPublicId);
 
-    // 2. Remove from Database
-    category.image = undefined; // This removes the object field in MongoDB
-    await category.save();
+  // 2. Remove from Database
+  category.image = undefined; // This removes the object field in MongoDB
+  await category.save();
 
-    return category;
+  return category;
 };

@@ -5,13 +5,17 @@
   "type": "module",
   "main": "apps/backend/src/server.js",
   "scripts": {
-    "dev": "npx nodemon app/backend/src/server.js"
+    "dev": "npx nodemon apps/backend/src/server.js",
+    "test": "vitest run --reporter=verbose",
+    "test:watch": "vitest"
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "devDependencies": {
-    "prettier": "^3.8.1"
+    "prettier": "^3.8.1",
+    "supertest": "^7.2.2",
+    "vitest": "^4.1.0"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -22,6 +26,7 @@
     "express": "^5.2.1",
     "express-rate-limit": "^8.3.1",
     "express-validator": "^7.3.1",
+    "google-auth-library": "^10.6.1",
     "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.3.0",
@@ -29,8 +34,6 @@
     "nodemailer": "^8.0.2",
     "nodemon": "^3.1.14",
     "slugify": "^1.6.6",
-    "stripe": "^20.4.1",
-    "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "stripe": "^20.4.1"
   }
 }

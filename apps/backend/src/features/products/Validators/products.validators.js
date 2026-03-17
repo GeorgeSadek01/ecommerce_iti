@@ -1,4 +1,4 @@
-import { body, param,query, validationResult } from 'express-validator';
+import { body, param, query, validationResult } from 'express-validator';
 
 // ─── Create Product Validator ─────────────────────────────────────────────────
 
@@ -46,12 +46,6 @@ export const createProductValidator = [
     .withMessage('Category ID is required.')
     .isMongoId()
     .withMessage('Category ID must be a valid MongoDB ObjectId.'),
-
-  body('sellerProfileId')
-    .notEmpty()
-    .withMessage('Seller profile ID is required.')
-    .isMongoId()
-    .withMessage('Seller profile ID must be a valid MongoDB ObjectId.'),
 
   body('isActive').optional().isBoolean().withMessage('isActive must be a boolean.'),
 ];
@@ -131,42 +125,24 @@ export const validateProductSearch = [
     .customSanitizer((value) => (value === '' ? undefined : value))
     .withMessage('Search must be a string'),
 
-  query('category')
-    .optional()
-    .isString()
-    .trim()
-    .withMessage('Category must be a valid MongoDB ID or category name'),
+  query('category').optional().isString().trim().withMessage('Category must be a valid MongoDB ID or category name'),
 
-  query('minPrice')
-    .optional()
-    .isFloat({ min: 0 })
-    .withMessage('Minimum price must be a non-negative number'),
+  query('minPrice').optional().isFloat({ min: 0 }).withMessage('Minimum price must be a non-negative number'),
 
-  query('maxPrice')
-    .optional()
-    .isFloat({ min: 0 })
-    .withMessage('Maximum price must be a non-negative number'),
+  query('maxPrice').optional().isFloat({ min: 0 }).withMessage('Maximum price must be a non-negative number'),
 
   query('sort')
     .optional()
     .isIn(['price_asc', 'price_desc', 'name_asc', 'name_desc', 'newest', 'rating'])
     .withMessage('Invalid sort option. Valid options: price_asc, price_desc, name_asc, name_desc, newest, rating'),
 
-  query('page')
-    .optional()
-    .isInt({ min: 1 })
-    .withMessage('Page must be a positive integer'),
+  query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
 
-  query('limit')
-    .optional()
-    .isInt({ min: 1, max: 100 })
-    .withMessage('Limit must be between 1 and 100'),
+  query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
 ];
 // ─── Stock Update Validator ─────────────────────────────────────────────────
 export const validateStockUpdate = [
-  param('id')
-    .isMongoId()
-    .withMessage('Invalid Product ID format'),
+  param('id').isMongoId().withMessage('Invalid Product ID format'),
 
   body('quantity')
     .exists()
@@ -174,15 +150,12 @@ export const validateStockUpdate = [
     .isNumeric()
     .withMessage('Quantity must be a number')
     .custom((value, { req }) => {
-        // If mode is 'set', quantity MUST be 0 or higher
-        if (req.body.mode === 'set' && value < 0) {
-            throw new Error('You cannot set stock to a negative number');
-        }
-        return true;
+      // If mode is 'set', quantity MUST be 0 or higher
+      if (req.body.mode === 'set' && value < 0) {
+        throw new Error('You cannot set stock to a negative number');
+      }
+      return true;
     }),
 
-  body('mode')
-    .optional()
-    .isIn(['add', 'set'])
-    .withMessage('Mode must be either "add" or "set"'),
+  body('mode').optional().isIn(['add', 'set']).withMessage('Mode must be either "add" or "set"'),
 ];

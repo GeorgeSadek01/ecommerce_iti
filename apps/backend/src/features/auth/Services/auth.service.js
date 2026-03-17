@@ -1,6 +1,9 @@
 import bcrypt from 'bcryptjs';
+import { OAuth2Client } from 'google-auth-library';
 import User from '../../../core/db/Models/User/user.model.js';
+import SellerProfile from '../../../core/db/Models/Seller/sellerProfile.model.js';
 import AppError from '../../../core/utils/AppError.js';
+import env from '../../../core/config/env.js';
 import {
   signAccessToken,
   signEmailToken,
@@ -18,25 +21,52 @@ const SALT_ROUNDS = 12;
 // looked-up user does not exist, preventing timing-based user enumeration.
 // Must be a structurally valid hash or bcrypt.compare will reject early.
 const DUMMY_HASH = bcrypt.hashSync('__dummy_password_for_timing_protection__', SALT_ROUNDS);
+const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID || undefined);
 
 // ─── Register ────────────────────────────────────────────────────────────────
 
 /**
  * Register a new user, hash their password, send a confirmation email.
  *
- * @param {{ firstName: string, lastName: string, email: string, password: string }} dto
+ * @param {{ firstName: string, lastName: string, email: string, password: string, role?: 'customer'|'seller', sellerProfile?: {storeName: string, description?: string, logoUrl?: string} }} dto
  * @returns {Promise<{ user: object }>}
  */
-export const register = async ({ firstName, lastName, email, password }) => {
+export const register = async ({ firstName, lastName, email, password, role = 'customer', sellerProfile }) => {
+  const requestedRole = role === 'seller' ? 'seller' : 'customer';
+
+  if (requestedRole === 'seller' && !sellerProfile?.storeName) {
+    throw new AppError('sellerProfile.storeName is required when registering as seller.', 422);
+  }
+
+  if (requestedRole === 'seller') {
+    const storeNameExists = await SellerProfile.findOne({ storeName: sellerProfile.storeName }).setOptions({
+      includeDeleted: true,
+    });
+    if (storeNameExists) {
+      throw new AppError('Store name is already taken. Please choose another.', 409);
+    }
+  }
+
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
   const user = await User.create({
     firstName,
     lastName,
     email,
+    role: requestedRole,
     passwordHash,
     isEmailConfirmed: false,
   });
+
+  if (requestedRole === 'seller') {
+    await SellerProfile.create({
+      userId: user._id,
+      storeName: sellerProfile.storeName,
+      description: sellerProfile.description || null,
+      logoUrl: sellerProfile.logoUrl || null,
+      status: 'pending',
+    });
+  }
 
   const confirmToken = signEmailToken({ id: user._id.toString(), email: user.email });
   // Fire-and-forget — registration does not fail if email delivery fails
@@ -126,6 +156,111 @@ export const login = async ({ email, password }) => {
   };
 };
 
+// ─── Google Login ─────────────────────────────────────────────────────────────
+
+/**
+ * Authenticate a user using a Google ID token.
+ * Creates a new account if no matching user exists.
+ *
+ * @param {{ idToken: string }} dto
+ * @returns {Promise<{ accessToken: string, refreshToken: string, user: object }>}
+ */
+export const loginWithGoogle = async ({ idToken }) => {
+  if (!env.GOOGLE_CLIENT_ID) {
+    throw new AppError('Google authentication is not configured on the server.', 500);
+  }
+
+  let payload;
+  try {
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: env.GOOGLE_CLIENT_ID,
+    });
+    payload = ticket.getPayload();
+  } catch (_err) {
+    throw new AppError('Invalid Google token.', 401);
+  }
+
+  if (!payload) {
+    throw new AppError('Invalid Google token payload.', 401);
+  }
+
+  const {
+    sub: googleId,
+    email,
+    email_verified: emailVerified,
+    given_name: givenName,
+    family_name: familyName,
+    picture,
+    name,
+  } = payload;
+
+  if (!googleId || !email) {
+    throw new AppError('Google account did not provide required identity fields.', 401);
+  }
+
+  if (!emailVerified) {
+    throw new AppError('Google email must be verified to continue.', 401);
+  }
+
+  // Include soft-deleted users in the lookup to avoid duplicate-key errors on unique indexes.
+  let user = await User.findOne({ googleId }, null, { includeDeleted: true });
+
+  // If the Google-linked account exists but is soft-deleted, reject instead of recreating.
+  if (user && (user.deletedAt || user.isDeleted)) {
+    throw new AppError('This Google account is associated with a deleted user. Please contact support.', 409);
+  }
+
+  if (!user) {
+    const existingByEmail = await User.findOne({ email }, null, { includeDeleted: true });
+
+    if (existingByEmail) {
+      // If the email belongs to a soft-deleted account, reject instead of creating a new one.
+      if (existingByEmail.deletedAt || existingByEmail.isDeleted) {
+        throw new AppError('This email is associated with a deleted user. Please contact support.', 409);
+      }
+
+      if (existingByEmail.googleId && existingByEmail.googleId !== googleId) {
+        throw new AppError('This email is already linked to a different Google account.', 409);
+      }
+
+      existingByEmail.googleId = googleId;
+      existingByEmail.isEmailConfirmed = true;
+      if (picture && !existingByEmail.avatarUrl) {
+        existingByEmail.avatarUrl = picture;
+      }
+      user = await existingByEmail.save();
+    } else {
+      const [firstFromName = 'Google', secondFromName = 'User'] = (name || '').trim().split(/\s+/, 2);
+
+      user = await User.create({
+        firstName: givenName || firstFromName || 'Google',
+        lastName: familyName || secondFromName || 'User',
+        email,
+        googleId,
+        avatarUrl: picture || null,
+        isEmailConfirmed: true,
+      });
+    }
+  }
+
+  const accessToken = signAccessToken({ id: user._id.toString(), role: user.role });
+  const refreshToken = await createRefreshToken(user._id.toString());
+
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      role: user.role,
+      avatarUrl: user.avatarUrl,
+    },
+  };
+};
+
 // ─── Refresh ─────────────────────────────────────────────────────────────────
 
 /**
@@ -207,7 +342,8 @@ export const changePassword = async (userId, { currentPassword, newPassword }) =
  * @returns {Promise<void>}
  */
 export const forgotPassword = async (email) => {
-  const user = await User.findOne({ email });
+  // Select passwordHash explicitly (field has select: false in schema)
+  const user = await User.findOne({ email }).select('+passwordHash');
 
   // Don't reveal whether user exists - return success either way
   if (!user) {

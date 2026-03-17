@@ -8,12 +8,10 @@ const sellerProfileSchema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: [true, 'User ID is required'],
-      unique: true, // one seller profile per user
     },
     storeName: {
       type: String,
       required: [true, 'Store name is required'],
-      unique: true,
       trim: true,
       maxlength: [100, 'Store name cannot exceed 100 characters'],
     },
@@ -36,6 +34,15 @@ const sellerProfileSchema = new Schema(
       default: 'pending',
       index: true,
     },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
     totalEarnings: {
       type: mongoose.Types.Decimal128,
       default: mongoose.Types.Decimal128.fromString('0.00'),
@@ -49,7 +56,17 @@ const sellerProfileSchema = new Schema(
   }
 );
 
+// Keep uniqueness for active sellers while allowing soft-deleted profiles to remain in DB.
+sellerProfileSchema.index({ userId: 1 }, { unique: true, partialFilterExpression: { isDeleted: false } });
+sellerProfileSchema.index({ storeName: 1 }, { unique: true, partialFilterExpression: { isDeleted: false } });
 sellerProfileSchema.index({ storeName: 'text' });
+sellerProfileSchema.index({ status: 1, isDeleted: 1, createdAt: -1 });
+
+sellerProfileSchema.pre(/^find/, function () {
+  if (!this.getOptions().includeDeleted) {
+    this.where({ isDeleted: false });
+  }
+});
 
 const SellerProfile = mongoose.model('SellerProfile', sellerProfileSchema);
 

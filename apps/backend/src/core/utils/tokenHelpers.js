@@ -69,7 +69,7 @@ export const createRefreshToken = async (userId) => {
  * @returns {Promise<{ newToken: string, userId: string } | null>}
  */
 export const rotateRefreshToken = async (oldToken) => {
-  const record = await RefreshToken.findOneAndDelete({ token: oldToken, expiresAt: { $gt: new Date() } }); // only generate access token when old refresh token matches the sent one and it is already not expired
+  const record = await RefreshToken.findOneAndDelete({ token: hashToken(oldToken), expiresAt: { $gt: new Date() } }); // only generate access token when old refresh token matches the sent one and it is already not expired
 
   if (!record) return null;
 

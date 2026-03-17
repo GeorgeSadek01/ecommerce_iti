@@ -76,11 +76,11 @@ export const getById = async (id) => {
 // ─── Get All Products ─────────────────────────────────────────────────────────
 
 export const getAll = async (options = {}) => {
-  const { sellerId, page = 1, limit = 10, search } = options;
+  const { sellerProfileId, page = 1, limit = 10, search } = options;
 
   const query = {};
-  if (sellerId) {
-    query.sellerId = sellerId;
+  if (sellerProfileId) {
+    query.sellerProfileId = sellerProfileId;
   }
   if (search) {
     query.name = { $regex: search, $options: 'i' };
@@ -189,136 +189,119 @@ export const deleteProduct = async (id) => {
 };
 
 export const search = async (filters) => {
-        const {
-            search,
-            category,
-            minPrice,
-            maxPrice,
-            sort = 'newest',
-            page = 1,
-            limit = 10,
-        } = filters;
+  const { search, category, minPrice, maxPrice, sort = 'newest', page = 1, limit = 10 } = filters;
 
-        // Build query object
-        const query = { isActive: true };
+  // Build query object
+  const query = { isActive: true };
 
-        // Full-text search on name and description
-        if (search && search.trim()) {
-            const searchTerm = search.trim();
-            
-            // Check if search term matches a category name
-            const matchingCategory = await categoryModel.findOne({ name: { $regex: searchTerm, $options: 'i' } });
-            
-            if (matchingCategory) {
-                // If category found, include products from that category OR matching search text
-                query.$or = [
-                    { categoryId: matchingCategory._id },
-                    { $text: { $search: searchTerm } }
-                ];
-            } else {
-                // No matching category, just search by text
-                query.$text = { $search: searchTerm };
-            }
-        }
+  // Full-text search on name and description
+  if (search && search.trim()) {
+    const searchTerm = search.trim();
 
-        // Filter by category (support both ID and name)
-        if (category) {
-            if (mongoose.Types.ObjectId.isValid(category)) {
-                // Category is an ObjectId, use directly
-                query.categoryId = category;
-            } else {
-                // Category is a name, find the category by name
-                const foundCategory = await categoryModel.findOne({ name: { $regex: category, $options: 'i' } });
-                if (foundCategory) {
-                    query.categoryId = foundCategory._id;
-                } else {
-                    // Category not found, return empty result
-                    return {
-                        data: [],
-                        pagination: {
-                            currentPage: page,
-                            totalPages: 0,
-                            totalRecords: 0,
-                            hasNextPage: false,
-                            hasPrevPage: false,
-                        }
-                    };
-                }
-            }
-        }
-        // Price range filter
-        if (minPrice !== undefined || maxPrice !== undefined) {
-            query.price = {};
-            if (minPrice !== undefined) {
-                query.price.$gte = minPrice;
-            }
-            if (maxPrice !== undefined) {
-                query.price.$lte = maxPrice;
-            }
-        }
+    // Check if search term matches a category name
+    const matchingCategory = await categoryModel.findOne({ name: { $regex: searchTerm, $options: 'i' } });
 
-        // Calculate pagination
-        const { skip, limit: pageLimit } = calculatePagination(page, limit);
+    if (matchingCategory) {
+      // If category found, include products from that category OR matching search text
+      query.$or = [{ categoryId: matchingCategory._id }, { $text: { $search: searchTerm } }];
+    } else {
+      // No matching category, just search by text
+      query.$text = { $search: searchTerm };
+    }
+  }
 
-        // Build sort object
-        let sortObj = { createdAt: -1 }; // Default: newest first
-        if (sort === 'price_asc') {
-            sortObj = { price: 1 };
-        } else if (sort === 'price_desc') {
-            sortObj = { price: -1 };
-        } else if (sort === 'name_asc') {
-            sortObj = { name: 1 };
-        } else if (sort === 'name_desc') {
-            sortObj = { name: -1 };
-        } else if (sort === 'rating') {
-            sortObj = { averageRating: -1, reviewCount: -1 };
-        }
-
-        // Execute query
-        const products = await productModel
-            .find(query)
-            .populate('categoryId', 'name slug')
-            .sort(sortObj)
-            .skip(skip)
-            .limit(pageLimit)
-            .lean();
-
-        const total = await productModel.countDocuments(query);
-
-        // Get pagination metadata
-        const pagination = getPaginationMetadata(total, page, pageLimit);
-
+  // Filter by category (support both ID and name)
+  if (category) {
+    if (mongoose.Types.ObjectId.isValid(category)) {
+      // Category is an ObjectId, use directly
+      query.categoryId = category;
+    } else {
+      // Category is a name, find the category by name
+      const foundCategory = await categoryModel.findOne({ name: { $regex: category, $options: 'i' } });
+      if (foundCategory) {
+        query.categoryId = foundCategory._id;
+      } else {
+        // Category not found, return empty result
         return {
-            data: products,
-            pagination,
+          data: [],
+          pagination: {
+            currentPage: page,
+            totalPages: 0,
+            totalRecords: 0,
+            hasNextPage: false,
+            hasPrevPage: false,
+          },
         };
-    };
+      }
+    }
+  }
+  // Price range filter
+  if (minPrice !== undefined || maxPrice !== undefined) {
+    query.price = {};
+    if (minPrice !== undefined) {
+      query.price.$gte = minPrice;
+    }
+    if (maxPrice !== undefined) {
+      query.price.$lte = maxPrice;
+    }
+  }
+
+  // Calculate pagination
+  const { skip, limit: pageLimit } = calculatePagination(page, limit);
+
+  // Build sort object
+  let sortObj = { createdAt: -1 }; // Default: newest first
+  if (sort === 'price_asc') {
+    sortObj = { price: 1 };
+  } else if (sort === 'price_desc') {
+    sortObj = { price: -1 };
+  } else if (sort === 'name_asc') {
+    sortObj = { name: 1 };
+  } else if (sort === 'name_desc') {
+    sortObj = { name: -1 };
+  } else if (sort === 'rating') {
+    sortObj = { averageRating: -1, reviewCount: -1 };
+  }
+
+  // Execute query
+  const products = await productModel
+    .find(query)
+    .populate('categoryId', 'name slug')
+    .sort(sortObj)
+    .skip(skip)
+    .limit(pageLimit)
+    .lean();
+
+  const total = await productModel.countDocuments(query);
+
+  // Get pagination metadata
+  const pagination = getPaginationMetadata(total, page, pageLimit);
+
+  return {
+    data: products,
+    pagination,
+  };
+};
 // ─── Update Product Stock ─────────────────────────────────────────────────
 export const updateStock = async (id, quantity, mode = 'add') => {
-// 1. If mode is 'set', we already ensure it's at least 0
-    const updateQuery = mode === 'set'
-        ? { stock: Math.max(0, quantity) }
-        : { $inc: { stock: quantity } };
+  // 1. If mode is 'set', we already ensure it's at least 0
+  const updateQuery = mode === 'set' ? { stock: Math.max(0, quantity) } : { $inc: { stock: quantity } };
 
-    const product = await productModel.findByIdAndUpdate(
-        id,
-        updateQuery,
-        { new: true, runValidators: true }
-    );
+  const product = await productModel.findByIdAndUpdate(id, updateQuery, { new: true, runValidators: true });
 
-    // 2. Updated Safety Check with your specific message
-    if (product.stock < 0) {
-        // Reset to original state (before the decrement)
-        product.stock = product.stock - quantity;
-        await product.save();
-        
-        throw new Error("Operation failed: You cannot update stock to a negative number.");
-    }
+  // 2. Updated Safety Check with your specific message
+  if (product.stock < 0) {
+    // Reset to original state (before the decrement)
+    product.stock = product.stock - quantity;
+    await product.save();
 
-    const threshold = product.lowStockThreshold || 5;
-    if (product.stock <= threshold) {
-        console.log(`[ALERT] Low stock for ${product.name}: ${product.stock} units remaining.`);
-    }
+    throw new Error('Operation failed: You cannot update stock to a negative number.');
+  }
 
-    return product;
+  const threshold = product.lowStockThreshold || 5;
+  if (product.stock <= threshold) {
+    console.log(`[ALERT] Low stock for ${product.name}: ${product.stock} units remaining.`);
+  }
+
+  return product;
 };
