@@ -1,7 +1,7 @@
 import Cart from '../../../core/db/Models/Cart/cart.model.js';
 import CartItem from '../../../core/db/Models/Cart/cartItem.model.js';
 import Product from '../../../core/db/Models/Product/product.model.js';
-import SellerProfile from '../../../core/db/Models/SellerProfile/sellerProfile.model.js';
+import SellerProfile from '../../../core/db/Models/Seller/sellerProfile.model.js';
 import AppError from '../../../core/utils/AppError.js';
 
 // helper
