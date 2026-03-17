@@ -36,14 +36,9 @@ export const confirmOrder = asyncHandler(async (req, res) => {
 // ─── POST /payment/checkout ───────────────────────────────────────────────────
 
 export const checkout = asyncHandler(async (req, res) => {
-  const userId = req.user.id;
-  const { addressId } = req.body;
-
-  const session = await paymentService.createCheckoutSession(userId, addressId);
-
-  sendSuccess(res, 200, 'Checkout session created successfully', {
-    checkoutUrl: session.url,
-  });
+  const { addressId, promoCode } = req.body;
+  const session = await paymentService.createCheckoutSession(req.user.id, addressId, promoCode);
+  sendSuccess(res, 200, 'Checkout session created successfully', { checkoutUrl: session.url });
 });
 
 // ─── POST /payment/webhook ────────────────────────────────────────────────────

@@ -71,6 +71,8 @@ app.use('/api/v1/orders', authenticate, orderRoutes);
 app.use('/api/v1/admin', adminPanelRoutes);
 app.use('/api/v1/seller', sellerPanelRoutes);
 app.use('/api/v1/promo-codes', promoCodeRoutes);
+app.use('/api/v1/reviews', reviewRoutes);
+app.use('/api/v1/wishlist', authenticate, wishlistRoutes);
 
 // ─── 404 handler ───────────────────────────────────────────────────────────
 app.all('*any', (req, _res, next) => {
