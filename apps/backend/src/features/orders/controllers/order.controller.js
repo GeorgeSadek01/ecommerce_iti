@@ -1,5 +1,5 @@
 import asyncHandler from '../../../core/utils/asyncHandler.js';
-import { sendSuccess } from '../../../core/utils/apiResponse.js';
+import { sendSuccess, sendFail } from '../../../core/utils/apiResponse.js';
 import * as orderService from '../services/order.service.js';
 
 export const placeOrder = asyncHandler(async (req, res) => {
@@ -23,6 +23,17 @@ export const getUserOrders = asyncHandler(async (req, res) => {
   const { status, page, limit } = req.query;
   const result = await orderService.getOrdersByUser(req.params.id, req.user.id, req.user.role, { status, page, limit });
   sendSuccess(res, 200, 'User orders fetched successfully', result);
+});
+
+export const getMyOrders = asyncHandler(async (req, res) => {
+  console.log('plapla');
+  console.log('my orders');
+  console.log(req);
+  const { status, page, limit } = req.query;
+  if (req.user.role == 'admin') sendFail(res, 404, 'Admins cannot have orders');
+  console.log('passed');
+  const result = await orderService.getOrdersByUser(req.user.id, req.user.id, req.user.role, { status, page, limit });
+  sendSuccess(res, 200, 'Your orders fetched successfully', result);
 });
 
 export const updateOrder = asyncHandler(async (req, res) => {

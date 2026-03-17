@@ -4,6 +4,7 @@ import Product from '../../../core/db/Models/Product/product.model.js';
 import Cart from '../../../core/db/Models/Cart/cart.model.js';
 import CartItem from '../../../core/db/Models/Cart/cartItem.model.js';
 import User from '../../../core/db/Models/User/user.model.js';
+import Address from '../../../core/db/Models/User/address.model.js';
 import AppError from '../../../core/utils/AppError.js';
 import { sendOrderPlacedEmail, sendOrderShippedEmail } from '../../../core/utils/emailService.js';
 
@@ -115,6 +116,12 @@ export async function bringOrderItems(userId) {
 // place Order (Cash on Delivery)
 
 export const placeOrder = async (userId, addressId, promoCodeInput = null) => {
+  const address = await Address.findOne({ userId, _id: addressId });
+
+  if (!address) {
+    throw new AppError("Invalid address , or this address doesn't belong to this user", 400);
+  }
+
   const { orderItems, subtotal } = await bringOrderItems(userId);
   const user = await getUserEmailInfo(userId);
 
@@ -133,6 +140,7 @@ export const placeOrder = async (userId, addressId, promoCodeInput = null) => {
         {
           userId,
           addressId,
+          status: 'processing',
           items: orderItems,
           subtotal,
           discountAmount,
@@ -209,7 +217,12 @@ export const getOrderById = async (orderId, userId, role) => {
 };
 
 export const getOrdersByUser = async (targetUserId, requesterId, role, { status, page = 1, limit = 20 } = {}) => {
+  // admin can see orders of customers and sellers
+  // if anyone tries to access orders of other , it is forbidden
   // Non-admin can only fetch their own orders
+  console.log('Role : ', role);
+  console.log(targetUserId);
+  console.log(requesterId);
   if (role !== 'admin' && String(targetUserId) !== String(requesterId)) {
     throw new AppError('You do not have access to these orders', 403);
   }
