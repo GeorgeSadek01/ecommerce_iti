@@ -87,35 +87,25 @@ export const deleteProduct = asyncHandler(async (req, res) => {
 });
 // ─── PATCH /seller/products/:id/stock ──────────────────────────────────────────────
 export const search = asyncHandler(async (req, res) => {
-  try {
-    const filters = {
-      search: req.query.search,
-      category: req.query.category,
-      minPrice: req.query.minPrice ? parseFloat(req.query.minPrice) : undefined,
-      maxPrice: req.query.maxPrice ? parseFloat(req.query.maxPrice) : undefined,
-      sort: req.query.sort || 'newest',
-      page: req.query.page || 1,
-      limit: req.query.limit || 10,
-    };
+  const filters = {
+    search: req.query.search,
+    category: req.query.category,
+    minPrice: req.query.minPrice ? parseFloat(req.query.minPrice) : undefined,
+    maxPrice: req.query.maxPrice ? parseFloat(req.query.maxPrice) : undefined,
+    sort: req.query.sort || 'newest',
+    page: req.query.page || 1,
+    limit: req.query.limit || 10,
+  };
 
-    const result = await productService.search(filters);
-    if (result.data.length === 0) {
-      return res.status(200).json({
-        success: true,
-        message: "We couldn't find any products matching your search.",
-        data: [],
-        pagination: result.pagination,
-      });
-    }
-    res.status(200).json({
-      success: true,
-      message: 'Products retrieved successfully',
-      data: result.data,
-      pagination: result.pagination,
-    });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
-  }
+  const result = await productService.search(filters);
+  res.status(200).json({
+    success: true,
+    message: result.data.length === 0 
+      ? "We couldn't find any products matching your search."
+      : 'Products retrieved successfully',
+    data: result.data,
+    pagination: result.pagination,
+  });
 });
 // ─── PATCH /seller/products/:id/stock ──────────────────────────────────────────────
 export const updateProductStock = asyncHandler(async (req, res) => {
