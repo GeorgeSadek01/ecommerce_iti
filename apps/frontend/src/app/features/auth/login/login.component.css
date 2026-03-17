@@ -1,0 +1,34 @@
+@import '../shared-auth.css';
+
+.google-signin-container {
+  max-width: 720px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  text-align: center;
+}
+
+.google-signin-container h2 {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.google-button {
+  display: flex;
+  justify-content: center;
+}
+
+/* Links inside auth cards should inherit routerLink styling but be slightly smaller */
+.auth-card a[routerLink] {
+  color: inherit;
+  font-size: 0.95rem;
+}
+
+.auth-card p {
+  margin: 0.5rem 0 0;
+}
+
+.auth-card a[routerLink].button-like {
+  margin-top: 0.75rem;
+}

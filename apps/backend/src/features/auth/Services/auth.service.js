@@ -7,11 +7,12 @@ import env from '../../../core/config/env.js';
 import {
   signAccessToken,
   signEmailToken,
-  signPasswordResetToken,
   createRefreshToken,
   rotateRefreshToken,
   revokeRefreshToken,
   verifyPurposeToken,
+  createPasswordResetToken,
+  consumePasswordResetToken,
 } from '../../../core/utils/tokenHelpers.js';
 import { sendConfirmationEmail, sendPasswordResetEmail } from '../../../core/utils/emailService.js';
 
@@ -47,16 +48,34 @@ export const register = async ({ firstName, lastName, email, password, role = 'c
     }
   }
 
+  // normalize email and ensure uniqueness (including soft-deleted records)
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const existingUser = await User.findOne({ email: normalizedEmail }).setOptions({ includeDeleted: true });
+  if (existingUser) {
+    throw new AppError('Email is already registered. Please use another email.', 409);
+  }
+
   const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
 
-  const user = await User.create({
-    firstName,
-    lastName,
-    email,
-    role: requestedRole,
-    passwordHash,
-    isEmailConfirmed: false,
-  });
+  let user;
+  try {
+    user = await User.create({
+      firstName,
+      lastName,
+      email: normalizedEmail,
+      role: requestedRole,
+      passwordHash,
+      isEmailConfirmed: false,
+    });
+  } catch (err) {
+    // Handle duplicate-key race condition if unique index exists but two
+    // requests passed the pre-check simultaneously. Mongo duplicate key
+    // errors have code 11000.
+    if (err && (err.code === 11000 || err.code === 11001)) {
+      throw new AppError('Email is already registered. Please use another email.', 409);
+    }
+    throw err;
+  }
 
   if (requestedRole === 'seller') {
     await SellerProfile.create({
@@ -355,7 +374,7 @@ export const forgotPassword = async (email) => {
     return;
   }
 
-  const resetToken = signPasswordResetToken({ id: user._id.toString(), email: user.email });
+  const resetToken = await createPasswordResetToken(user._id.toString());
 
   // Fire-and-forget — don't fail the request if email delivery fails
   sendPasswordResetEmail({ userId: user._id.toString(), email: user.email, token: resetToken }).catch((err) =>
@@ -373,20 +392,13 @@ export const forgotPassword = async (email) => {
  * @returns {Promise<void>}
  */
 export const resetPassword = async (token, newPassword) => {
-  let decoded;
-  try {
-    decoded = verifyPurposeToken(token, 'password-reset');
-  } catch (err) {
-    if (err.name === 'JsonWebTokenError') {
-      throw new AppError('Invalid password reset link.', 401);
-    }
-    if (err.name === 'TokenExpiredError') {
-      throw new AppError('Password reset link has expired. Please request a new one.', 401);
-    }
-    throw err;
+  // Consume the single-use password reset token from the DB
+  const record = await consumePasswordResetToken(token);
+  if (!record) {
+    throw new AppError('Invalid or expired password reset link.', 401);
   }
 
-  const user = await User.findById(decoded.sub).select('+passwordHash');
+  const user = await User.findById(record.userId).select('+passwordHash');
   if (!user) throw new AppError('User not found.', 404);
 
   // Hash and save new password

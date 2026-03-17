@@ -1,0 +1,36 @@
+<section class="auth-page">
+    <form class="auth-card" [formGroup]="loginForm" (ngSubmit)="submit()">
+        <h1>Sign In</h1>
+
+        <label>
+            Email
+            <input type="email" formControlName="email" />
+        </label>
+
+        <label>
+            Password
+            <input type="password" formControlName="password" />
+        </label>
+
+        <button type="submit" [disabled]="isSubmitting()">
+            {{ isSubmitting() ? 'Signing in...' : 'Login' }}
+        </button>
+
+        <p>
+            New here?
+            <a routerLink="/auth/register">Create an account</a>
+        </p>
+        <p>
+            <a routerLink="/auth/forgot-password">Forgot password?</a>
+        </p>
+
+        @if (errorMessage()) {
+        <p class="feedback error">{{ errorMessage() }}</p>
+        }
+    </form>
+
+    <div class="google-signin-container">
+        <h2>Or sign in with Google</h2>
+        <div #googleButtonContainer class="google-button"></div>
+    </div>
+</section>

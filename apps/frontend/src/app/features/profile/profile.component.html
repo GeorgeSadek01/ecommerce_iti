@@ -1,0 +1,98 @@
+<section class="auth-page">
+    <header class="auth-header">
+        <h1>Profile</h1>
+        <button type="button" class="secondary-btn" (click)="logout()">Logout</button>
+    </header>
+
+    <form class="auth-card" [formGroup]="profileForm" (ngSubmit)="submitProfile()">
+        <h2>Update Account</h2>
+
+        <label>
+            First Name
+            <input formControlName="firstName" type="text" />
+        </label>
+
+        <label>
+            Last Name
+            <input formControlName="lastName" type="text" />
+        </label>
+
+        <label>
+            Email
+            <input formControlName="email" type="email" />
+        </label>
+
+        <label>
+            Confirm Password
+            <input formControlName="confirmPassword" type="password" />
+        </label>
+
+        <button type="submit" [disabled]="isSubmitting()">
+            {{ isSubmitting() ? 'Saving...' : 'Save Changes' }}
+        </button>
+    </form>
+
+    <section class="auth-card">
+        <h2>Addresses</h2>
+
+        <form [formGroup]="addressForm" (ngSubmit)="submitAddress()" class="address-form">
+            <label>
+                Street
+                <input formControlName="street" type="text" />
+            </label>
+            <label>
+                City
+                <input formControlName="city" type="text" />
+            </label>
+            <label>
+                State
+                <input formControlName="state" type="text" />
+            </label>
+            <label>
+                Country
+                <input formControlName="country" type="text" />
+            </label>
+            <label>
+                Zip Code
+                <input formControlName="zipCode" type="text" />
+            </label>
+
+            <label>
+                <input formControlName="isDefault" type="checkbox" />
+                Set as default
+            </label>
+
+            <div class="address-actions">
+                <button type="submit" [disabled]="isSubmitting()">
+                    {{ isSubmitting() ? 'Saving...' : (editingAddressId() ? 'Update Address' : 'Add Address') }}
+                </button>
+                <button type="button" class="secondary-btn" (click)="resetAddressForm()" [disabled]="isSubmitting()">
+                    Cancel
+                </button>
+            </div>
+        </form>
+
+        <ul>
+            @for (address of addresses(); track address.id) {
+            <li>
+                {{ address.street }}, {{ address.city }}, {{ address.country }}
+                @if (address.isDefault) {
+                <strong>(Default)</strong>
+                }
+                <div class="address-actions">
+                    <button type="button" class="secondary-btn" (click)="editAddress(address)">Edit</button>
+                    <button type="button" (click)="deleteAddress(address.id)">Delete</button>
+                </div>
+            </li>
+            }
+        </ul>
+    </section>
+
+    @if (errorMessage()) {
+    <p class="feedback error">{{ errorMessage() }}</p>
+    }
+
+    @if (successMessage()) {
+    <p class="feedback success">{{ successMessage() }}</p>
+    }
+</section>

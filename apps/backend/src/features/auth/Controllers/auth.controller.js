@@ -118,9 +118,27 @@ export const resetPasswordHandler = asyncHandler(async (req, res) => {
 
 export const updateUserProfileHandler = asyncHandler(async (req, res) => {
   const userId = req.user.id; // From authenticate middleware
+  const oldEmail = req.user.email;
   const { firstName, lastName, email, confirmPassword } = req.body;
 
   const user = await updateUserProfile(userId, { firstName, lastName, email, confirmPassword });
+
+  // If email was changed, revoke refresh token and clear cookie to force logout
+  if (user.email && user.email !== oldEmail) {
+    const token = req.cookies?.[REFRESH_COOKIE_NAME];
+    if (token) {
+      await logout(token);
+    }
+
+    const { maxAge: _dropped, ...clearOptions } = getRefreshCookieOptions();
+    res.clearCookie(REFRESH_COOKIE_NAME, clearOptions);
+
+    sendSuccess(res, 200, 'Profile updated successfully. Please confirm your new email address, then log in again.', {
+      user,
+    });
+
+    return;
+  }
 
   sendSuccess(res, 200, 'Profile updated successfully.', { user });
 });
