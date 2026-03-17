@@ -2,12 +2,10 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
-import swaggerUi from 'swagger-ui-express';
 
 import { globalLimiter } from './core/middlewares/rateLimiter.js';
 import errorHandler from './core/middlewares/errorHandler.js';
 import AppError from './core/utils/AppError.js';
-import swaggerSpec from './core/config/swagger.js';
 
 // Import routes
 import authRoutes from './features/auth/auth.routes.js';
@@ -59,18 +57,13 @@ app.get('/health', (_req, res) => res.status(200).json({ status: 'ok' }));
 // ─── Global rate limiter ───────────────────────────────────────────────────
 app.use(globalLimiter);
 
-// ─── API docs (dev only) ───────────────────────────────────────────────────
-if (process.env.NODE_ENV !== 'production') {
-  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-  app.get('/api/docs.json', (_req, res) => {
-    res.setHeader('Content-Type', 'application/json');
-    res.send(swaggerSpec);
-  });
-}
+// API docs removed
 
 // ─── API routes ────────────────────────────────────────────────────────────
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/categories', categoryRoutes);
+// Mount categories under admin path as well to support admin-facing requests
+app.use('/api/v1/admin/categories', categoryRoutes);
 app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/payment', paymentRoutes);
 app.use('/api/v1/cart', authenticate, cartRoutes);

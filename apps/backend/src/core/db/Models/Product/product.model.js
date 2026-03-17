@@ -87,55 +87,48 @@ productSchema.index({ name: 'text', description: 'text' });
 productSchema.index({ price: 1 });
 
 // Validate price > 0 and discountedPrice < price
-productSchema.pre('save', function (next) {
+productSchema.pre('save', async function () {
   const price = parseFloat(this.price.toString());
   if (price <= 0) {
-    return next(new Error('Price must be greater than 0'));
+    throw new Error('Price must be greater than 0');
   }
   if (this.discountedPrice !== null && this.discountedPrice !== undefined) {
     const discountedPrice = parseFloat(this.discountedPrice.toString());
     if (discountedPrice <= 0) {
-      return next(new Error('Discounted price must be greater than 0'));
+      throw new Error('Discounted price must be greater than 0');
     }
     if (discountedPrice >= price) {
-      return next(new Error('Discounted price must be less than the original price'));
+      throw new Error('Discounted price must be less than the original price');
     }
   }
-  // next();
 });
 
 // Shared validator used by save and all update query middleware. For update
 // hooks we fetch the existing document as needed and propagate any errors
 // through next(err). This ensures price invariants hold for all update paths.
-const validatePriceUpdate = async function (next) {
-  try {
-    const update = this.getUpdate();
-    const rawPrice = update?.price ?? update?.$set?.price;
-    const rawDiscountedPrice = update?.discountedPrice ?? update?.$set?.discountedPrice;
+const validatePriceUpdate = async function () {
+  const update = this.getUpdate();
+  const rawPrice = update?.price ?? update?.$set?.price;
+  const rawDiscountedPrice = update?.discountedPrice ?? update?.$set?.discountedPrice;
 
-    // Only validate if at least one price field is part of this update
-    if (rawPrice === undefined && rawDiscountedPrice === undefined) return next();
+  // Only validate if at least one price field is part of this update
+  if (rawPrice === undefined && rawDiscountedPrice === undefined) return;
 
-    // Fetch the current document to fill in whichever field isn't being updated
-    const existing = await this.model.findOne(this.getQuery()).lean();
+  // Fetch the current document to fill in whichever field isn't being updated
+  const existing = await this.model.findOne(this.getQuery()).lean();
 
-    const priceVal = rawPrice !== undefined ? rawPrice : existing?.price;
-    const discountedVal = rawDiscountedPrice !== undefined ? rawDiscountedPrice : existing?.discountedPrice;
+  const priceVal = rawPrice !== undefined ? rawPrice : existing?.price;
+  const discountedVal = rawDiscountedPrice !== undefined ? rawDiscountedPrice : existing?.discountedPrice;
 
-    if (priceVal !== undefined && priceVal !== null) {
-      const price = parseFloat(priceVal.toString());
-      if (price <= 0) return next(new Error('Price must be greater than 0'));
+  if (priceVal !== undefined && priceVal !== null) {
+    const price = parseFloat(priceVal.toString());
+    if (price <= 0) throw new Error('Price must be greater than 0');
 
-      if (discountedVal !== null && discountedVal !== undefined) {
-        const discountedPrice = parseFloat(discountedVal.toString());
-        if (discountedPrice <= 0) return next(new Error('Discounted price must be greater than 0'));
-        if (discountedPrice >= price) return next(new Error('Discounted price must be less than the original price'));
-      }
+    if (discountedVal !== null && discountedVal !== undefined) {
+      const discountedPrice = parseFloat(discountedVal.toString());
+      if (discountedPrice <= 0) throw new Error('Discounted price must be greater than 0');
+      if (discountedPrice >= price) throw new Error('Discounted price must be less than the original price');
     }
-
-    return next();
-  } catch (err) {
-    return next(err);
   }
 };
 

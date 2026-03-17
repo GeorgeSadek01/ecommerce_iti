@@ -4,7 +4,6 @@ import validateRequest from '../../core/middlewares/validateRequest.js';
 import authorize from '../../core/utils/authorize.js';
 import {
   createSellerProfileHandler,
-  registerSellerHandler,
   getSellerProfileHandler,
   getSellerProfilesHandler,
   getSellerProfileByIdHandler,
@@ -22,6 +21,8 @@ import {
   sellerEarningsValidator,
 } from './Validators/sellerProfile.validators.js';
 
+import productRoutes from '../products/product.routes.js';
+
 const router = Router();
 
 // Public seller discovery
@@ -29,7 +30,6 @@ router.get('/profiles', getSellerProfilesValidator, validateRequest, getSellerPr
 router.get('/profile/:id', sellerProfileIdParamValidator, validateRequest, getSellerProfileByIdHandler);
 
 // Authenticated seller profile management
-router.post('/register', authenticate, createSellerProfileValidator, validateRequest, registerSellerHandler);
 router.post('/profile', authenticate, createSellerProfileValidator, validateRequest, createSellerProfileHandler);
 router.get('/profile', authenticate, authorize('seller', 'admin'), getSellerProfileHandler);
 router.patch(
@@ -57,5 +57,8 @@ router.get(
   validateRequest,
   getSellerEarningsHandler
 );
+
+// Mount seller product routes under seller namespace
+router.use('/products', productRoutes);
 
 export default router;

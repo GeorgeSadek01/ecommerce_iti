@@ -24,19 +24,6 @@ export const createSellerProfileHandler = asyncHandler(async (req, res) => {
   });
 });
 
-// ─── POST /seller/register ───────────────────────────────────────────────────
-
-export const registerSellerHandler = asyncHandler(async (req, res) => {
-  const userId = req.user.id;
-  const { storeName, description, logoUrl } = req.body;
-
-  const sellerProfile = await createSellerProfile(userId, { storeName, description, logoUrl });
-
-  sendSuccess(res, 201, 'Seller registration submitted successfully. Your profile is pending approval.', {
-    sellerProfile,
-  });
-});
-
 // ─── GET /seller/profile ──────────────────────────────────────────────────────
 
 export const getSellerProfileHandler = asyncHandler(async (req, res) => {
