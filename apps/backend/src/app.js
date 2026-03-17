@@ -22,6 +22,7 @@ import orderRoutes from './features/orders/orders.routes.js';
 import sellerPanelRoutes from './features/sellerPanel/sellerPanel.routes.js';
 import promoCodeRoutes from './features/promoCode/promoCode.routes.js';
 import reviewRoutes from './features/reviews/reviews.routes.js';
+import wishlistRoutes from './features/wishlist/wishlist.routes.js';
 
 import { webhook } from './features/payment/Controllers/payment.controller.js';
 
@@ -81,6 +82,7 @@ app.use('/api/v1/orders', authenticate, orderRoutes);
 app.use('/api/v1/seller', authenticate, authorize('seller', 'admin'), sellerPanelRoutes);
 app.use('/api/v1/promo-codes', promoCodeRoutes);
 app.use('/api/v1/reviews', reviewRoutes);
+app.use('/api/v1/wishlist', authenticate, wishlistRoutes);
 
 // ─── 404 handler ───────────────────────────────────────────────────────────
 app.all('*any', (req, _res, next) => {
