@@ -60,7 +60,7 @@ const parseMountedRouters = (source) => {
 
 const parseRouterRoutes = (source) => {
   const routes = [];
-  const routeRegex = /router\.(get|post|put|patch|delete|options|head)\(\s*['\"]([^'\"]+)['\"]/g;
+  const routeRegex = /router\.(all|get|post|put|patch|delete|options|head)\(\s*['\"]([^'\"]+)['\"]/g;
   let match = routeRegex.exec(source);
 
   while (match) {
