@@ -81,13 +81,13 @@
         },
         {
             "key": "adminEmail",
-            "value": "admin@example.com",
+            "value": "",
             "type": "default",
             "enabled": true
         },
         {
             "key": "adminPassword",
-            "value": "Admin1234",
+            "value": "",
             "type": "default",
             "enabled": true
         },
