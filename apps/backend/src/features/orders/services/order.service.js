@@ -140,6 +140,7 @@ export const placeOrder = async (userId, addressId, promoCodeInput = null) => {
         {
           userId,
           addressId,
+          status: 'processing',
           items: orderItems,
           subtotal,
           discountAmount,
@@ -219,7 +220,10 @@ export const getOrdersByUser = async (targetUserId, requesterId, role, { status,
   // admin can see orders of customers and sellers
   // if anyone tries to access orders of other , it is forbidden
   // Non-admin can only fetch their own orders
-  if (role !== 'admin' || String(targetUserId) !== String(requesterId)) {
+  console.log('Role : ', role);
+  console.log(targetUserId);
+  console.log(requesterId);
+  if (role !== 'admin' && String(targetUserId) !== String(requesterId)) {
     throw new AppError('You do not have access to these orders', 403);
   }
 

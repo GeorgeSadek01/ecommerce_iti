@@ -6,6 +6,7 @@ import {
   getAllOrders,
   getOrder,
   getUserOrders,
+  getMyOrders,
   updateOrder,
   cancelOrder,
   confirmOrder,
@@ -15,13 +16,21 @@ const router = express.Router();
 
 router.use(authenticate);
 
+// done
 router.post('/place-order', authorize('customer', 'seller'), placeOrder); // any auth user
+// done
 router.get('/', authorize('admin'), getAllOrders); // admin only
+// done
+router.get('/my-orders', getMyOrders);
+// done
 router.get('/:id', getOrder); // own order or admin
+//
 router.patch('/:id', authorize('admin'), updateOrder); // admin only
+// done
 router.patch('/:id/cancel', cancelOrder); // own order or admin
+// done
 router.patch('/:id/confirm', authorize('admin'), confirmOrder); // admin only
+// done
 router.get('/user/:id', getUserOrders);
-router.get('/my-orders', getUserOrders);
 
 export default router;

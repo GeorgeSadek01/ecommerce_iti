@@ -7,9 +7,17 @@ import {
   deleteReview,
 } from './controllers/reviews.controllers.js';
 
+import {
+  addReviewValidator,
+  getProductReviewsValidator,
+  getUserReviewsValidator,
+  updateReviewValidator,
+  deleteReviewValidator,
+} from './validators/reviews.validators.js';
+
 import authenticate from '../../core/middlewares/authenticate.js';
 import authorize from '../../core/utils/authorize.js';
-import { getAll } from '../categories/Services/categories.service.js';
+import validateRequest from '../../core/middlewares/validateRequest.js';
 
 const router = express.Router();
 
@@ -18,21 +26,21 @@ const router = express.Router();
  * POST : /reviews
  *  {productId , content, rate over 5 }
  */
-router.route('/').post(authenticate, authorize('customer', 'seller'), addReview);
+router.route('/').post(authenticate, authorize('customer', 'seller'), addReviewValidator, validateRequest, addReview);
 
 /**
  * Get reviews of order :
  * Who can do this : anyone
  * GET : /reviews/:productId
  */
-router.route('/:id').get(getAllReviews);
+router.route('/:id').get(getProductReviewsValidator, validateRequest, getAllReviews);
 
 /**
  * Get reviews of customer
  * Who can access this : admins, owner of this reviews
  * GET : /reviews/user/:id
  */
-router.route('/user/:id').get(authenticate, getUserReviews);
+router.route('/user/:id').get(authenticate, getUserReviewsValidator, validateRequest, getUserReviews);
 
 /**
  * Update review
@@ -42,12 +50,13 @@ router.route('/user/:id').get(authenticate, getUserReviews);
  */
 router
   .route('/:id')
-  .patch(authenticate, authorize('customer', 'seller'), updateReview)
+  .patch(authenticate, authorize('customer', 'seller'), updateReviewValidator, validateRequest, updateReview)
+  .delete(authenticate, deleteReviewValidator, validateRequest, deleteReview);
 
-  /**
-   * Delete review
-   * Who can do this : admins, and the owner of review
-   * DELETE : /reviews/:reviewId
-   */
+/**
+ * Delete review
+ * Who can do this : admins, and the owner of review
+ * DELETE : /reviews/:reviewId
+ */
 
-  .delete(authenticate, deleteReview);
+export default router;

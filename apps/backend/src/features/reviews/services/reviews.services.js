@@ -1,69 +1,78 @@
-import Product from '../../../core/db/Models/Product/product.model';
-import Review from '../../../core/db/Models/Product/review.model';
-import Order from '../../../core/db/Models/Order/order.model';
+import Review from '../../../core/db/Models/Product/review.model.js';
+import Order from '../../../core/db/Models/Order/order.model.js';
+import AppError from '../../../core/utils/AppError.js';
 
-import asyncHandler from '../../../core/utils/asyncHandler';
-import AppError from '../../../core/utils/AppError';
+export const addReview = async (userId, productId, comment, rating) => {
+  // Check that user has a delivered order containing this product
+  const userOrders = await Order.find({ userId, $or: [{ status: 'delivered', isPaied: true }] });
+  console.log(userOrders);
 
-export const addReview = asyncHandler(async (userId, productId, comment, rate) => {
-  // check that user can add review on this product
-  const userOrders = await Order.find({ userId });
-  if (!userOrders) throw new AppError('You cannot review on this product, Buy it to order', 403);
+  if (userOrders.length === 0) {
+    throw new AppError('You cannot review this product. Buy it first.', 403);
+  }
 
-  const canReview = userOrders.some((order) => {
-    order.items.some((orderItem) => orderItem.userId == userId);
-  });
+  const canReview = userOrders.some((order) =>
+    order.items.some((orderItem) => String(orderItem.productId) === String(productId))
+  );
 
-  if (!canReview) throw new AppError('You cannot review on this product', 403);
+  if (!canReview) {
+    throw new AppError('You cannot review this product. Buy it first.', 403);
+  }
 
-  // check that user has no reviews on this porduct
-  const userReviews = await Review.find({ userId, productId });
-  if (!userReviews) throw new AppError('You already reviewd this product', 403);
+  // Check that user has no existing review on this product
+  const existingReview = await Review.findOne({ userId, productId });
+  if (existingReview) throw new AppError('You already reviewed this product', 400);
 
-  // add review to reviews database {userId, productId, comment, rate}
-  const newReview = await Review.crate({ productId, userId, comment, rate });
-
+  const newReview = await Review.create({ productId, userId, comment, rating });
   return newReview;
-});
+};
 
-export const getAllReviews = asyncHandler(async (productId) => {
-  const productReviews = await Review.find(productId).populate('userId');
-  if (!productReviews) throw new AppError('This product has no reviews yet!', 400);
-
+export const getAllReviews = async (productId) => {
+  const productReviews = await Review.find({ productId }).populate('userId', 'firstName email');
   return productReviews;
-});
+};
 
-export const getUserReviews = asyncHandler(async (requestedUser, targetUserId) => {
-  if (requestedUser.role !== 'admin' || requestedUser.id != targetUserId)
-    throw new AppError('You are not elligable to get the reviews of this user', 403);
+export const getUserReviews = async (requestedUser, targetUserId) => {
+  if (requestedUser.role !== 'admin' && String(requestedUser.id) !== String(targetUserId)) {
+    throw new AppError('You are not eligible to get the reviews of this user', 403);
+  }
 
-  const allUserReviews = await Review.find({ userId: targetUserId }).populate('productId');
-
+  const allUserReviews = await Review.find({ userId: targetUserId }).populate('productId', 'name');
   return allUserReviews;
-});
+};
 
-export const updateReview = asyncHandler(async (reviewId, userId, newComment, newRate) => {
-  // ensure that this review belongs to this user
-  const userReview = await Review.find({ userId, _id: reviewId });
-  if (!userReview) throw new AppError(400, 'User has no review on this product');
+export const updateReview = async (reviewId, userId, newComment, newRate) => {
+  const updates = {};
+  if (newComment) updates.comment = newComment;
+  if (newRate) updates.rating = newRate;
 
-  userReview.comment = newComment ? newComment : userReview.comment;
-  user.rate = newRate ? newRate : user.rate;
+  console.log(updates);
 
-  await userReview.save();
+  if (Object.keys(updates).length === 0) {
+    throw new AppError('No fields provided to update', 400);
+  }
 
-  return userReview;
-});
+  const updated = await Review.findOneAndUpdate(
+    { _id: reviewId, userId },
+    { $set: updates },
+    { new: true, runValidators: true }
+  );
 
-export const deleteReview = asyncHandler(async (user, reviewId) => {
+  if (!updated) throw new AppError('Review not found or does not belong to you', 404);
+  return updated;
+};
+
+export const deleteReview = async (user, reviewId) => {
   const review = await Review.findById(reviewId);
+  console.log(review);
+  console.log(reviewId);
+  if (!review) throw new AppError('No review matches this id', 404);
 
-  if (!review) throw (new AppError('No reviews matches this id'), 400);
-
-  if (user.role != 'admin' || review.userId != user.id)
+  console.log('user', user.id);
+  if (user.role !== 'admin' && String(review.userId) !== String(user.id)) {
     throw new AppError("You don't have permission to delete this review", 403);
+  }
 
-  await review.findOneAndDelete({ _id: reviewId });
-
+  await Review.findByIdAndDelete(reviewId);
   return true;
-});
+};

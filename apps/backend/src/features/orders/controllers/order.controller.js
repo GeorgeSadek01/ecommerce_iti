@@ -26,8 +26,12 @@ export const getUserOrders = asyncHandler(async (req, res) => {
 });
 
 export const getMyOrders = asyncHandler(async (req, res) => {
+  console.log('plapla');
+  console.log('my orders');
+  console.log(req);
   const { status, page, limit } = req.query;
-  if (req.user.id == 'admin') sendFail(res, 404, 'Admins cannot have orders');
+  if (req.user.role == 'admin') sendFail(res, 404, 'Admins cannot have orders');
+  console.log('passed');
   const result = await orderService.getOrdersByUser(req.user.id, req.user.id, req.user.role, { status, page, limit });
   sendSuccess(res, 200, 'Your orders fetched successfully', result);
 });
