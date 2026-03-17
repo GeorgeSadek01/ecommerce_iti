@@ -3150,1097 +3150,2070 @@
     },
     {
       "name": "Admin",
-      "description": "",
+      "description": "Full admin panel endpoints for /api/v1/admin. Uses Bearer {{token}} and captures IDs into environment variables for chained testing.",
+      "auth": {
+        "type": "bearer",
+        "bearer": [
+          {
+            "key": "token",
+            "value": "{{token}}",
+            "type": "string"
+          }
+        ]
+      },
       "item": [
         {
-          "name": "List Users",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/users",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "users"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get User By Id",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/users/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "users",
-                ":id"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update User",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/users/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "users",
-                ":id"
-              ],
-              "query": [],
-              "variable": []
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+          "name": "0. Setup",
+          "item": [
+            {
+              "name": "Admin Login (Get Token)",
+              "description": "Login with admin credentials and save token to environment variable: token.",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is 200', function () {",
+                      "  pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "const json = pm.response.json();",
+                      "const token = json?.data?.accessToken || json?.accessToken || json?.token;",
+                      "if (token) {",
+                      "  pm.environment.set('token', token);",
+                      "}",
+                      "",
+                      "const adminUserId = json?.data?.user?.id || json?.data?.user?._id || json?.user?.id || json?.user?._id;",
+                      "if (adminUserId) {",
+                      "  pm.environment.set('adminUserId', adminUserId);",
+                      "}"
+                    ],
+                    "packages": {}
+                  }
                 }
-              }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Change User Role",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/users/:id/role",
-              "host": [
-                "{{baseUrl}}"
               ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "users",
-                ":id",
-                "role"
-              ],
-              "query": [],
-              "variable": []
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+              "request": {
+                "auth": {},
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/auth/login",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "auth",
+                    "login"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 }
-              }
+              },
+              "response": []
             }
-          },
-          "response": []
+          ]
         },
         {
-          "name": "Delete User",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/users/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "users",
-                ":id"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Restore User",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/users/:id/restore",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "users",
-                ":id",
-                "restore"
-              ],
-              "query": [],
-              "variable": []
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+          "name": "1. Users",
+          "item": [
+            {
+              "name": "List Users",
+              "description": "Filters: role(customer|seller|admin), deleted/includeDeleted(true|false).",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                      "});",
+                      "",
+                      "const json = pm.response.json();",
+                      "const list = json?.data?.items || json?.data?.docs || json?.data || json?.items || [];",
+                      "if (Array.isArray(list) && list.length > 0) {",
+                      "  const entityId = list[0]?._id || list[0]?.id;",
+                      "  if (entityId) { pm.environment.set('targetUserId', entityId); }",
+                      "}"
+                    ],
+                    "packages": {}
+                  }
                 }
-              }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "List Sellers",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/sellers",
-              "host": [
-                "{{baseUrl}}"
               ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "sellers"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Seller By Id",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/sellers/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "sellers",
-                ":id"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update Seller Status",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/sellers/:id/status",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "sellers",
-                ":id",
-                "status"
-              ],
-              "query": [],
-              "variable": []
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+              "request": {
+                "auth": {},
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/users?page=1&limit=20&search=&role=&deleted=false&includeDeleted=false",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "users"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "search",
+                      "value": ""
+                    },
+                    {
+                      "key": "role",
+                      "value": ""
+                    },
+                    {
+                      "key": "deleted",
+                      "value": "false"
+                    },
+                    {
+                      "key": "includeDeleted",
+                      "value": "false"
+                    }
+                  ],
+                  "variable": []
                 }
-              }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Seller",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/sellers/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "sellers",
-                ":id"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Restore Seller",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/sellers/:id/restore",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "sellers",
-                ":id",
-                "restore"
-              ],
-              "query": [],
-              "variable": []
+              },
+              "response": []
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+            {
+              "name": "Get User By Id",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                      "});",
+                      "",
+                      "const json = pm.response.json();",
+                      "const entity = json?.data?.item || json?.data?.result || json?.data || json;",
+                      "const entityId = entity?._id || entity?.id;",
+                      "if (entityId) { pm.environment.set('targetUserId', entityId); }"
+                    ],
+                    "packages": {}
+                  }
                 }
-              }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Dashboard Summary",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/dashboard/summary",
-              "host": [
-                "{{baseUrl}}"
               ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "dashboard",
-                "summary"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Dashboard Timeseries",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/dashboard/timeseries",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "dashboard",
-                "timeseries"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Dashboard Recent Orders",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/dashboard/recent-orders",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "dashboard",
-                "recent-orders"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Dashboard Top Sellers",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/dashboard/top-sellers",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "dashboard",
-                "top-sellers"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "List Products",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/products",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "products"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Product By Id",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/products/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "products",
-                ":id"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Moderate Product",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/products/:id/moderation",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "products",
-                ":id",
-                "moderation"
-              ],
-              "query": [],
-              "variable": []
+              "request": {
+                "auth": {},
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/users/{{targetUserId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "users",
+                    "{{targetUserId}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              },
+              "response": []
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+            {
+              "name": "Update User",
+              "description": "Allowed fields only: firstName, lastName, avatarUrl, isEmailConfirmed.",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
                 }
-              }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Deactivate Product",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/products/:id/deactivate",
-              "host": [
-                "{{baseUrl}}"
               ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "products",
-                ":id",
-                "deactivate"
-              ],
-              "query": [],
-              "variable": []
+              "request": {
+                "auth": {},
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/users/{{targetUserId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "users",
+                    "{{targetUserId}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"User\",\n  \"avatarUrl\": \"https://images.example.com/avatar.png\",\n  \"isEmailConfirmed\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+            {
+              "name": "Change User Role",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
                 }
-              }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "List Orders",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/orders",
-              "host": [
-                "{{baseUrl}}"
               ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "orders"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Order By Id",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/orders/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "orders",
-                ":id"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update Order Status",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/orders/:id/status",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "orders",
-                ":id",
-                "status"
-              ],
-              "query": [],
-              "variable": []
+              "request": {
+                "auth": {},
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/users/{{targetUserId}}/role",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "users",
+                    "{{targetUserId}}",
+                    "role"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role\": \"seller\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+            {
+              "name": "Soft Delete User",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
                 }
-              }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update Order Tracking",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/orders/:id/tracking",
-              "host": [
-                "{{baseUrl}}"
               ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "orders",
-                ":id",
-                "tracking"
-              ],
-              "query": [],
-              "variable": []
+              "request": {
+                "auth": {},
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/users/{{targetUserId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "users",
+                    "{{targetUserId}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              },
+              "response": []
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+            {
+              "name": "Restore User",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
                 }
-              }
+              ],
+              "request": {
+                "auth": {},
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/users/{{targetUserId}}/restore",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "users",
+                    "{{targetUserId}}",
+                    "restore"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              },
+              "response": []
             }
-          },
-          "response": []
+          ]
         },
         {
-          "name": "Cancel Order",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/orders/:id/cancel",
-              "host": [
-                "{{baseUrl}}"
+          "name": "2. Sellers",
+          "item": [
+            {
+              "name": "List Sellers",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                      "});",
+                      "",
+                      "const json = pm.response.json();",
+                      "const list = json?.data?.items || json?.data?.docs || json?.data || json?.items || [];",
+                      "if (Array.isArray(list) && list.length > 0) {",
+                      "  const entityId = list[0]?._id || list[0]?.id;",
+                      "  if (entityId) { pm.environment.set('sellerProfileId', entityId); }",
+                      "}"
+                    ],
+                    "packages": {}
+                  }
+                }
               ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "orders",
-                ":id",
-                "cancel"
-              ],
-              "query": [],
-              "variable": []
+              "request": {
+                "auth": {},
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/sellers?page=1&limit=20&search=&status=&deleted=false&includeDeleted=false",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "sellers"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "search",
+                      "value": ""
+                    },
+                    {
+                      "key": "status",
+                      "value": ""
+                    },
+                    {
+                      "key": "deleted",
+                      "value": "false"
+                    },
+                    {
+                      "key": "includeDeleted",
+                      "value": "false"
+                    }
+                  ],
+                  "variable": []
+                }
+              },
+              "response": []
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+            {
+              "name": "Get Seller By Id",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                      "});",
+                      "",
+                      "const json = pm.response.json();",
+                      "const entity = json?.data?.item || json?.data?.result || json?.data || json;",
+                      "const entityId = entity?._id || entity?.id;",
+                      "if (entityId) { pm.environment.set('sellerProfileId', entityId); }"
+                    ],
+                    "packages": {}
+                  }
                 }
-              }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "List Commerce Promo Codes",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/commerce/promo-codes",
-              "host": [
-                "{{baseUrl}}"
               ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "commerce",
-                "promo-codes"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Commerce Promo Code",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/commerce/promo-codes/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "commerce",
-                "promo-codes",
-                ":id"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update Commerce Promo Code",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/commerce/promo-codes/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "commerce",
-                "promo-codes",
-                ":id"
-              ],
-              "query": [],
-              "variable": []
+              "request": {
+                "auth": {},
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/sellers/{{sellerProfileId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "sellers",
+                    "{{sellerProfileId}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              },
+              "response": []
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+            {
+              "name": "Update Seller Status",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
                 }
-              }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Commerce Promo Code",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/commerce/promo-codes/:id",
-              "host": [
-                "{{baseUrl}}"
               ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "commerce",
-                "promo-codes",
-                ":id"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Toggle Commerce Promo Code",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/commerce/promo-codes/:id/toggle-active",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "commerce",
-                "promo-codes",
-                ":id",
-                "toggle-active"
-              ],
-              "query": [],
-              "variable": []
+              "request": {
+                "auth": {},
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/sellers/{{sellerProfileId}}/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "sellers",
+                    "{{sellerProfileId}}",
+                    "status"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"approved\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+            {
+              "name": "Soft Delete Seller",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
                 }
-              }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Create Banner",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "POST",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/commerce/banners",
-              "host": [
-                "{{baseUrl}}"
               ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "commerce",
-                "banners"
-              ],
-              "query": [],
-              "variable": []
+              "request": {
+                "auth": {},
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/sellers/{{sellerProfileId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "sellers",
+                    "{{sellerProfileId}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              },
+              "response": []
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+            {
+              "name": "Restore Seller",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
                 }
-              }
+              ],
+              "request": {
+                "auth": {},
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/sellers/{{sellerProfileId}}/restore",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "sellers",
+                    "{{sellerProfileId}}",
+                    "restore"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              },
+              "response": []
             }
-          },
-          "response": []
+          ]
         },
         {
-          "name": "List Banners",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/commerce/banners",
-              "host": [
-                "{{baseUrl}}"
+          "name": "3. Dashboard",
+          "item": [
+            {
+              "name": "Dashboard Summary",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
+                }
               ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "commerce",
-                "banners"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Banner By Id",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/commerce/banners/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "commerce",
-                "banners",
-                ":id"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update Banner",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/commerce/banners/:id",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "commerce",
-                "banners",
-                ":id"
-              ],
-              "query": [],
-              "variable": []
+              "request": {
+                "auth": {},
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/dashboard/summary?dateFrom={{dateFrom}}&dateTo={{dateTo}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "dashboard",
+                    "summary"
+                  ],
+                  "query": [
+                    {
+                      "key": "dateFrom",
+                      "value": "{{dateFrom}}"
+                    },
+                    {
+                      "key": "dateTo",
+                      "value": "{{dateTo}}"
+                    }
+                  ],
+                  "variable": []
+                }
+              },
+              "response": []
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+            {
+              "name": "Dashboard Timeseries",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
                 }
-              }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Banner",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/commerce/banners/:id",
-              "host": [
-                "{{baseUrl}}"
               ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "commerce",
-                "banners",
-                ":id"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Reorder Banners",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/commerce/banners/reorder",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "commerce",
-                "banners",
-                "reorder"
-              ],
-              "query": [],
-              "variable": []
+              "request": {
+                "auth": {},
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/dashboard/timeseries?interval=day&dateFrom={{dateFrom}}&dateTo={{dateTo}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "dashboard",
+                    "timeseries"
+                  ],
+                  "query": [
+                    {
+                      "key": "interval",
+                      "value": "day"
+                    },
+                    {
+                      "key": "dateFrom",
+                      "value": "{{dateFrom}}"
+                    },
+                    {
+                      "key": "dateTo",
+                      "value": "{{dateTo}}"
+                    }
+                  ],
+                  "variable": []
+                }
+              },
+              "response": []
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+            {
+              "name": "Dashboard Recent Orders",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                      "});",
+                      "",
+                      "const json = pm.response.json();",
+                      "const list = json?.data?.items || json?.data?.docs || json?.data || json?.items || [];",
+                      "if (Array.isArray(list) && list.length > 0) {",
+                      "  const entityId = list[0]?._id || list[0]?.id;",
+                      "  if (entityId) { pm.environment.set('adminOrderId', entityId); }",
+                      "}"
+                    ],
+                    "packages": {}
+                  }
                 }
-              }
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "List Refunds",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/commerce/refunds",
-              "host": [
-                "{{baseUrl}}"
               ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "commerce",
-                "refunds"
-              ],
-              "query": [],
-              "variable": []
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Mark Refund Refunded",
-          "description": "",
-          "request": {
-            "auth": {},
-            "method": "PATCH",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/v1/admin/commerce/refunds/:id/mark-refunded",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "admin",
-                "commerce",
-                "refunds",
-                ":id",
-                "mark-refunded"
-              ],
-              "query": [],
-              "variable": []
+              "request": {
+                "auth": {},
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/dashboard/recent-orders?limit=10",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "dashboard",
+                    "recent-orders"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ],
+                  "variable": []
+                }
+              },
+              "response": []
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"example\": true\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
+            {
+              "name": "Dashboard Top Sellers",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
                 }
-              }
+              ],
+              "request": {
+                "auth": {},
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/dashboard/top-sellers?limit=10&dateFrom={{dateFrom}}&dateTo={{dateTo}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "dashboard",
+                    "top-sellers"
+                  ],
+                  "query": [
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "dateFrom",
+                      "value": "{{dateFrom}}"
+                    },
+                    {
+                      "key": "dateTo",
+                      "value": "{{dateTo}}"
+                    }
+                  ],
+                  "variable": []
+                }
+              },
+              "response": []
             }
-          },
-          "response": []
+          ]
+        },
+        {
+          "name": "4. Products",
+          "item": [
+            {
+              "name": "List Products",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                      "});",
+                      "",
+                      "const json = pm.response.json();",
+                      "const list = json?.data?.items || json?.data?.docs || json?.data || json?.items || [];",
+                      "if (Array.isArray(list) && list.length > 0) {",
+                      "  const entityId = list[0]?._id || list[0]?.id;",
+                      "  if (entityId) { pm.environment.set('adminProductId', entityId); }",
+                      "}"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/products?page=1&limit=20&search=&sellerProfileId=&categoryId=&isActive=true",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "products"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "search",
+                      "value": ""
+                    },
+                    {
+                      "key": "sellerProfileId",
+                      "value": ""
+                    },
+                    {
+                      "key": "categoryId",
+                      "value": ""
+                    },
+                    {
+                      "key": "isActive",
+                      "value": "true"
+                    }
+                  ],
+                  "variable": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Product By Id",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                      "});",
+                      "",
+                      "const json = pm.response.json();",
+                      "const entity = json?.data?.item || json?.data?.result || json?.data || json;",
+                      "const entityId = entity?._id || entity?.id;",
+                      "if (entityId) { pm.environment.set('adminProductId', entityId); }"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/products/{{adminProductId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "products",
+                    "{{adminProductId}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Moderate Product",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/products/{{adminProductId}}/moderation",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "products",
+                    "{{adminProductId}}",
+                    "moderation"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"name\": \"Moderated Product Name\",\n  \"description\": \"Admin-updated product description\",\n  \"price\": 100,\n  \"discountedPrice\": 80,\n  \"stock\": 25,\n  \"isActive\": true,\n  \"categoryId\": \"{{categoryId}}\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Deactivate Product",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/products/{{adminProductId}}/deactivate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "products",
+                    "{{adminProductId}}",
+                    "deactivate"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "5. Orders",
+          "item": [
+            {
+              "name": "List Orders",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                      "});",
+                      "",
+                      "const json = pm.response.json();",
+                      "const list = json?.data?.items || json?.data?.docs || json?.data || json?.items || [];",
+                      "if (Array.isArray(list) && list.length > 0) {",
+                      "  const entityId = list[0]?._id || list[0]?.id;",
+                      "  if (entityId) { pm.environment.set('adminOrderId', entityId); }",
+                      "}"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/orders?page=1&limit=20&status=&userId=&sellerId=&dateFrom={{dateFrom}}&dateTo={{dateTo}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "orders"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "status",
+                      "value": ""
+                    },
+                    {
+                      "key": "userId",
+                      "value": ""
+                    },
+                    {
+                      "key": "sellerId",
+                      "value": ""
+                    },
+                    {
+                      "key": "dateFrom",
+                      "value": "{{dateFrom}}"
+                    },
+                    {
+                      "key": "dateTo",
+                      "value": "{{dateTo}}"
+                    }
+                  ],
+                  "variable": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Order By Id",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                      "});",
+                      "",
+                      "const json = pm.response.json();",
+                      "const entity = json?.data?.item || json?.data?.result || json?.data || json;",
+                      "const entityId = entity?._id || entity?.id;",
+                      "if (entityId) { pm.environment.set('adminOrderId', entityId); }"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/orders/{{adminOrderId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "orders",
+                    "{{adminOrderId}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Order Status",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/orders/{{adminOrderId}}/status",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "orders",
+                    "{{adminOrderId}}",
+                    "status"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"processing\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Order Tracking",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/orders/{{adminOrderId}}/tracking",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "orders",
+                    "{{adminOrderId}}",
+                    "tracking"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"trackingNumber\": \"TRK-2026-0001\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Cancel Order",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/orders/{{adminOrderId}}/cancel",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "orders",
+                    "{{adminOrderId}}",
+                    "cancel"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "6. Commerce - Promo Codes",
+          "item": [
+            {
+              "name": "List Promo Codes",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                      "});",
+                      "",
+                      "const json = pm.response.json();",
+                      "const list = json?.data?.items || json?.data?.docs || json?.data || json?.items || [];",
+                      "if (Array.isArray(list) && list.length > 0) {",
+                      "  const entityId = list[0]?._id || list[0]?.id;",
+                      "  if (entityId) { pm.environment.set('adminPromoCodeId', entityId); }",
+                      "}"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/commerce/promo-codes?page=1&limit=20&search=&scope=&isActive=true",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "commerce",
+                    "promo-codes"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "search",
+                      "value": ""
+                    },
+                    {
+                      "key": "scope",
+                      "value": ""
+                    },
+                    {
+                      "key": "isActive",
+                      "value": "true"
+                    }
+                  ],
+                  "variable": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Promo Code By Id",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                      "});",
+                      "",
+                      "const json = pm.response.json();",
+                      "const entity = json?.data?.item || json?.data?.result || json?.data || json;",
+                      "const entityId = entity?._id || entity?.id;",
+                      "if (entityId) { pm.environment.set('adminPromoCodeId', entityId); }"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/commerce/promo-codes/{{adminPromoCodeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "commerce",
+                    "promo-codes",
+                    "{{adminPromoCodeId}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Promo Code",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/commerce/promo-codes/{{adminPromoCodeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "commerce",
+                    "promo-codes",
+                    "{{adminPromoCodeId}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"code\": \"ADMIN20\",\n  \"discountType\": \"percentage\",\n  \"discountValue\": 20,\n  \"minOrderAmount\": 100,\n  \"usageLimit\": 100,\n  \"expiresAt\": \"2026-12-31T23:59:59.000Z\",\n  \"isActive\": true,\n  \"scope\": \"general\",\n  \"sellerId\": null,\n  \"productId\": null\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Promo Code",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/commerce/promo-codes/{{adminPromoCodeId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "commerce",
+                    "promo-codes",
+                    "{{adminPromoCodeId}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Toggle Promo Code Active",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/commerce/promo-codes/{{adminPromoCodeId}}/toggle-active",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "commerce",
+                    "promo-codes",
+                    "{{adminPromoCodeId}}",
+                    "toggle-active"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "7. Commerce - Banners",
+          "item": [
+            {
+              "name": "Create Banner",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                      "});",
+                      "",
+                      "const json = pm.response.json();",
+                      "const entity = json?.data?.item || json?.data?.result || json?.data || json;",
+                      "const entityId = entity?._id || entity?.id;",
+                      "if (entityId) { pm.environment.set('adminBannerId', entityId); }"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/commerce/banners",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "commerce",
+                    "banners"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Homepage Hero\",\n  \"imageUrl\": \"https://images.example.com/banner.jpg\",\n  \"linkUrl\": \"https://example.com/products\",\n  \"sortOrder\": 0,\n  \"isActive\": true,\n  \"startsAt\": \"2026-01-01T00:00:00.000Z\",\n  \"endsAt\": \"2026-12-31T23:59:59.000Z\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Banners",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                      "});",
+                      "",
+                      "const json = pm.response.json();",
+                      "const list = json?.data?.items || json?.data?.docs || json?.data || json?.items || [];",
+                      "if (Array.isArray(list) && list.length > 0) {",
+                      "  const entityId = list[0]?._id || list[0]?.id;",
+                      "  if (entityId) { pm.environment.set('adminBannerId', entityId); }",
+                      "}"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/commerce/banners?page=1&limit=20&search=&isActive=true",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "commerce",
+                    "banners"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "search",
+                      "value": ""
+                    },
+                    {
+                      "key": "isActive",
+                      "value": "true"
+                    }
+                  ],
+                  "variable": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get Banner By Id",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                      "});",
+                      "",
+                      "const json = pm.response.json();",
+                      "const entity = json?.data?.item || json?.data?.result || json?.data || json;",
+                      "const entityId = entity?._id || entity?.id;",
+                      "if (entityId) { pm.environment.set('adminBannerId', entityId); }"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/commerce/banners/{{adminBannerId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "commerce",
+                    "banners",
+                    "{{adminBannerId}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Banner",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/commerce/banners/{{adminBannerId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "commerce",
+                    "banners",
+                    "{{adminBannerId}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"title\": \"Homepage Hero Updated\",\n  \"imageUrl\": \"https://images.example.com/banner-updated.jpg\",\n  \"linkUrl\": \"https://example.com/collections/new\",\n  \"sortOrder\": 1,\n  \"isActive\": true,\n  \"startsAt\": \"2026-01-01T00:00:00.000Z\",\n  \"endsAt\": \"2026-12-31T23:59:59.000Z\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Banner",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/commerce/banners/{{adminBannerId}}",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "commerce",
+                    "banners",
+                    "{{adminBannerId}}"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Reorder Banners",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/commerce/banners/reorder",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "commerce",
+                    "banners",
+                    "reorder"
+                  ],
+                  "query": [],
+                  "variable": []
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"items\": [\n    {\n      \"id\": \"{{adminBannerId}}\",\n      \"sortOrder\": 0\n    },\n    {\n      \"id\": \"{{adminBannerId2}}\",\n      \"sortOrder\": 1\n    }\n  ]\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "8. Commerce - Refunds",
+          "item": [
+            {
+              "name": "List Refunds",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+                      "});",
+                      "",
+                      "const json = pm.response.json();",
+                      "const list = json?.data?.items || json?.data?.docs || json?.data || json?.items || [];",
+                      "if (Array.isArray(list) && list.length > 0) {",
+                      "  const entityId = list[0]?._id || list[0]?.id;",
+                      "  if (entityId) { pm.environment.set('paymentId', entityId); }",
+                      "}"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/commerce/refunds?page=1&limit=20&provider=&status=",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "commerce",
+                    "refunds"
+                  ],
+                  "query": [
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "provider",
+                      "value": ""
+                    },
+                    {
+                      "key": "status",
+                      "value": ""
+                    }
+                  ],
+                  "variable": []
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Mark Refunded",
+              "description": "",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status code is successful', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([200, 201, 204]);",
+                      "});"
+                    ],
+                    "packages": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {},
+                "method": "PATCH",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/v1/admin/commerce/refunds/{{paymentId}}/mark-refunded",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "v1",
+                    "admin",
+                    "commerce",
+                    "refunds",
+                    "{{paymentId}}",
+                    "mark-refunded"
+                  ],
+                  "query": [],
+                  "variable": []
+                }
+              },
+              "response": []
+            }
+          ]
         }
       ]
     }
   ],
-  "variable": [],
+  "variable": [
+    {
+      "key": "adminEmail",
+      "value": "admin@example.com",
+      "type": "string"
+    },
+    {
+      "key": "adminPassword",
+      "value": "Admin1234",
+      "type": "string"
+    },
+    {
+      "key": "dateFrom",
+      "value": "2026-01-01T00:00:00.000Z",
+      "type": "string"
+    },
+    {
+      "key": "dateTo",
+      "value": "2026-12-31T23:59:59.000Z",
+      "type": "string"
+    },
+    {
+      "key": "targetUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminProductId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminOrderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminPromoCodeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminBannerId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminBannerId2",
+      "value": "",
+      "type": "string"
+    }
+  ],
   "event": [],
   "auth": {}
 }

@@ -1,0 +1,10 @@
+import express from 'express';
+import AppError from '../../core/utils/AppError.js';
+
+const router = express.Router();
+
+router.all('*any', (_req, _res, next) => {
+  next(new AppError('Order endpoints are not implemented yet.', 501));
+});
+
+export default router;
