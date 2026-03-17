@@ -723,7 +723,7 @@ export const updateAdminOrderTracking = async (orderId, trackingNumber) => {
   }
 
   order.trackingNumber = trackingNumber;
-  if (order.status === 'pending' || order.status === 'processing') {
+  if (order.status === 'processing') {
     order.status = 'shipped';
   }
 
