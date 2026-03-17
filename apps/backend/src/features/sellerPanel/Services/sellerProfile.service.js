@@ -266,8 +266,14 @@ export const getSellerEarnings = async (userId, { from, to } = {}) => {
 
   if (from || to) {
     match.placedAt = {};
-    if (from) match.placedAt.$gte = new Date(from);
-    if (to) match.placedAt.$lte = new Date(to);
+    if (from) {
+      const fromDate = new Date(from);
+      if (!isNaN(fromDate.getTime())) match.placedAt.$gte = fromDate;
+    }
+    if (to) {
+      const toDate = new Date(to);
+      if (!isNaN(toDate.getTime())) match.placedAt.$lte = toDate;
+    }
   }
 
   const [summary] = await Order.aggregate([
