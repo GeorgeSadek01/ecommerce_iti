@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import Order from '../../../core/db/Models/Order/order.model.js';
 import Product from '../../../core/db/Models/Product/product.model.js';
+import ProductImage from '../../../core/db/Models/Product/productImage.model.js';
 import Cart from '../../../core/db/Models/Cart/cart.model.js';
 import CartItem from '../../../core/db/Models/Cart/cartItem.model.js';
 import User from '../../../core/db/Models/User/user.model.js';
@@ -64,6 +65,10 @@ export async function applyPromoCode(code, userId, orderItems, subtotal) {
   };
 }
 
+async function clearCartAfterOrder(cartId, dbSession) {
+  await CartItem.deleteMany({ cartId }, { session: dbSession });
+}
+
 // helpers
 
 export async function getUserEmailInfo(userId) {
@@ -78,39 +83,44 @@ export async function bringOrderItems(userId) {
 
   const cartItems = await CartItem.find({ cartId: cart._id }).populate({
     path: 'productId',
-    select: 'sellerProfileId name price discountedPrice',
+    select: 'sellerProfileId name price discountedPrice images',
   });
 
   if (!cartItems.length) throw new AppError('Cart is empty', 400);
 
   let subtotal = 0;
 
-  const orderItems = cartItems.map((item) => {
-    const priceSnapshot = item.priceSnapshot;
+  const orderItems = await Promise.all(
+    cartItems.map(async (item) => {
+      const priceSnapshot = item.priceSnapshot;
 
-    if (priceSnapshot === null || priceSnapshot === undefined || priceSnapshot === '') {
-      throw new AppError('Invalid price data in cart', 400);
-    }
+      if (priceSnapshot === null || priceSnapshot === undefined || priceSnapshot === '') {
+        throw new AppError('Invalid price data in cart', 400);
+      }
 
-    const price = parseFloat(priceSnapshot);
-    if (!Number.isFinite(price) || price < 0) throw new AppError('Invalid price data in cart', 400);
+      const price = parseFloat(priceSnapshot);
+      if (!Number.isFinite(price) || price < 0) throw new AppError('Invalid price data in cart', 400);
 
-    const lineTotal = price * item.quantity;
-    if (!Number.isFinite(lineTotal)) throw new AppError('Invalid line total calculation', 400);
+      const lineTotal = price * item.quantity;
+      if (!Number.isFinite(lineTotal)) throw new AppError('Invalid line total calculation', 400);
 
-    subtotal += lineTotal;
+      subtotal += lineTotal;
 
-    return {
-      productId: item.productId._id,
-      sellerId: item.productId.sellerProfileId,
-      productNameSnapshot: item.productId.name,
-      priceSnapshot: price,
-      quantity: item.quantity,
-      lineTotal,
-    };
-  });
+      const productImage = await ProductImage.findOne({ productId: item.productId._id, isPrimary: true });
 
-  return { orderItems, subtotal };
+      return {
+        productId: item.productId._id,
+        sellerId: item.productId.sellerProfileId,
+        productNameSnapshot: item.productId.name,
+        priceSnapshot: price,
+        imageUrl: productImage?.url ?? null,
+        quantity: item.quantity,
+        lineTotal,
+      };
+    })
+  );
+
+  return { orderItems, subtotal, cart };
 }
 
 // place Order (Cash on Delivery)
@@ -158,6 +168,7 @@ export const placeOrder = async (userId, addressId, promoCodeInput = null) => {
       await PromoCode.findByIdAndUpdate(promoCode._id, { $inc: { usageCount: 1 } }, { session: dbSession });
     }
 
+    await clearCartAfterOrder(cart._id, dbSession);
     await dbSession.commitTransaction();
   } catch (err) {
     await dbSession.abortTransaction();
@@ -354,6 +365,11 @@ export const confirmOrder = async (orderId) => {
     email: user.email,
     firstName: user.firstName,
     orderId: order._id.toString(),
+    items: order.items,
+    subtotal: order.subtotal,
+    discountAmount: order.discountAmount,
+    shippingCost: order.shippingCost,
+    total: order.total,
     trackingNumber: order.trackingNumber ?? null,
   });
 
