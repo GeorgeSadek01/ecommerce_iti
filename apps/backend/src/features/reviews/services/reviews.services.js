@@ -28,7 +28,7 @@ export const addReview = async (userId, productId, comment, rating) => {
   await assertNotSellerOwnProduct(userId, productId);
 
   // Check that user has a delivered order containing this product
-  const userOrders = await Order.find({ userId, $or: [{ status: 'delivered', isPaied: true }] });
+  const userOrders = await Order.find({ userId, $or: [{ status: 'delivered', isPaid: true }] });
   console.log(userOrders);
 
   if (userOrders.length === 0) {

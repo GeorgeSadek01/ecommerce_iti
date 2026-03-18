@@ -132,7 +132,7 @@ export const placeOrder = async (userId, addressId, promoCodeInput = null) => {
     throw new AppError("Invalid address , or this address doesn't belong to this user", 400);
   }
 
-  const { orderItems, subtotal } = await bringOrderItems(userId);
+  const { orderItems, subtotal, cart } = await bringOrderItems(userId);
   const user = await getUserEmailInfo(userId);
 
   // ── Validate & calculate promo code BEFORE transaction ──
@@ -157,7 +157,7 @@ export const placeOrder = async (userId, addressId, promoCodeInput = null) => {
           total,
           promoCodeId,
           payingMethod: 'cash-on-delivery',
-          isPaied: false,
+          isPaid: false,
         },
       ],
       { session: dbSession }
@@ -300,7 +300,7 @@ export const cancelOrder = async (orderId, userId, role) => {
   }
 
   // Cancellation rules
-  if (order.isPaied) {
+  if (order.isPaid) {
     throw new AppError('Cannot cancel a paid order. Please request a refund instead.', 400);
   }
 

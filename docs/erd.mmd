@@ -1,0 +1,138 @@
+erDiagram
+  USER {
+    ObjectId _id PK
+    string firstName
+    string lastName
+    string email
+  }
+
+  ADDRESS {
+    ObjectId _id PK
+    ObjectId userId FK
+    string line1
+    string city
+  }
+
+  REFRESH_TOKEN {
+    ObjectId _id PK
+    ObjectId userId FK
+    string token
+  }
+
+  SELLER_PROFILE {
+    ObjectId _id PK
+    ObjectId userId FK
+    string storeName
+  }
+
+  CATEGORY {
+    ObjectId _id PK
+    string name
+  }
+
+  PRODUCT {
+    ObjectId _id PK
+    ObjectId sellerProfileId FK
+    ObjectId categoryId FK
+    string title
+    decimal price
+  }
+
+  PRODUCT_IMAGE {
+    ObjectId _id PK
+    ObjectId productId FK
+    string url
+  }
+
+  REVIEW {
+    ObjectId _id PK
+    ObjectId productId FK
+    ObjectId userId FK
+    integer rating
+    string comment
+  }
+
+  CART {
+    ObjectId _id PK
+    ObjectId userId FK
+  }
+
+  CART_ITEM {
+    ObjectId _id PK
+    ObjectId cartId FK
+    ObjectId productId FK
+    integer quantity
+  }
+
+  ORDER {
+    ObjectId _id PK
+    ObjectId userId FK
+    ObjectId promoCodeId FK
+    Decimal total
+    string status
+  }
+
+  ORDER_ITEM {
+    ObjectId _id PK
+    ObjectId productId FK
+    ObjectId sellerId FK
+    integer quantity
+    Decimal priceSnapshot
+  }
+
+  PAYMENT {
+    ObjectId _id PK
+    ObjectId orderId FK
+    string provider
+    string status
+  }
+
+  PROMO_CODE {
+    ObjectId _id PK
+    string code
+    string discountType
+  }
+
+  WISHLIST {
+    ObjectId _id PK
+    ObjectId userId FK
+    ObjectId productId FK
+  }
+
+  EMAIL_LOG {
+    ObjectId _id PK
+    ObjectId userId FK
+    string type
+  }
+
+  BANNER {
+    ObjectId _id PK
+    string title
+  }
+
+  %% Relationships
+  USER ||--o{ ADDRESS : has
+  USER ||--o{ REFRESH_TOKEN : issues
+  USER ||--o{ SELLER_PROFILE : owns
+  USER ||--o{ CART : owns
+  CART ||--o{ CART_ITEM : contains
+  CART_ITEM }o--|| PRODUCT : references
+
+  USER ||--o{ ORDER : places
+  ORDER ||--|{ ORDER_ITEM : contains
+  ORDER_ITEM }o--|| PRODUCT : references
+  ORDER_ITEM }o--|| SELLER_PROFILE : sold_by
+
+  PRODUCT }o--|| CATEGORY : belongs_to
+  PRODUCT ||--o{ PRODUCT_IMAGE : has
+  PRODUCT ||--o{ REVIEW : has
+  REVIEW }o--|| USER : by
+
+  PAYMENT }o--|| ORDER : for
+
+  PROMO_CODE ||--o{ ORDER : applied_to
+
+  USER ||--o{ WISHLIST : has
+  WISHLIST }o--|| PRODUCT : item
+
+  EMAIL_LOG }o--|| USER : about
