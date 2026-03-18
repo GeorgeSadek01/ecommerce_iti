@@ -18,6 +18,8 @@ import adminPanelRoutes from './features/adminPanel/adminPanel.routes.js';
 import sellerPanelRoutes from './features/sellerPanel/sellerPanel.routes.js';
 import promoCodeRoutes from './features/promoCode/promoCode.routes.js';
 import authenticate from './core/middlewares/authenticate.js';
+import reviewRoutes from './features/reviews/reviews.routes.js';
+import wishlistRoutes from './features/wishlist/wishlist.routes.js';
 
 import { webhook } from './features/payment/Controllers/payment.controller.js';
 

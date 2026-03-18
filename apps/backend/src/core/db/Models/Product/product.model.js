@@ -111,10 +111,8 @@ const validatePriceUpdate = async function () {
   const rawPrice = update?.price ?? update?.$set?.price;
   const rawDiscountedPrice = update?.discountedPrice ?? update?.$set?.discountedPrice;
 
-  // Only validate if at least one price field is part of this update
   if (rawPrice === undefined && rawDiscountedPrice === undefined) return;
 
-  // Fetch the current document to fill in whichever field isn't being updated
   const existing = await this.model.findOne(this.getQuery()).lean();
 
   const priceVal = rawPrice !== undefined ? rawPrice : existing?.price;
@@ -122,7 +120,7 @@ const validatePriceUpdate = async function () {
 
   if (priceVal !== undefined && priceVal !== null) {
     const price = parseFloat(priceVal.toString());
-    if (price <= 0) throw new Error('Price must be greater than 0');
+    if (price <= 0) throw new Error('Price must be greater than 0'); // ✅ throw, no next
 
     if (discountedVal !== null && discountedVal !== undefined) {
       const discountedPrice = parseFloat(discountedVal.toString());
@@ -130,6 +128,7 @@ const validatePriceUpdate = async function () {
       if (discountedPrice >= price) throw new Error('Discounted price must be less than the original price');
     }
   }
+  // ✅ no next() call at all — async functions don't need it
 };
 
 // Register the shared validator on all query update hooks that can modify

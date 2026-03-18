@@ -1,8 +1,32 @@
 import Review from '../../../core/db/Models/Product/review.model.js';
 import Order from '../../../core/db/Models/Order/order.model.js';
+import SellerProfile from '../../../core/db/Models/Seller/sellerProfile.model.js';
+import Product from '../../../core/db/Models/Product/product.model.js';
 import AppError from '../../../core/utils/AppError.js';
 
+// helpers
+async function assertNotSellerOwnProduct(userId, productId) {
+  console.log('userId:', userId, typeof userId);
+  console.log('productId:', productId, typeof productId);
+
+  const sellerProfile = await SellerProfile.findOne({ userId });
+  console.log('sellerProfile:', sellerProfile);
+
+  if (!sellerProfile) return;
+
+  console.log('sellerProfile._id:', sellerProfile._id);
+
+  const product = await Product.findOne({ _id: productId, sellerProfileId: sellerProfile._id });
+  console.log('product:', product);
+
+  if (product) throw new AppError('You cannot review your product as a seller', 403);
+}
+
 export const addReview = async (userId, productId, comment, rating) => {
+  console.log(userId);
+  console.log('[Reviews]: adding review');
+  await assertNotSellerOwnProduct(userId, productId);
+
   // Check that user has a delivered order containing this product
   const userOrders = await Order.find({ userId, $or: [{ status: 'delivered', isPaied: true }] });
   console.log(userOrders);
