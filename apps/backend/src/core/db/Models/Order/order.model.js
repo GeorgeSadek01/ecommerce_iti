@@ -37,6 +37,10 @@ const orderItemSchema = new Schema(
       required: [true, 'Line total is required'],
       get: decimal128Getter,
     },
+    imageUrl: {
+      type: String,
+      default: null,
+    },
   },
   {
     _id: true,

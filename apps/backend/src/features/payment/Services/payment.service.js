@@ -4,6 +4,7 @@ import env from '../../../core/config/env.js';
 import Order from '../../../core/db/Models/Order/order.model.js';
 import PromoCode from '../../../core/db/Models/Promo/promoCode.model.js';
 import Payment from '../../../core/db/Models/Payment/payment.model.js';
+import CartItem from '../../../core/db/Models/Cart/cartItem.model.js';
 import AppError from '../../../core/utils/AppError.js';
 import { sendOrderProcessingEmail } from '../../../core/utils/emailService.js';
 import { bringOrderItems, getUserEmailInfo, applyPromoCode } from '../../orders/services/order.service.js';
@@ -11,7 +12,7 @@ import { bringOrderItems, getUserEmailInfo, applyPromoCode } from '../../orders/
 // ─── Create Checkout Session ──────────────────────────────────────────────────
 
 export const createCheckoutSession = async (userId, addressId, promoCodeInput = null) => {
-  const { orderItems, subtotal } = await bringOrderItems(userId);
+  const { orderItems, subtotal, cart } = await bringOrderItems(userId);
   const user = await getUserEmailInfo(userId);
 
   // ── Validate & calculate promo code BEFORE transaction ──
@@ -49,7 +50,10 @@ export const createCheckoutSession = async (userId, addressId, promoCodeInput = 
         line_items: orderItems.map((item) => ({
           price_data: {
             currency: 'usd',
-            product_data: { name: item.productNameSnapshot },
+            product_data: {
+              name: item.productNameSnapshot,
+              images: item.imageUrl ? [item.imageUrl] : [],
+            },
             unit_amount: Math.round(item.priceSnapshot * 100),
           },
           quantity: item.quantity,
@@ -75,6 +79,8 @@ export const createCheckoutSession = async (userId, addressId, promoCodeInput = 
     if (promoCode) {
       await PromoCode.findByIdAndUpdate(promoCode._id, { $inc: { usageCount: 1 } }, { session: dbSession });
     }
+
+    await CartItem.deleteMany({ cartId: cart._id }, { session: dbSession });
 
     await dbSession.commitTransaction();
   } catch (err) {
@@ -145,5 +151,10 @@ export const handleSuccessfulPayment = async (session) => {
     email: user.email,
     firstName: user.firstName,
     orderId: order._id.toString(),
+    items: order.items,
+    subtotal: order.subtotal,
+    discountAmount: order.discountAmount,
+    shippingCost: order.shippingCost,
+    total: order.total,
   });
 };

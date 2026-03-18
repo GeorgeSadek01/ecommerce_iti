@@ -27,10 +27,12 @@ cartSchema.index({ guestToken: 1 }, { unique: true, sparse: true });
 
 // Application-level: exactly one of userId or guestToken must be set
 cartSchema.pre('save', function (next) {
-  if ((this.userId === null || this.userId === undefined) === (this.guestToken === null || this.guestToken === undefined)) {
+  if (
+    (this.userId === null || this.userId === undefined) === (this.guestToken === null || this.guestToken === undefined)
+  ) {
     return next(new Error('A cart must have either a userId or a guestToken, but not both.'));
   }
-  next();
+  // next();
 });
 
 const Cart = mongoose.model('Cart', cartSchema);
