@@ -35,22 +35,34 @@ export const getOne = asyncHandler(async (req, res) => {
   sendSuccess(res, 200, 'Product retrieved successfully', { product });
 });
 
-// ─── GET /seller/products ─────────────────────────────────────────────────────
-
 export const getAll = asyncHandler(async (req, res) => {
-  // If the user is a seller, scope results to their sellerProfileId
   let sellerProfileId;
+
+  // 1. If the user is NOT an admin, we MUST force a filter
   if (req.user.role !== 'admin') {
+    // Look up the profile using 'userId' (as defined in your model)
     const sellerProfile = await SellerProfile.findOne({ userId: req.user._id });
-    sellerProfileId = sellerProfile?._id;
+
+    // 2. Security Check: If no profile exists, they cannot have products
+    if (!sellerProfile) {
+      return sendSuccess(res, 200, 'No seller profile associated with this account', {
+        products: [],
+        pagination: { total: 0, page: 1, limit: 10, pages: 0 }
+      });
+    }
+
+    // 3. This is the ID stored on the Product documents
+    sellerProfileId = sellerProfile._id;
   }
 
+  // 4. Call the service with the restricted ID
   const options = {
     sellerProfileId,
     page: parseInt(req.query.page) || 1,
     limit: parseInt(req.query.limit) || 10,
     search: req.query.search,
   };
+
   const result = await productService.getAll(options);
   sendSuccess(res, 200, 'Products retrieved successfully', result);
 });
@@ -76,10 +88,19 @@ export const update = asyncHandler(async (req, res) => {
 
 export const deleteProduct = asyncHandler(async (req, res) => {
   const product = await productService.getById(req.params.id);
+  if (!product) {
+    throw new AppError('Product not found', 404);
+  }
 
-  // Check ownership: only owner or admin can delete
-  if (req.user.role !== 'admin' && product.sellerId?.toString() !== req.user.id?.toString()) {
-    throw new AppError('You do not have permission to delete this product', 403);
+  // 1. If the user is an Admin, they can bypass the ownership check
+  if (req.user.role !== 'admin') {
+    // 2. Find the SellerProfile belonging to the logged-in user
+    const sellerProfile = await SellerProfile.findOne({ userId: req.user._id });
+
+    // 3. Check: Does the product's sellerProfileId match the user's Profile ID?
+    if (!sellerProfile || product.sellerProfileId?.toString() !== sellerProfile._id.toString()) {
+      throw new AppError('You do not have permission to delete this product', 403);
+    }
   }
 
   await productService.deleteProduct(req.params.id);

@@ -22,7 +22,7 @@ const router = Router();
 router
   .route('/')
   .post(authenticate, authorize('seller', 'admin'), createProductValidator, validateRequest, productController.create)
-  .get(productController.getAll);
+  .get(authenticate,productController.getAll);
 
   // Search should come before anything that might interpret 'search' as an ID
 router.route('/search')

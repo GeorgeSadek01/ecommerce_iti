@@ -8,10 +8,10 @@ import mongoose from 'mongoose';
 // ─── Create Product ───────────────────────────────────────────────────────────
 
 export const create = async (data) => {
-  if (!data.name || typeof data.name !== 'string') {
-    throw new AppError('Product name is required', 400);
+  const categoryFound = await categoryModel.findById(data.categoryId);
+  if (!categoryFound) {
+    throw new AppError('Category not found', 404);
   }
-
   // Enforce max 10 products per seller (user)
   if (data.sellerProfileId) {
     const existingCount = await productModel.countDocuments({ sellerProfileId: data.sellerProfileId });
@@ -19,36 +19,6 @@ export const create = async (data) => {
       throw new AppError('Maximum 10 products allowed per seller', 400);
     }
   }
-
-  // Validate price and stock (cannot be negative)
-  if (data.price !== undefined) {
-    const priceNum = parseFloat(data.price);
-    if (isNaN(priceNum) || priceNum < 0) {
-      throw new AppError('Price must be a non-negative number', 400);
-    }
-  }
-
-  if (data.stock !== undefined) {
-    const stockNum = Number(data.stock);
-    if (isNaN(stockNum) || stockNum < 0) {
-      throw new AppError('Stock must be a non-negative number', 400);
-    }
-  }
-
-  // Validate discountedPrice (cannot be negative and should not exceed price when price provided)
-  if (data.discountedPrice !== undefined) {
-    const dp = parseFloat(data.discountedPrice);
-    if (isNaN(dp) || dp < 0) {
-      throw new AppError('Discounted price must be a non-negative number', 400);
-    }
-    if (data.price !== undefined) {
-      const priceNum = parseFloat(data.price);
-      if (!isNaN(priceNum) && dp > priceNum) {
-        throw new AppError('Discounted price cannot exceed price', 400);
-      }
-    }
-  }
-
   const slug = slugify(data.name, { lower: true });
 
   // Ensure slug uniqueness
@@ -79,18 +49,22 @@ export const getAll = async (options = {}) => {
   const { sellerProfileId, page = 1, limit = 10, search } = options;
 
   const query = {};
+
   if (sellerProfileId) {
-    query.sellerProfileId = sellerProfileId;
+    // FORCE cast the string to a MongoDB ObjectId
+    query.sellerProfileId = new mongoose.Types.ObjectId(sellerProfileId);
   }
+
   if (search) {
     query.name = { $regex: search, $options: 'i' };
   }
 
   const skip = (page - 1) * limit;
   const total = await productModel.countDocuments(query);
+  
   const products = await productModel
     .find(query)
-    .populate('categoryId')
+    .populate('categoryId', 'name')
     .limit(limit)
     .skip(skip)
     .sort({ createdAt: -1 });
