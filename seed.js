@@ -101,14 +101,11 @@ const Product = mongoose.model('Product', productSchema);
 // -- Cart
 const cartSchema = new Schema(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', default: null, sparse: true },
-    guestToken: { type: String, default: null, sparse: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   },
   { timestamps: { createdAt: false, updatedAt: true } }
 );
-cartSchema.index({ userId: 1 }, { unique: true, sparse: true });
-cartSchema.index({ guestToken: 1 }, { unique: true, sparse: true });
-// NOTE: skipping the pre-save validation hook so insertMany works cleanly
+cartSchema.index({ userId: 1 }, { unique: true });
 const Cart = mongoose.model('Cart', cartSchema);
 
 // -- CartItem
@@ -487,13 +484,12 @@ async function seed() {
   console.log('🛍️  Products seeded');
 
   // ── 5. Carts ─────────────────────────────────────────────────────────────────
-  // One authenticated cart per customer, one guest cart
+  // One authenticated cart per customer
 
-  const [cart1, cart2, cart3, guestCart] = await Cart.insertMany([
-    { userId: customer1User._id, guestToken: null }, // David's cart
-    { userId: customer2User._id, guestToken: null }, // Eva's cart
-    { userId: customer3User._id, guestToken: null }, // Frank's cart
-    { userId: null, guestToken: 'guest-token-abc-xyz-001' }, // Guest cart
+  const [cart1, cart2, cart3] = await Cart.insertMany([
+    { userId: customer1User._id }, // David's cart
+    { userId: customer2User._id }, // Eva's cart
+    { userId: customer3User._id }, // Frank's cart
   ]);
 
   console.log('🛒 Carts seeded');

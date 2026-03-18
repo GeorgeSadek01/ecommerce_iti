@@ -38,24 +38,19 @@ export const getOne = asyncHandler(async (req, res) => {
 export const getAll = asyncHandler(async (req, res) => {
   let sellerProfileId;
 
-  // 1. If the user is NOT an admin, we MUST force a filter
-  if (req.user.role !== 'admin') {
-    // Look up the profile using 'userId' (as defined in your model)
+  // If the request comes from an authenticated seller, restrict results to their products.
+  // Admins, customers and guests will receive all products (no sellerProfileId filter).
+  if (req.user && req.user.role === 'seller') {
     const sellerProfile = await SellerProfile.findOne({ userId: req.user._id });
-
-    // 2. Security Check: If no profile exists, they cannot have products
     if (!sellerProfile) {
       return sendSuccess(res, 200, 'No seller profile associated with this account', {
         products: [],
-        pagination: { total: 0, page: 1, limit: 10, pages: 0 }
+        pagination: { total: 0, page: 1, limit: 10, pages: 0 },
       });
     }
-
-    // 3. This is the ID stored on the Product documents
     sellerProfileId = sellerProfile._id;
   }
 
-  // 4. Call the service with the restricted ID
   const options = {
     sellerProfileId,
     page: parseInt(req.query.page) || 1,
@@ -121,9 +116,10 @@ export const search = asyncHandler(async (req, res) => {
   const result = await productService.search(filters);
   res.status(200).json({
     success: true,
-    message: result.data.length === 0 
-      ? "We couldn't find any products matching your search."
-      : 'Products retrieved successfully',
+    message:
+      result.data.length === 0
+        ? "We couldn't find any products matching your search."
+        : 'Products retrieved successfully',
     data: result.data,
     pagination: result.pagination,
   });

@@ -37,7 +37,7 @@ export const createCheckoutSession = async (userId, addressId, promoCodeInput = 
           total,
           promoCodeId,
           payingMethod: 'credit',
-          isPaied: false,
+          isPaid: false,
         },
       ],
       { session: dbSession }
@@ -119,7 +119,7 @@ export const handleSuccessfulPayment = async (session) => {
     }
 
     order.status = 'processing';
-    order.isPaied = true;
+    order.isPaid = true;
     order.sessionURL = null;
     await order.save({ session: dbSession });
 

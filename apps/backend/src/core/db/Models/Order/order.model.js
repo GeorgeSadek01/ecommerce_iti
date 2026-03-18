@@ -127,7 +127,7 @@ const orderSchema = new Schema(
       default: 'cash-on-delivery',
       required: [true, 'Paying method is required'],
     },
-    isPaied: {
+    isPaid: {
       type: Boolean,
       required: [true, 'Is this order paied or not. isPaieed required'],
       default: false,
