@@ -65,10 +65,11 @@ export const create = async (data) => {
 // ─── Get All Categories ───────────────────────────────────────────────────────
 
 export const getAll = async () => {
-export const getAll = async () => {
   const categories = await Category.find().populate('parentId', 'name');
+  if(categories.length === 0) {
+    throw new AppError('No categories found', 404);
+  }
   return categories;
-};
 };
 
 // ─── Get Category By ID ───────────────────────────────────────────────────────
