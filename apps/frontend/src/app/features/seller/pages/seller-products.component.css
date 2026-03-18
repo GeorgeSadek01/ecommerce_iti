@@ -1,0 +1,17 @@
+:host {
+  display: block;
+}
+
+.table td,
+.table th {
+  vertical-align: middle;
+}
+
+.stock-inline {
+  min-width: 170px;
+}
+
+.table tbody tr td {
+  padding-top: 0.8rem;
+  padding-bottom: 0.8rem;
+}

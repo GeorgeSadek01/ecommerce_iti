@@ -9,12 +9,15 @@
     "start": "node apps/backend/src/server.js",
     "start:prod": "NODE_ENV=production node apps/backend/src/server.js",
     "test": "vitest run --reporter=verbose",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "test:api": "newman run endpoints/ecommerce.postman.json -e endpoints/ecommerce.local.postman_environment.json --reporters cli",
+    "test:api:ci": "newman run endpoints/ecommerce.postman.json -e endpoints/ecommerce.local.postman_environment.json --reporters cli,junit --reporter-junit-export reports/newman-junit.xml"
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "devDependencies": {
+    "newman": "^6.2.1",
     "prettier": "^3.8.1",
     "supertest": "^7.2.2",
     "vitest": "^4.1.0"

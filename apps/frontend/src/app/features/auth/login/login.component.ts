@@ -61,6 +61,16 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  private navigateAfterLogin(): void {
+    const role = this.authService.currentUser()?.role;
+    if (role === 'seller' || role === 'admin') {
+      this.router.navigate(['/seller']);
+      return;
+    }
+
+    this.router.navigate(['/profile']);
+  }
+
   private initializeGoogleSignIn(): void {
     const clientId = environment.googleClientId;
     if (!clientId) {
@@ -109,7 +119,7 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
           // callback from external script may be outside Angular zone
           this.ngZone.run(() => {
             this.toast.success('Signed in with Google');
-            this.router.navigate(['/profile']);
+            this.navigateAfterLogin();
           });
         },
         error: (error: unknown) => {
@@ -135,7 +145,7 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
       .login(this.loginForm.getRawValue())
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
-        next: () => this.router.navigate(['/profile']),
+        next: () => this.navigateAfterLogin(),
         error: (error: unknown) => {
           const msg = extractApiErrorMessage(error, 'Login failed.');
           this.errorMessage.set(msg);

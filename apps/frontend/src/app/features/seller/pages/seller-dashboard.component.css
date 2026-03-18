@@ -1,0 +1,21 @@
+:host {
+  display: block;
+}
+
+.metric-card {
+  background: #ffffff;
+  border: 1px solid #dde7f7;
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 2px 10px rgba(18, 38, 83, 0.04);
+}
+
+.metric-card .label {
+  color: #5f6d85;
+  margin-bottom: 0.4rem;
+}
+
+.metric-card h3 {
+  margin: 0;
+  font-size: 1.35rem;
+}

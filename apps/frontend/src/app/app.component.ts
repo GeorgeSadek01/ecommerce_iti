@@ -13,6 +13,9 @@ import { ToastComponent } from './core/components/toast/toast.component';
 
       <nav class="topbar-nav">
         @if (authService.isAuthenticated()) {
+          @if (canAccessSellerArea()) {
+            <a routerLink="/seller">Seller</a>
+          }
           <a routerLink="/profile">Profile</a>
           <button type="button" (click)="logout()">Logout</button>
         } @else {
@@ -34,6 +37,11 @@ export class AppComponent {
     protected readonly authService: AuthService,
     private readonly router: Router
   ) {}
+
+  protected canAccessSellerArea(): boolean {
+    const role = this.authService.currentUser()?.role;
+    return role === 'seller' || role === 'admin';
+  }
 
   protected logout(): void {
     this.authService.logout().subscribe({

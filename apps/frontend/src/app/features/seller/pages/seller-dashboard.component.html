@@ -1,0 +1,93 @@
+@if (isLoading()) {
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <p class="placeholder-glow mb-0">
+            <span class="placeholder col-8"></span>
+        </p>
+    </div>
+</div>
+} @else if (errorMessage()) {
+<div class="alert alert-danger d-flex justify-content-between align-items-center">
+    <span>{{ errorMessage() }}</span>
+    <button type="button" class="btn btn-sm btn-outline-danger" (click)="refresh()">Retry</button>
+</div>
+} @else {
+@if (dashboard(); as model) {
+<section class="row g-3 mb-4">
+    <article class="col-12 col-sm-6 col-xl-3">
+        <div class="metric-card h-100">
+            <p class="label">Total products</p>
+            <h3>{{ model.metrics.totalProducts }}</h3>
+        </div>
+    </article>
+
+    <article class="col-12 col-sm-6 col-xl-3">
+        <div class="metric-card h-100">
+            <p class="label">Active products</p>
+            <h3>{{ model.metrics.activeProducts }}</h3>
+        </div>
+    </article>
+
+    <article class="col-12 col-sm-6 col-xl-3">
+        <div class="metric-card h-100">
+            <p class="label">Delivered earnings</p>
+            <h3>{{ model.metrics.totalDeliveredEarnings | currency }}</h3>
+        </div>
+    </article>
+
+    <article class="col-12 col-sm-6 col-xl-3">
+        <div class="metric-card h-100">
+            <p class="label">Profile earnings</p>
+            <h3>{{ model.metrics.totalEarningsFromProfile | currency }}</h3>
+        </div>
+    </article>
+</section>
+
+<section class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3 gap-2 flex-wrap">
+            <h2 class="h5 mb-0">Store status</h2>
+            <span class="badge rounded-pill text-bg-info text-capitalize">{{ model.sellerProfile.status }}</span>
+        </div>
+
+        <p class="mb-1"><strong>{{ model.sellerProfile.storeName }}</strong></p>
+        <p class="text-secondary mb-0">{{ model.sellerProfile.description || 'No description provided yet.' }}</p>
+    </div>
+</section>
+
+<section class="card border-0 shadow-sm">
+    <div class="card-body">
+        <h2 class="h5 mb-3">Recent orders</h2>
+
+        @if (model.recentOrders.length === 0) {
+        <p class="text-secondary mb-0">No recent orders yet.</p>
+        } @else {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Order</th>
+                        <th scope="col">Placed at</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Total</th>
+                        <th scope="col">Items</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (order of model.recentOrders; track order._id) {
+                    <tr>
+                        <td>{{ order._id }}</td>
+                        <td>{{ order.placedAt | date: 'medium' }}</td>
+                        <td><span class="text-capitalize">{{ order.status }}</span></td>
+                        <td>{{ order.total | currency }}</td>
+                        <td>{{ order.items.length }}</td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+    </div>
+</section>
+}
+}

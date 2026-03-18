@@ -1,0 +1,186 @@
+<section class="card border-0 shadow-sm">
+    <div class="card-body p-4 p-md-5">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+            <h2 class="h5 mb-0">{{ isEditMode() ? 'Edit product' : 'Create product' }}</h2>
+            <a class="btn btn-sm btn-outline-secondary" routerLink="/seller/products">Back to products</a>
+        </div>
+
+        @if (errorMessage()) {
+        <div class="alert alert-danger" role="alert">{{ errorMessage() }}</div>
+        }
+
+        @if (isLoading()) {
+        <p class="text-secondary mb-0">Loading product details...</p>
+        } @else {
+        <form [formGroup]="form" (ngSubmit)="submit()" class="row g-3" novalidate>
+            <div class="col-12 col-md-8">
+                <label for="productName" class="form-label">Name</label>
+                <input id="productName" class="form-control form-control-lg" type="text" formControlName="name" />
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label for="productCategory" class="form-label">Category</label>
+                <select id="productCategory" class="form-select" formControlName="categoryId">
+                    <option value="" disabled>Select category</option>
+                    @for (category of categories(); track category._id) {
+                    <option [value]="category._id">{{ category.name }}</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-12">
+                <label for="productDescription" class="form-label">Description</label>
+                <textarea id="productDescription" rows="4" class="form-control"
+                    formControlName="description"></textarea>
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label for="productPrice" class="form-label">Price</label>
+                <input id="productPrice" class="form-control" type="number" min="0" step="0.01"
+                    formControlName="price" />
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label for="productDiscountedPrice" class="form-label">Discounted price</label>
+                <input id="productDiscountedPrice" class="form-control" type="number" min="0" step="0.01"
+                    formControlName="discountedPrice" />
+            </div>
+
+            <div class="col-12 col-md-4">
+                <label for="productStock" class="form-label">Stock</label>
+                <input id="productStock" class="form-control" type="number" min="0" step="1" formControlName="stock" />
+            </div>
+
+            <div class="col-12">
+                <div class="form-check">
+                    <input id="productIsActive" class="form-check-input" type="checkbox" formControlName="isActive" />
+                    <label class="form-check-label" for="productIsActive">Active product</label>
+                </div>
+            </div>
+
+            <div class="col-12 d-flex justify-content-end">
+                <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+                    @if (isSubmitting()) {
+                    <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                    }
+                    {{ isEditMode() ? 'Update product' : 'Create product' }}
+                </button>
+            </div>
+        </form>
+
+        @if (isEditMode()) {
+        <hr class="my-4" />
+
+        <section>
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                <h3 class="h6 mb-0">Product images</h3>
+                <small class="text-secondary">Maximum 10 images</small>
+            </div>
+
+            <div class="drop-zone mb-3" [class.active]="isDropZoneActive()" (dragover)="onDropZoneDragOver($event)"
+                (dragleave)="onDropZoneDragLeave($event)" (drop)="onDropZoneDrop($event)">
+                <p class="mb-2 fw-semibold">Drag and drop images here</p>
+                <p class="text-secondary small mb-2">or choose files manually</p>
+                <input type="file" multiple accept="image/*" class="form-control" (change)="onFilesSelected($event)" />
+            </div>
+
+            @if (pendingUploads().length > 0) {
+            <div class="pending-grid mb-3">
+                @for (pending of pendingUploads(); track pending.id; let i = $index) {
+                <article class="pending-card" draggable="true" (dragstart)="onPreviewDragStart(pending.id)"
+                    (dragover)="onPreviewDragOver($event)" (drop)="onPreviewDrop(pending.id)" tabindex="0">
+                    <img [src]="pending.previewUrl" alt="Pending upload preview" />
+                    <p class="small text-secondary text-truncate mt-2 mb-2">{{ pending.file.name }}</p>
+
+                    <div class="d-flex justify-content-between gap-1" role="group" aria-label="Pending upload actions">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" [disabled]="i === 0"
+                            (click)="movePendingImage(i, i - 1)" aria-label="Move pending image up" title="Move up">
+                            ▲
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary"
+                            [disabled]="i === pendingUploads().length - 1" (click)="movePendingImage(i, i + 1)"
+                            aria-label="Move pending image down" title="Move down">
+                            ▼
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                            (click)="removePendingUpload(pending.id)" aria-label="Remove pending image" title="Remove">
+                            Remove
+                        </button>
+                    </div>
+                </article>
+                }
+            </div>
+            }
+
+            <div class="d-flex gap-2 flex-wrap mb-3">
+                <button type="button" class="btn btn-outline-primary" [disabled]="isUploadingImages()"
+                    (click)="uploadSelectedImages()">
+                    @if (isUploadingImages()) {
+                    <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                    }
+                    Upload
+                </button>
+
+                <button type="button" class="btn btn-outline-secondary" [disabled]="pendingUploads().length === 0"
+                    (click)="clearPendingUploads()">
+                    Clear selected
+                </button>
+            </div>
+
+            @if (isImagesLoading()) {
+            <p class="text-secondary mb-0">Loading images...</p>
+            } @else if (images().length === 0) {
+            <p class="text-secondary mb-0">No images uploaded yet.</p>
+            } @else {
+            <div class="images-grid">
+                @for (image of images(); track image._id; let i = $index) {
+                <article class="image-card">
+                    <img [src]="image.url" alt="Product image" />
+
+                    <div class="d-flex justify-content-between align-items-center mt-2 gap-2">
+                        <div class="d-flex gap-1" role="group" aria-label="Reorder image">
+                            <button type="button" class="btn btn-sm btn-outline-secondary drag-handle"
+                                [disabled]="i === 0" (click)="moveImage(i, i - 1)" aria-label="Move image left"
+                                title="Move left">‹</button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                [disabled]="i === images().length - 1" (click)="moveImage(i, i + 1)"
+                                aria-label="Move image right" title="Move right">›</button>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            @if (image.isPrimary) {
+                            <span class="badge text-bg-success">Primary</span>
+                            } @else {
+                            <button type="button" class="btn btn-sm btn-outline-secondary"
+                                (click)="makePrimary(image._id)" aria-label="Set primary image">
+                                Set primary
+                            </button>
+                            }
+
+                            <button type="button" class="btn btn-sm btn-outline-danger"
+                                (click)="openDeleteConfirm(image._id)" aria-label="Delete image">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </article>
+                }
+            </div>
+            }
+        </section>
+        }
+        }
+    </div>
+</section>
+
+@if (isDeleteModalOpen()) {
+<div class="modal-backdrop-custom" (click)="closeDeleteConfirm()"></div>
+<div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="delete-image-title">
+    <h3 id="delete-image-title" class="h6 mb-2">Delete image</h3>
+    <p class="text-secondary mb-3">This action cannot be undone. Do you want to continue?</p>
+    <div class="d-flex justify-content-end gap-2">
+        <button type="button" class="btn btn-sm btn-outline-secondary" (click)="closeDeleteConfirm()">Cancel</button>
+        <button type="button" class="btn btn-sm btn-danger" (click)="confirmDeleteImage()">Delete</button>
+    </div>
+</div>
+}

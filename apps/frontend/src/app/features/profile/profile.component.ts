@@ -41,7 +41,7 @@ export class ProfileComponent implements OnInit {
 
   constructor(
     private readonly fb: FormBuilder,
-    private readonly authService: AuthService,
+    protected readonly authService: AuthService,
     private readonly toast: ToastService,
     private readonly router: Router
   ) {}

@@ -1,4 +1,4 @@
-# Run it local :
+# Run it local
 
 ## Prerequisites
 
@@ -128,3 +128,22 @@ curl http://localhost:4000/health
 ## Endpoints
 
 [Explore it](./endpoints/)
+
+## Postman Collection And Newman
+
+Use the maintained collection and local environment files:
+
+- `endpoints/ecommerce.postman.json`
+- `endpoints/ecommerce.local.postman_environment.json`
+
+Run API checks locally:
+
+```bash
+npm run test:api
+```
+
+Run API checks in CI (with JUnit output):
+
+```bash
+npm run test:api:ci
+```
