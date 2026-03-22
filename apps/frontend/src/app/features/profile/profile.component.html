@@ -6,9 +6,8 @@
     </div>
 
     <div class="d-flex gap-2 align-items-center">
-      @if (user.role !== 'seller') {
-      <a class="btn btn-primary d-inline-flex align-items-center me-2" routerLink="/seller/onboarding" role="button"
-        aria-label="Become a seller" title="Become a seller">
+      <button type="button" class="btn btn-sm btn-primary d-inline-flex align-items-center me-2"
+        [routerLink]="sellerActionLink()" [attr.aria-label]="sellerActionLabel()" [attr.title]="sellerActionLabel()">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shop me-2"
           viewBox="0 0 16 16" aria-hidden="true">
           <path
@@ -16,9 +15,8 @@
           <path
             d="M0 6.5A1.5 1.5 0 0 1 1.5 5h13A1.5 1.5 0 0 1 16 6.5v6A2.5 2.5 0 0 1 13.5 15h-11A2.5 2.5 0 0 1 0 12.5v-6zM4.5 8a.5.5 0 0 0-.5.5V11h1V8.5A.5.5 0 0 0 4.5 8zm3 0a.5.5 0 0 0-.5.5V11h1V8.5a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5V11h1V8.5a.5.5 0 0 0-.5-.5z" />
         </svg>
-        Become a seller
-      </a>
-      }
+        {{ sellerActionLabel() }}
+      </button>
 
       <button type="button" class="btn btn-sm btn-outline-secondary" (click)="logout()">Logout</button>
     </div>
@@ -30,8 +28,8 @@
     </div>
 
     <div class="d-flex gap-2 align-items-center">
-      <a class="btn btn-primary d-inline-flex align-items-center me-2" routerLink="/seller/onboarding" role="button"
-        aria-label="Become a seller" title="Become a seller">
+      <button type="button" class="btn btn-sm btn-primary d-inline-flex align-items-center me-2"
+        [routerLink]="sellerActionLink()" [attr.aria-label]="sellerActionLabel()" [attr.title]="sellerActionLabel()">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shop me-2"
           viewBox="0 0 16 16" aria-hidden="true">
           <path
@@ -39,8 +37,8 @@
           <path
             d="M0 6.5A1.5 1.5 0 0 1 1.5 5h13A1.5 1.5 0 0 1 16 6.5v6A2.5 2.5 0 0 1 13.5 15h-11A2.5 2.5 0 0 1 0 12.5v-6zM4.5 8a.5.5 0 0 0-.5.5V11h1V8.5A.5.5 0 0 0 4.5 8zm3 0a.5.5 0 0 0-.5.5V11h1V8.5a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5V11h1V8.5a.5.5 0 0 0-.5-.5z" />
         </svg>
-        Become a seller
-      </a>
+        {{ sellerActionLabel() }}
+      </button>
       <button type="button" class="btn btn-outline-secondary" (click)="logout()">Logout</button>
     </div>
   </header>

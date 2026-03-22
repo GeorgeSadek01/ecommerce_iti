@@ -15,6 +15,7 @@ import {
   RegisterPayload,
   ResetPasswordPayload,
   UpdateProfilePayload,
+  UserRole,
 } from '../types/auth.types';
 import { SKIP_AUTH } from '../interceptors/interceptor-tokens';
 import { TokenService } from './token.service';
@@ -26,6 +27,7 @@ export class AuthService {
   private readonly loadingSignal = signal<boolean>(false);
 
   readonly currentUser = computed(() => this.userSignal());
+  readonly currentRole = computed<UserRole | null>(() => this.userSignal()?.role ?? this.getRoleFromToken());
   readonly isLoading = computed(() => this.loadingSignal());
 
   constructor(
@@ -160,6 +162,32 @@ export class AuthService {
 
   setCurrentUser(user: AuthUser | null): void {
     this.userSignal.set(user);
+  }
+
+  private getRoleFromToken(): UserRole | null {
+    const token = this.tokenService.token;
+    if (!token) {
+      return null;
+    }
+
+    try {
+      const payloadPart = token.split('.')[1];
+      if (!payloadPart) {
+        return null;
+      }
+
+      const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+      const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=');
+      const payload = JSON.parse(atob(padded)) as { role?: unknown };
+
+      if (payload.role === 'customer' || payload.role === 'seller' || payload.role === 'admin') {
+        return payload.role;
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
   }
 
   private hydrateSession(response: ApiResponse<AuthTokensData>): void {

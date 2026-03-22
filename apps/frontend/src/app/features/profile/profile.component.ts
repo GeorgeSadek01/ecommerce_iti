@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/services/auth-api.service';
 import { ToastService } from '../../core/services/toast.service';
@@ -11,9 +11,9 @@ import { extractApiErrorMessage } from '../../core/utils/http-error.util';
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
   templateUrl: './profile.component.html',
-  styleUrl: './profile.component.css',
+  styleUrls: ['./profile.component.css'],
 })
 export class ProfileComponent implements OnInit {
   private originalEmail = '';
@@ -58,6 +58,19 @@ export class ProfileComponent implements OnInit {
       });
       this.originalEmail = currentUser.email ?? '';
     }
+  }
+
+  protected isSellerOrAdmin(): boolean {
+    const role = this.authService.currentRole();
+    return role === 'seller' || role === 'admin';
+  }
+
+  protected sellerActionLink(): string {
+    return this.isSellerOrAdmin() ? '/seller/dashboard' : '/seller/onboarding';
+  }
+
+  protected sellerActionLabel(): string {
+    return this.isSellerOrAdmin() ? 'Seller Dashboard' : 'Become a seller';
   }
 
   protected submitProfile(): void {

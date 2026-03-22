@@ -9,15 +9,15 @@ export const roleGuard: CanActivateFn = (route): boolean | UrlTree => {
 
   const requiredRoles = (route.data['roles'] as UserRole[] | undefined) ?? [];
   const user = authService.currentUser();
+  const role = user?.role ?? authService.currentRole();
 
-  if (!user) {
+  if (!role) {
     return router.createUrlTree(['/auth/login']);
   }
 
-  if (requiredRoles.length === 0 || requiredRoles.includes(user.role)) {
+  if (requiredRoles.length === 0 || requiredRoles.includes(role)) {
     return true;
   }
 
   return router.createUrlTree(['/profile']);
 };
-

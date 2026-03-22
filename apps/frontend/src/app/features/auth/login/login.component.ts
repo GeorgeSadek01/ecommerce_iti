@@ -62,9 +62,14 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
   }
 
   private navigateAfterLogin(): void {
-    const role = this.authService.currentUser()?.role;
-    if (role === 'seller' || role === 'admin') {
-      this.router.navigate(['/seller']);
+    const role = this.authService.currentRole();
+    if (role === 'admin') {
+      this.router.navigate(['/admin']);
+      return;
+    }
+
+    if (role === 'seller') {
+      this.router.navigate(['/seller/dashboard']);
       return;
     }
 

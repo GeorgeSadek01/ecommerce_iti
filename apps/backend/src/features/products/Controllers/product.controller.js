@@ -40,9 +40,13 @@ export const getOne = asyncHandler(async (req, res) => {
 export const getAll = asyncHandler(async (req, res) => {
   // If the user is a seller, scope results to their sellerProfileId
   let sellerProfileId;
-  if (req.user.role !== 'admin') {
-    const sellerProfile = await SellerProfile.findOne({ userId: req.user._id });
-    sellerProfileId = sellerProfile?._id;
+  if (!req.user || req.user.role !== 'admin') {
+    // If user is present and not admin, scope to their seller profile.
+    if (req.user) {
+      const sellerProfile = await SellerProfile.findOne({ userId: req.user._id });
+      sellerProfileId = sellerProfile?._id;
+    }
+    // If no authenticated user, leave sellerProfileId undefined to return public results
   }
 
   const options = {

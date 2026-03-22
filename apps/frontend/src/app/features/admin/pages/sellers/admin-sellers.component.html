@@ -1,0 +1,155 @@
+<div class="admin-sellers">
+    <!-- Header -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body p-3 p-md-4">
+            <h2 class="mb-0">Seller Management</h2>
+        </div>
+    </div>
+
+    <!-- Error Alert -->
+    @if (error()) {
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        {{ error() }}
+        <button type="button" class="btn-close" (click)="error.set(null)"></button>
+    </div>
+    }
+
+    <!-- Filters Card -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="searchInput" class="form-label">Search</label>
+                    <input id="searchInput" type="text" class="form-control"
+                        placeholder="Search by store name or email..." [(ngModel)]="searchQuery"
+                        (keyup.enter)="onSearch()" [disabled]="loading()" />
+                </div>
+                <div class="col-md-6">
+                    <label for="statusFilter" class="form-label">Filter by Status</label>
+                    <select id="statusFilter" class="form-select" [(ngModel)]="selectedStatus"
+                        (change)="onFilterChange()" [disabled]="loading()">
+                        <option value="">All Status</option>
+                        @for (status of statuses; track status) {
+                        <option [value]="status">{{ status }}</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="row g-3 mt-3">
+                <div class="col-12">
+                    <button class="btn btn-primary" (click)="onSearch()" [disabled]="loading()">
+                        @if (loading()) {
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        } Search
+                    </button>
+                    <button class="btn btn-outline-secondary ms-2"
+                        (click)="searchQuery.set(''); selectedStatus.set(''); onSearch()" [disabled]="loading()">
+                        Clear
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sellers Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            @if (loading()) {
+            <div class="text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+            } @else if (sellers() && sellers().length > 0) {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Store Name</th>
+                            <th>Owner</th>
+                            <th>Status</th>
+                            <th>Total Earnings</th>
+                            <th>Joined Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (seller of sellers(); track seller._id) {
+                        <tr>
+                            <td class="fw-semibold">{{ seller.storeName }}</td>
+                            <td>
+                                @if (seller.user) {
+                                {{ seller.user.firstName }} {{ seller.user.lastName }}
+                                }
+                            </td>
+                            <td>
+                                <app-status-badge [status]="seller.status"></app-status-badge>
+                            </td>
+                            <td>${{ seller.totalEarnings | number: '1.2-2' }}</td>
+                            <td>{{ seller.createdAt | date: 'short' }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary me-1"
+                                    (click)="openSellerModal(seller)">Change Status</button>
+                                <button class="btn btn-sm btn-outline-danger"
+                                    (click)="deleteSeller(seller._id)">Delete</button>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <span class="text-secondary">Page {{ currentPage() }} of {{ totalPages() }}</span>
+                <div>
+                    <button class="btn btn-outline-primary btn-sm me-2" [disabled]="currentPage() === 1"
+                        (click)="prevPage()">Previous</button>
+                    <button class="btn btn-outline-primary btn-sm" [disabled]="currentPage() === totalPages()"
+                        (click)="nextPage()">Next</button>
+                </div>
+            </div>
+            } @else {
+            <div class="alert alert-info mb-0">No sellers found</div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Seller Status Modal -->
+@if (showSellerModal() && selectedSeller(); as seller) {
+<div class="modal d-block" style="background: rgba(0, 0, 0, 0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Seller Status - {{ seller.storeName }}</h5>
+                <button type="button" class="btn-close" (click)="closeSellerModal()"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Store Name</label>
+                    <p class="form-control-plaintext">{{ seller.storeName }}</p>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Current Status</label>
+                    <p class="form-control-plaintext">
+                        <app-status-badge [status]="seller.status"></app-status-badge>
+                    </p>
+                </div>
+                <div class="mb-3">
+                    <label for="statusSelect" class="form-label">Change Status To</label>
+                    <select id="statusSelect" class="form-select" [(ngModel)]="selectedStatusForUpdate">
+                        @for (status of statuses; track status) {
+                        <option [value]="status">{{ status }}</option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeSellerModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" (click)="updateSellerStatus()">Update Status</button>
+            </div>
+        </div>
+    </div>
+</div>
+}

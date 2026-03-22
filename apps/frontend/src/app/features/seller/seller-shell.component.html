@@ -23,7 +23,9 @@
                 <a class="nav-link" routerLink="/seller/products" routerLinkActive="active">Products</a>
                 <a class="nav-link" routerLink="/seller/earnings" routerLinkActive="active">Earnings</a>
                 <a class="nav-link" routerLink="/seller/settings" routerLinkActive="active">Settings</a>
+                @if (!isStoreApproved()) {
                 <a class="nav-link" routerLink="/seller/onboarding" routerLinkActive="active">Store Setup</a>
+                }
             </div>
         </div>
     </nav>
