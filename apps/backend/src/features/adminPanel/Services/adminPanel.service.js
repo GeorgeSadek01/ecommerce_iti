@@ -319,16 +319,9 @@ const buildDateRangeFilter = ({ dateFrom, dateTo } = {}) => {
   if (!dateFrom && !dateTo) return null;
 
   const range = {};
-  if (dateFrom) {
-    const d = new Date(dateFrom);
-    if (!isNaN(d.getTime())) range.$gte = d;
-  }
-  if (dateTo) {
-    const d = new Date(dateTo);
-    if (!isNaN(d.getTime())) range.$lte = d;
-  }
+  if (dateFrom) range.$gte = new Date(dateFrom);
+  if (dateTo) range.$lte = new Date(dateTo);
 
-  if (Object.keys(range).length === 0) return null;
   return { placedAt: range };
 };
 
@@ -527,7 +520,7 @@ const serializeOrder = (order) => ({
   trackingNumber: order.trackingNumber,
   placedAt: order.placedAt,
   payingMethod: order.payingMethod,
-  isPaid: order.isPaid,
+  isPaied: order.isPaied,
   items: order.items,
   updatedAt: order.updatedAt,
 });
@@ -723,7 +716,7 @@ export const updateAdminOrderTracking = async (orderId, trackingNumber) => {
   }
 
   order.trackingNumber = trackingNumber;
-  if (order.status === 'processing') {
+  if (order.status === 'pending' || order.status === 'processing') {
     order.status = 'shipped';
   }
 

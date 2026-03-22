@@ -1,0 +1,47 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #101829;
+}
+
+/* RouterLink anchors: consistent brand color, hover and focus states */
+a[routerLink] {
+  color: #0b5fff;
+  text-decoration: none;
+  font-weight: 600;
+  transition:
+    color 140ms ease,
+    text-decoration 140ms ease;
+}
+
+a[routerLink]:hover,
+a[routerLink]:focus {
+  color: #0836d6;
+  text-decoration: underline;
+  outline: none;
+}
+
+/* Button-like routerLink (use class="button-like") */
+a[routerLink].button-like {
+  display: inline-block;
+  padding: 0.45rem 0.85rem;
+  background: #0b5fff;
+  color: #ffffff;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+a[routerLink].button-like:hover,
+a[routerLink].button-like:focus {
+  background: #0836d6;
+}
+
+/* Ensure visible focus ring for keyboard users */
+a[routerLink]:focus-visible {
+  box-shadow: 0 0 0 3px rgba(11, 95, 255, 0.14);
+  border-radius: 4px;
+}

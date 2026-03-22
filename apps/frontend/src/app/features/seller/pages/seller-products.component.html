@@ -1,0 +1,109 @@
+<section class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3 p-md-4">
+        <form class="row g-2" [formGroup]="filterForm" (ngSubmit)="applySearch()">
+            <div class="col-12 col-md-8">
+                <label for="searchProducts" class="form-label">Search products</label>
+                <input id="searchProducts" class="form-control" type="text" placeholder="Search by product name"
+                    formControlName="search" />
+            </div>
+
+            <div class="col-12 col-md-4 d-flex align-items-end gap-2">
+                <button class="btn btn-primary flex-grow-1" type="submit" [disabled]="isLoading()">Search</button>
+                <a class="btn btn-outline-primary" routerLink="/seller/products/new">New</a>
+            </div>
+        </form>
+    </div>
+</section>
+
+@if (isLoading()) {
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+        <p class="placeholder-glow mb-0"><span class="placeholder col-8"></span></p>
+    </div>
+</div>
+} @else if (errorMessage()) {
+<div class="alert alert-danger" role="alert">{{ errorMessage() }}</div>
+} @else {
+<section class="card border-0 shadow-sm">
+    <div class="card-body p-3 p-md-4">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <h2 class="h5 mb-0">Your products</h2>
+            @if (pagination(); as pageInfo) {
+            <small class="text-secondary">{{ pageInfo.total }} total</small>
+            }
+        </div>
+
+        @if (products().length === 0) {
+        <div class="text-center py-4 border rounded-3 bg-light-subtle">
+            <p class="text-secondary mb-2">No products found.</p>
+            <a class="btn btn-sm btn-primary" routerLink="/seller/products/new">Create your first product</a>
+        </div>
+        } @else {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th scope="col">Name</th>
+                        <th scope="col">Price</th>
+                        <th scope="col">Stock</th>
+                        <th scope="col">Status</th>
+                        <th scope="col" class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (product of products(); track product._id) {
+                    <tr>
+                        <td>
+                            <div class="fw-semibold">{{ product.name }}</div>
+                            <small class="text-secondary">{{ product.slug }}</small>
+                        </td>
+                        <td>{{ product.price | currency }}</td>
+                        <td>
+                            <div class="d-flex gap-2 align-items-center stock-inline">
+                                <input #stockInput class="form-control form-control-sm" type="number" min="0"
+                                    [value]="product.stock" />
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                    (click)="updateStock(product._id, stockInput.valueAsNumber)">
+                                    Save
+                                </button>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge" [class.text-bg-success]="product.isActive"
+                                [class.text-bg-secondary]="!product.isActive">
+                                {{ product.isActive ? 'Active' : 'Inactive' }}
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <div class="d-flex justify-content-end gap-2">
+                                <a class="btn btn-sm btn-outline-primary"
+                                    [routerLink]="['/seller/products', product._id, 'edit']">Edit</a>
+                                <button class="btn btn-sm btn-outline-danger" type="button"
+                                    (click)="deleteProduct(product._id)">
+                                    Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        }
+
+        @if (pagination(); as pageInfo) {
+        <div class="d-flex justify-content-end align-items-center gap-2 mt-3">
+            <button class="btn btn-sm btn-outline-secondary" type="button" [disabled]="pageInfo.page <= 1"
+                (click)="goToPage(pageInfo.page - 1)">
+                Previous
+            </button>
+            <span class="small text-secondary">Page {{ pageInfo.page }} of {{ pageInfo.pages }}</span>
+            <button class="btn btn-sm btn-outline-secondary" type="button" [disabled]="pageInfo.page >= pageInfo.pages"
+                (click)="goToPage(pageInfo.page + 1)">
+                Next
+            </button>
+        </div>
+        }
+    </div>
+</section>
+}

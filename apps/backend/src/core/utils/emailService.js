@@ -141,14 +141,7 @@ const buildItemsTable = (items) => `
         .map(
           (item) => `
         <tr>
-          <td style="padding:8px;border:1px solid #ddd;">
-            ${
-              item.imageUrl
-                ? `<img src="${item.imageUrl}" alt="${escapeHtml(item.productNameSnapshot)}" style="width:48px;height:48px;object-fit:cover;border-radius:4px;vertical-align:middle;margin-right:8px;">`
-                : ''
-            }
-            ${escapeHtml(item.productNameSnapshot)}
-          </td>
+          <td style="padding:8px;border:1px solid #ddd;">${escapeHtml(item.productNameSnapshot)}</td>
           <td style="padding:8px;text-align:center;border:1px solid #ddd;">${item.quantity}</td>
           <td style="padding:8px;text-align:right;border:1px solid #ddd;">${formatCurrency(item.priceSnapshot)}</td>
           <td style="padding:8px;text-align:right;border:1px solid #ddd;">${formatCurrency(item.lineTotal)}</td>
@@ -222,17 +215,7 @@ export const sendOrderPlacedEmail = ({
  *
  * @param {{ userId: string, email: string, firstName: string, orderId: string }} param0
  */
-export const sendOrderProcessingEmail = ({
-  userId,
-  email,
-  firstName,
-  orderId,
-  items,
-  subtotal,
-  discountAmount,
-  shippingCost,
-  total,
-}) => {
+export const sendOrderProcessingEmail = ({ userId, email, firstName, orderId }) => {
   const orderLink = `${process.env.FRONTEND_URL}/orders/${orderId}`;
   return sendEmail(
     {
@@ -241,13 +224,7 @@ export const sendOrderProcessingEmail = ({
       html: `
         <h2>Good news, ${escapeHtml(firstName)}!</h2>
         <p>Your order <strong>#${orderId}</strong> is now being processed and will be shipped soon.</p>
-        ${buildItemsTable(items)}
-        <table style="width:100%;margin:8px 0;">
-          <tr><td>Subtotal</td><td style="text-align:right;">${formatCurrency(subtotal)}</td></tr>
-          ${Number(discountAmount) > 0 ? `<tr><td>Discount</td><td style="text-align:right;">-${formatCurrency(discountAmount)}</td></tr>` : ''}
-          <tr><td>Shipping</td><td style="text-align:right;">${formatCurrency(shippingCost ?? 0)}</td></tr>
-          <tr><td><strong>Total</strong></td><td style="text-align:right;"><strong>${formatCurrency(total)}</strong></td></tr>
-        </table>
+        <p>We'll send you another email as soon as it ships.</p>
         <p><a href="${orderLink}">Track your order</a></p>
       `,
     },
@@ -260,18 +237,7 @@ export const sendOrderProcessingEmail = ({
  *
  * @param {{ userId: string, email: string, firstName: string, orderId: string, trackingNumber: string | null }} param0
  */
-export const sendOrderShippedEmail = ({
-  userId,
-  email,
-  firstName,
-  orderId,
-  trackingNumber,
-  items,
-  subtotal,
-  discountAmount,
-  shippingCost,
-  total,
-}) => {
+export const sendOrderShippedEmail = ({ userId, email, firstName, orderId, trackingNumber }) => {
   const orderLink = `${process.env.FRONTEND_URL}/orders/${orderId}`;
   return sendEmail(
     {
@@ -281,13 +247,6 @@ export const sendOrderShippedEmail = ({
         <h2>Your order is on its way, ${escapeHtml(firstName)}!</h2>
         <p>Order <strong>#${orderId}</strong> has been shipped.</p>
         ${trackingNumber ? `<p><strong>Tracking number:</strong> ${escapeHtml(trackingNumber)}</p>` : ''}
-        ${buildItemsTable(items)}
-        <table style="width:100%;margin:8px 0;">
-          <tr><td>Subtotal</td><td style="text-align:right;">${formatCurrency(subtotal)}</td></tr>
-          ${Number(discountAmount) > 0 ? `<tr><td>Discount</td><td style="text-align:right;">-${formatCurrency(discountAmount)}</td></tr>` : ''}
-          <tr><td>Shipping</td><td style="text-align:right;">${formatCurrency(shippingCost ?? 0)}</td></tr>
-          <tr><td><strong>Total</strong></td><td style="text-align:right;"><strong>${formatCurrency(total)}</strong></td></tr>
-        </table>
         <p><a href="${orderLink}">View order details</a></p>
       `,
     },

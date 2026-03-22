@@ -37,10 +37,6 @@ const orderItemSchema = new Schema(
       required: [true, 'Line total is required'],
       get: decimal128Getter,
     },
-    imageUrl: {
-      type: String,
-      default: null,
-    },
   },
   {
     _id: true,
@@ -127,7 +123,7 @@ const orderSchema = new Schema(
       default: 'cash-on-delivery',
       required: [true, 'Paying method is required'],
     },
-    isPaid: {
+    isPaied: {
       type: Boolean,
       required: [true, 'Is this order paied or not. isPaieed required'],
       default: false,

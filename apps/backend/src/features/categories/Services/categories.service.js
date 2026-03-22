@@ -66,7 +66,7 @@ export const create = async (data) => {
 
 export const getAll = async () => {
   const categories = await Category.find().populate('parentId', 'name');
-  if(categories.length === 0) {
+  if (categories.length === 0) {
     throw new AppError('No categories found', 404);
   }
   return categories;

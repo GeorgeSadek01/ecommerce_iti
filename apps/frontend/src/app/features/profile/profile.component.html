@@ -1,0 +1,151 @@
+<section class="auth-page">
+  @if (authService.currentUser(); as user) {
+  <header class="auth-header d-flex justify-content-between align-items-center">
+    <div>
+      <h1>Profile</h1>
+    </div>
+
+    <div class="d-flex gap-2 align-items-center">
+      <button type="button" class="btn btn-sm btn-primary d-inline-flex align-items-center me-2"
+        [routerLink]="sellerActionLink()" [attr.aria-label]="sellerActionLabel()" [attr.title]="sellerActionLabel()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shop me-2"
+          viewBox="0 0 16 16" aria-hidden="true">
+          <path
+            d="M2.97 1a1 1 0 0 0-.894.553L.73 4.5A1 1 0 0 0 1.6 6h12.8a1 1 0 0 0 .87-1.5L13.924 1.553A1 1 0 0 0 13.03 1H2.97z" />
+          <path
+            d="M0 6.5A1.5 1.5 0 0 1 1.5 5h13A1.5 1.5 0 0 1 16 6.5v6A2.5 2.5 0 0 1 13.5 15h-11A2.5 2.5 0 0 1 0 12.5v-6zM4.5 8a.5.5 0 0 0-.5.5V11h1V8.5A.5.5 0 0 0 4.5 8zm3 0a.5.5 0 0 0-.5.5V11h1V8.5a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5V11h1V8.5a.5.5 0 0 0-.5-.5z" />
+        </svg>
+        {{ sellerActionLabel() }}
+      </button>
+
+      <button type="button" class="btn btn-sm btn-outline-secondary" (click)="logout()">Logout</button>
+    </div>
+  </header>
+  } @else if (authService.isAuthenticated()) {
+  <header class="auth-header d-flex justify-content-between align-items-center">
+    <div>
+      <h1>Profile</h1>
+    </div>
+
+    <div class="d-flex gap-2 align-items-center">
+      <button type="button" class="btn btn-sm btn-primary d-inline-flex align-items-center me-2"
+        [routerLink]="sellerActionLink()" [attr.aria-label]="sellerActionLabel()" [attr.title]="sellerActionLabel()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-shop me-2"
+          viewBox="0 0 16 16" aria-hidden="true">
+          <path
+            d="M2.97 1a1 1 0 0 0-.894.553L.73 4.5A1 1 0 0 0 1.6 6h12.8a1 1 0 0 0 .87-1.5L13.924 1.553A1 1 0 0 0 13.03 1H2.97z" />
+          <path
+            d="M0 6.5A1.5 1.5 0 0 1 1.5 5h13A1.5 1.5 0 0 1 16 6.5v6A2.5 2.5 0 0 1 13.5 15h-11A2.5 2.5 0 0 1 0 12.5v-6zM4.5 8a.5.5 0 0 0-.5.5V11h1V8.5A.5.5 0 0 0 4.5 8zm3 0a.5.5 0 0 0-.5.5V11h1V8.5a.5.5 0 0 0-.5-.5zm3 0a.5.5 0 0 0-.5.5V11h1V8.5a.5.5 0 0 0-.5-.5z" />
+        </svg>
+        {{ sellerActionLabel() }}
+      </button>
+      <button type="button" class="btn btn-outline-secondary" (click)="logout()">Logout</button>
+    </div>
+  </header>
+  }
+
+  <form class="auth-card card p-3 p-md-4 mb-4" [formGroup]="profileForm" (ngSubmit)="submitProfile()">
+    <h2 class="h5 mb-3">Update Account</h2>
+
+    <div class="row g-3">
+      <div class="col-12 col-md-6">
+        <label class="form-label">First Name</label>
+        <input class="form-control" formControlName="firstName" type="text" />
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label">Last Name</label>
+        <input class="form-control" formControlName="lastName" type="text" />
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label">Email</label>
+        <input class="form-control" formControlName="email" type="email" />
+      </div>
+
+      <div class="col-12 col-md-6">
+        <label class="form-label">Confirm Password</label>
+        <input class="form-control" formControlName="confirmPassword" type="password" />
+      </div>
+
+      <div class="col-12 d-flex gap-2 justify-content-end">
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+          {{ isSubmitting() ? 'Saving...' : 'Save Changes' }}
+        </button>
+      </div>
+    </div>
+  </form>
+
+  <section class="auth-card">
+    <h2>Addresses</h2>
+
+    <form [formGroup]="addressForm" (ngSubmit)="submitAddress()" class="row g-3">
+      <div class="col-12 col-md-6">
+        <label class="form-label">Street</label>
+        <input class="form-control" formControlName="street" type="text" />
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label">City</label>
+        <input class="form-control" formControlName="city" type="text" />
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label">State</label>
+        <input class="form-control" formControlName="state" type="text" />
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label">Country</label>
+        <input class="form-control" formControlName="country" type="text" />
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label">Zip Code</label>
+        <input class="form-control" formControlName="zipCode" type="text" />
+      </div>
+
+      <div class="col-12">
+        <div class="form-check">
+          <input class="form-check-input" formControlName="isDefault" type="checkbox" id="addrDefault" />
+          <label class="form-check-label" for="addrDefault">Set as default</label>
+        </div>
+      </div>
+
+      <div class="col-12 d-flex gap-2 address-actions">
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+          {{ isSubmitting() ? 'Saving...' : (editingAddressId() ? 'Update Address' : 'Add Address') }}
+        </button>
+        <button type="button" class="btn btn-outline-secondary" (click)="resetAddressForm()"
+          [disabled]="isSubmitting()">
+          Cancel
+        </button>
+      </div>
+    </form>
+
+    <ul>
+      @for (address of addresses(); track address.id) {
+      <li class="mb-3">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div>{{ address.street }}, {{ address.city }}, {{ address.country }}</div>
+            @if (address.isDefault) {
+            <small class="text-muted">Default</small>
+            }
+          </div>
+
+          <div class="d-flex gap-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="editAddress(address)">Edit</button>
+            <button type="button" class="btn btn-sm btn-outline-danger"
+              (click)="deleteAddress(address.id)">Delete</button>
+          </div>
+        </div>
+      </li>
+      }
+    </ul>
+  </section>
+
+  @if (errorMessage()) {
+  <p class="feedback error">{{ errorMessage() }}</p>
+  }
+
+  @if (successMessage()) {
+  <p class="feedback success">{{ successMessage() }}</p>
+  }
+</section>

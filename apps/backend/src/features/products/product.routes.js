@@ -13,7 +13,7 @@ import {
   uploadImagesValidator,
   imageIdValidator,
   validateProductSearch,
-  validateStockUpdate,
+  validateStockUpdate
 } from './Validators/products.validators.js';
 import { handleValidationErrors } from './handleValidationErrors.js';
 
@@ -24,8 +24,9 @@ router
   .post(authenticate, authorize('seller', 'admin'), createProductValidator, validateRequest, productController.create)
   .get(productController.getAll);
 
-// Search should come before anything that might interpret 'search' as an ID
-router.route('/search').get(validateProductSearch, handleValidationErrors, productController.search);
+  // Search should come before anything that might interpret 'search' as an ID
+router.route('/search')
+.get(validateProductSearch, handleValidationErrors, productController.search)
 // ─── Get, Update, Delete Product by ID ───────────────────────────────────────
 router
   .route('/:id')
@@ -88,12 +89,12 @@ router
   );
 // ─── Update Product Stock ─────────────────────────────────────────────────
 router.patch(
-  '/:id/stock',
+	'/:id/stock',
   authenticate,
   authorize('seller', 'admin'),
-  validateStockUpdate,
-  handleValidationErrors,
-  checkProductExists,
-  productController.updateProductStock
+	validateStockUpdate,
+	handleValidationErrors,
+	checkProductExists,
+	productController.updateProductStock
 );
 export default router;
