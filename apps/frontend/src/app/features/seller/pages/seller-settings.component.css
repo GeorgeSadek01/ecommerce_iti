@@ -1,0 +1,29 @@
+:host {
+  display: block;
+}
+
+.form-control,
+textarea.form-control {
+  border-radius: 10px;
+  border-color: #cfdbf4;
+}
+
+.form-control:focus,
+textarea.form-control:focus {
+  border-color: #6d91d9;
+  box-shadow: 0 0 0 0.2rem rgba(69, 115, 206, 0.15);
+}
+
+.logo-preview {
+  background: #f8fbff;
+  border-color: #d8e4fb !important;
+}
+
+.logo-preview img {
+  max-width: 180px;
+  max-height: 90px;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  display: block;
+}

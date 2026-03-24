@@ -1,0 +1,143 @@
+<div class="admin-dashboard">
+    @if (error()) {
+    <div class="error-banner" role="alert">
+        <div>
+            <p class="error-title mb-1">Could not load dashboard</p>
+            <p class="mb-0">{{ error() }}</p>
+        </div>
+        <button class="btn btn-sm btn-danger" (click)="loadDashboardData()">Retry now</button>
+    </div>
+    }
+
+    <section class="metrics-grid mb-4">
+        @if (loading()) {
+        @for (slot of metricSkeleton; track slot) {
+        <article class="metric-card metric-skeleton"></article>
+        }
+        } @else {
+        @for (card of metricCards(); track card.label) {
+        <article class="metric-card">
+            <div class="metric-icon" [class]="'tone-' + card.tone">
+                <span class="material-icons">{{ card.icon }}</span>
+            </div>
+            <div>
+                <p class="metric-label">{{ card.label }}</p>
+                <h3 class="metric-value">{{ card.value }}</h3>
+            </div>
+        </article>
+        }
+        }
+    </section>
+
+    <div class="row g-4">
+        <div class="col-xl-8">
+            <div class="card border-0 shadow-sm chart-card h-100">
+                <div class="card-body">
+                    <div class="chart-header">
+                        <div>
+                            <p class="chart-kicker">Revenue trend</p>
+                            <h5 class="mb-0">Revenue & Orders</h5>
+                        </div>
+                        <div class="text-end">
+                            <p class="chart-kicker mb-0">Latest revenue</p>
+                            <strong>{{ formatCurrency(latestRevenue()) }}</strong>
+                        </div>
+                    </div>
+
+                    @if (loading()) {
+                    <div class="chart-loading"></div>
+                    } @else if (timeseries().length) {
+                    <div class="chart-wrap">
+                        <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="line-chart">
+                            <polyline class="line-fill" [attr.points]="linePoints() + ' 100,100 0,100'"></polyline>
+                            <polyline class="line-stroke" [attr.points]="linePoints()"></polyline>
+                        </svg>
+
+                        <div class="bar-chart" aria-label="Orders volume chart">
+                            @for (point of timeseries(); track point.date) {
+                            <div class="bar-group" [title]="point.orders + ' orders'">
+                                <div class="bar-fill" [style.height.%]="orderBarHeight(point.orders)"></div>
+                                <small>{{ shortDate(point.date) }}</small>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                    } @else {
+                    <div class="empty-card">No timeseries data available.</div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <p class="chart-kicker">Leaderboard</p>
+                    <h5 class="mb-3">Top Sellers</h5>
+
+                    @if (loading()) {
+                    <div class="seller-skeleton"></div>
+                    <div class="seller-skeleton"></div>
+                    <div class="seller-skeleton"></div>
+                    } @else if (topSellers().length) {
+                    <div class="top-sellers-list">
+                        @for (seller of topSellers(); track seller.sellerId; let i = $index) {
+                        <article class="seller-item">
+                            <div class="seller-rank">{{ i + 1 }}</div>
+                            <div class="seller-details">
+                                <p class="mb-1 fw-semibold text-truncate">{{ seller.storeName }}</p>
+                                <small>{{ formatCurrency(seller.totalEarnings) }}</small>
+                            </div>
+                        </article>
+                        }
+                    </div>
+                    } @else {
+                    <div class="empty-card">No seller data available.</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <section class="mt-4">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                    <h5 class="mb-0">Recent Orders</h5>
+                    <small class="text-secondary">{{ recentOrders().length }} record(s)</small>
+                </div>
+
+                @if (loading()) {
+                <div class="table-loading"></div>
+                } @else if (recentOrders().length) {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0 align-middle">
+                        <thead>
+                            <tr class="table-light">
+                                <th>Order ID</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (order of recentOrders(); track order._id) {
+                            <tr>
+                                <td class="fw-semibold">{{ order._id | slice: 0:8 }}...</td>
+                                <td>{{ order.placedAt | date: 'short' }}</td>
+                                <td>
+                                    <app-status-badge [status]="order.status"></app-status-badge>
+                                </td>
+                                <td>{{ order.total | currency: 'USD' }}</td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                } @else {
+                <div class="empty-card">No recent orders found.</div>
+                }
+            </div>
+        </div>
+    </section>
+</div>

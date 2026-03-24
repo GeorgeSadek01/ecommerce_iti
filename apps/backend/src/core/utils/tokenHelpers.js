@@ -1,12 +1,14 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import RefreshToken from '../db/Models/User/refreshToken.model.js';
+import PasswordResetToken from '../db/Models/User/passwordResetToken.model.js';
 import env from '../config/env.js';
 
 const ACCESS_TOKEN_SECRET = env.JWT_SECRET;
 const ACCESS_TOKEN_TTL = '15m';
 const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
 const CONFIRM_TOKEN_TTL = '24h';
+const PASSWORD_RESET_TTL_MS = 1 * 60 * 60 * 1000; // 1 hour
 
 // ─── Access Token ─────────────────────────────────────────────────────────────
 
@@ -69,7 +71,7 @@ export const createRefreshToken = async (userId) => {
  * @returns {Promise<{ newToken: string, userId: string } | null>}
  */
 export const rotateRefreshToken = async (oldToken) => {
-  const record = await RefreshToken.findOneAndDelete({ token: oldToken, expiresAt: { $gt: new Date() } }); // only generate access token when old refresh token matches the sent one and it is already not expired
+  const record = await RefreshToken.findOneAndDelete({ token: hashToken(oldToken), expiresAt: { $gt: new Date() } }); // only generate access token when old refresh token matches the sent one and it is already not expired
 
   if (!record) return null;
 
@@ -108,9 +110,37 @@ export const signEmailToken = (payload) =>
  * @returns {string} signed JWT
  */
 export const signPasswordResetToken = (payload) =>
-  jwt.sign({ sub: payload.id, email: payload.email, purpose: 'password-reset' }, ACCESS_TOKEN_SECRET, {
-    expiresIn: '1h',
-  });
+  // Deprecated: replaced by opaque, single-use tokens stored in DB.
+  // For backward compatibility, generate an opaque token and persist it.
+  // This function returns the raw token string.
+  (() => {
+    throw new Error('signPasswordResetToken should not be used synchronously anymore');
+  })();
+
+/**
+ * Create a single-use opaque password-reset token, persist its hash, and return raw token.
+ * @param {string} userId
+ * @returns {Promise<string>} raw token
+ */
+export const createPasswordResetToken = async (userId) => {
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + PASSWORD_RESET_TTL_MS);
+  const hashed = hashToken(token);
+  await PasswordResetToken.create({ userId, token: hashed, expiresAt });
+  return token;
+};
+
+/**
+ * Consume (verify + delete) a password reset token. Returns the record if valid.
+ * @param {string} rawToken
+ * @returns {Promise<{ userId: any } | null>} record
+ */
+export const consumePasswordResetToken = async (rawToken) => {
+  if (!rawToken) return null;
+  const hashed = hashToken(rawToken);
+  const record = await PasswordResetToken.findOneAndDelete({ token: hashed, expiresAt: { $gt: new Date() } });
+  return record;
+};
 
 /**
  * Verify a purpose-specific JWT (email-confirm or password-reset).

@@ -12,7 +12,7 @@ export const createCategoryValidator = [
 
   body('description').optional().trim().isLength({ max: 500 }).withMessage('Description cannot exceed 500 characters.'),
 
-  body('parentId').optional().isMongoId().withMessage('Parent ID must be a valid MongoDB ObjectId.'),
+  body('parentId').optional({ nullable: true }).isMongoId().withMessage('Parent ID must be a valid MongoDB ObjectId.'),
 ];
 
 // ─── Update Category Validator ────────────────────────────────────────────────
@@ -30,7 +30,7 @@ export const updateCategoryValidator = [
 
   body('description').optional().trim().isLength({ max: 500 }).withMessage('Description cannot exceed 500 characters.'),
 
-  body('parentId').optional().isMongoId().withMessage('Parent ID must be a valid MongoDB ObjectId.'),
+  body('parentId').optional({ nullable: true }).isMongoId().withMessage('Parent ID must be a valid MongoDB ObjectId.'),
 ];
 
 // ─── Category ID Validator ────────────────────────────────────────────────────

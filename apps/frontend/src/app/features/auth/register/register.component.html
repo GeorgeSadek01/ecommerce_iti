@@ -1,0 +1,43 @@
+<section class="auth-page">
+  <form class="auth-card" [formGroup]="registerForm" (ngSubmit)="submit()">
+    <h1>Create Account</h1>
+
+    <label>
+      First Name
+      <input type="text" formControlName="firstName" />
+    </label>
+
+    <label>
+      Last Name
+      <input type="text" formControlName="lastName" />
+    </label>
+
+    <label>
+      Email
+      <input type="email" formControlName="email" />
+    </label>
+
+    <label>
+      Password
+      <input type="password" formControlName="password" />
+    </label>
+
+    <button type="submit" [disabled]="isSubmitting()">
+      {{ isSubmitting() ? 'Creating account...' : 'Register' }}
+    </button>
+
+    <p>
+      Already have an account?
+      <a routerLink="/auth/login">Login</a>
+    </p>
+
+    @if (successMessage()) {
+    <p class="feedback success">{{ successMessage() }}</p>
+    <button type="button" class="secondary-btn" (click)="goToLogin()">Go to Login</button>
+    }
+
+    @if (errorMessage()) {
+    <p class="feedback error">{{ errorMessage() }}</p>
+    }
+  </form>
+</section>

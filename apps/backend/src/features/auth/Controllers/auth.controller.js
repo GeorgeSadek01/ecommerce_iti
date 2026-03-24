@@ -4,6 +4,7 @@ import {
   register,
   confirmEmail,
   login,
+  loginWithGoogle,
   refreshTokens,
   logout,
   changePassword,
@@ -16,8 +17,8 @@ import { REFRESH_COOKIE_NAME, getRefreshCookieOptions } from '../../../core/util
 // ─── POST /auth/register ──────────────────────────────────────────────────────
 
 export const registerHandler = asyncHandler(async (req, res) => {
-  const { firstName, lastName, email, password } = req.body;
-  const result = await register({ firstName, lastName, email, password });
+  const { firstName, lastName, email, password, role, sellerProfile } = req.body;
+  const result = await register({ firstName, lastName, email, password, role, sellerProfile });
   sendSuccess(res, 201, 'Registration successful. Please check your email to confirm your account.', {
     user: result.user,
   });
@@ -39,6 +40,16 @@ export const loginHandler = asyncHandler(async (req, res) => {
 
   res.cookie(REFRESH_COOKIE_NAME, refreshToken, getRefreshCookieOptions());
   sendSuccess(res, 200, 'Login successful.', { accessToken, user });
+});
+
+// ─── POST /auth/google ────────────────────────────────────────────────────────
+
+export const googleAuthHandler = asyncHandler(async (req, res) => {
+  const { idToken } = req.body;
+  const { accessToken, refreshToken, user } = await loginWithGoogle({ idToken });
+
+  res.cookie(REFRESH_COOKIE_NAME, refreshToken, getRefreshCookieOptions());
+  sendSuccess(res, 200, 'Google login successful.', { accessToken, user });
 });
 
 // ─── POST /auth/refresh ───────────────────────────────────────────────────────
@@ -107,9 +118,27 @@ export const resetPasswordHandler = asyncHandler(async (req, res) => {
 
 export const updateUserProfileHandler = asyncHandler(async (req, res) => {
   const userId = req.user.id; // From authenticate middleware
+  const oldEmail = req.user.email;
   const { firstName, lastName, email, confirmPassword } = req.body;
 
   const user = await updateUserProfile(userId, { firstName, lastName, email, confirmPassword });
+
+  // If email was changed, revoke refresh token and clear cookie to force logout
+  if (user.email && user.email !== oldEmail) {
+    const token = req.cookies?.[REFRESH_COOKIE_NAME];
+    if (token) {
+      await logout(token);
+    }
+
+    const { maxAge: _dropped, ...clearOptions } = getRefreshCookieOptions();
+    res.clearCookie(REFRESH_COOKIE_NAME, clearOptions);
+
+    sendSuccess(res, 200, 'Profile updated successfully. Please confirm your new email address, then log in again.', {
+      user,
+    });
+
+    return;
+  }
 
   sendSuccess(res, 200, 'Profile updated successfully.', { user });
 });

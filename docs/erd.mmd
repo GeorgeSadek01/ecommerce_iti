@@ -1,0 +1,214 @@
+erDiagram
+  USER {
+    ObjectId _id PK
+    string firstName
+    string lastName
+    string email
+    string passwordHash
+    string role
+    boolean isEmailConfirmed
+    boolean isDeleted
+    string googleId
+    string avatarUrl
+  }
+
+  ADDRESS {
+    ObjectId _id PK
+    ObjectId userId FK
+    string street
+    string city
+    string state
+    string country
+    string zipCode
+    boolean isDefault
+  }
+
+  REFRESH_TOKEN {
+    ObjectId _id PK
+    ObjectId userId FK
+    string token
+    Date expiresAt
+  }
+
+  SELLER_PROFILE {
+    ObjectId _id PK
+    ObjectId userId FK
+    string storeName
+    string description
+    string logoUrl
+    string status
+    boolean isDeleted
+    Date deletedAt
+    decimal totalEarnings
+  }
+
+  CATEGORY {
+    ObjectId _id PK
+    string name
+    string slug
+    ObjectId parentId FK
+    ObjectId[] ancestors
+    object image
+  }
+
+  PRODUCT {
+    ObjectId _id PK
+    ObjectId sellerProfileId FK
+    ObjectId categoryId FK
+    string name
+    string slug
+    string description
+    decimal price
+    decimal discountedPrice
+    integer stock
+    boolean isActive
+    number averageRating
+  }
+
+  PRODUCT_IMAGE {
+    ObjectId _id PK
+    ObjectId productId FK
+    string url
+    string cloudinaryPublicId
+    boolean isPrimary
+    integer sortOrder
+  }
+
+  REVIEW {
+    ObjectId _id PK
+    ObjectId productId FK
+    ObjectId userId FK
+    integer rating
+    string comment
+  }
+
+  CART {
+    ObjectId _id PK
+    ObjectId userId FK
+  }
+
+  CART_ITEM {
+    ObjectId _id PK
+    ObjectId cartId FK
+    ObjectId productId FK
+    integer quantity
+    decimal priceSnapshot
+  }
+
+  PROMO_CODE {
+    ObjectId _id PK
+    string code
+    string discountType
+    decimal discountValue
+    decimal minOrderAmount
+    integer usageLimit
+    integer usageCount
+    Date expiresAt
+    boolean isActive
+    ObjectId createdBy FK
+    string scope
+    ObjectId sellerId FK
+    ObjectId productId FK
+  }
+
+  ORDER_ITEM {
+    ObjectId _id PK
+    ObjectId productId FK
+    ObjectId sellerId FK
+    string productNameSnapshot
+    decimal priceSnapshot
+    integer quantity
+    decimal lineTotal
+    string imageUrl
+  }
+
+  ORDER {
+    ObjectId _id PK
+    ObjectId userId FK
+    ObjectId addressId FK
+    ObjectId promoCodeId FK
+    string status
+    Decimal subtotal
+    Decimal discountAmount
+    Decimal shippingCost
+    Decimal total
+    string trackingNumber
+    Date placedAt
+    string sessionURL
+    string payingMethod
+    boolean isPaid
+    OrderItem[] items
+  }
+
+  PAYMENT {
+    ObjectId _id PK
+    ObjectId orderId FK
+    string provider
+    string providerTransactionId
+    string status
+    decimal amount
+    string currency
+  }
+
+  WISHLIST {
+    ObjectId _id PK
+    ObjectId userId FK
+    items[] productId FK
+  }
+
+  EMAIL_LOG {
+    ObjectId _id PK
+    ObjectId userId FK
+    string type
+    string recipient
+    string status
+    Date sentAt
+    string errorMessage
+  }
+
+  BANNER {
+    ObjectId _id PK
+    string title
+    string imageUrl
+    string linkUrl
+    integer sortOrder
+    boolean isActive
+    Date startsAt
+    Date endsAt
+  }
+
+  %% Relationships
+  USER ||--o{ ADDRESS : has
+  USER ||--o{ REFRESH_TOKEN : issues
+  USER ||--o{ SELLER_PROFILE : owns
+  USER ||--o{ CART : owns
+  USER ||--o{ REVIEW : writes
+  USER ||--o{ ORDER : places
+  USER ||--o{ WISHLIST : owns
+  USER ||--o{ EMAIL_LOG : receives
+
+  CART ||--o{ CART_ITEM : contains
+  CART_ITEM }o--|| PRODUCT : references
+
+  PRODUCT }o--|| CATEGORY : belongs_to
+  PRODUCT ||--o{ PRODUCT_IMAGE : has
+  PRODUCT ||--o{ REVIEW : has
+
+  ORDER ||--|{ ORDER_ITEM : contains
+  ORDER_ITEM }o--|| PRODUCT : references
+  ORDER_ITEM }o--|| SELLER_PROFILE : sold_by
+
+  ORDER ||--o{ PAYMENT : paid_by
+  PAYMENT }o--|| ORDER : for
+
+  PROMO_CODE ||--o{ ORDER : applied_to
+  PROMO_CODE }o--|| PRODUCT : product_specific
+  PROMO_CODE }o--|| SELLER_PROFILE : seller_specific
+
+  WISHLIST }o--|| PRODUCT : item
+
+  EMAIL_LOG }o--|| USER : about
+
+  %% Notes
+  %% ORDER_ITEM is embedded inside ORDER (MongoDB subdocument)
+  %% Index: Order has compound index { userId, status } (see model)

@@ -1,0 +1,170 @@
+.admin-refunds {
+  .table {
+    font-size: 0.95rem;
+  }
+
+  .table thead th {
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+  }
+
+  .table tbody tr {
+    transition: background-color 0.2s ease;
+  }
+
+  .table tbody tr:hover {
+    background-color: #f8f9fa;
+  }
+
+  .btn-sm {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.875rem;
+  }
+
+  .form-label {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #2c3e50;
+  }
+
+  .form-control,
+  .form-select {
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+
+    &:focus {
+      border-color: #0d6efd;
+      box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+  }
+
+  .modal {
+    .modal-dialog {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      border-radius: 0.5rem;
+      border: none;
+      box-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+      border-bottom: 1px solid #dee2e6;
+      background-color: #f8f9fa;
+    }
+
+    .modal-body {
+      padding-top: 1.5rem;
+    }
+
+    .form-control-plaintext {
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
+      color: #212529;
+
+      &.text-break {
+        word-break: break-all;
+      }
+    }
+
+    .alert {
+      margin-bottom: 0;
+      padding: 1rem;
+      font-size: 0.95rem;
+
+      strong {
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+
+      p {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .d-inline-block {
+    display: inline-block;
+  }
+
+  /* Responsive Styling */
+  @media (max-width: 768px) {
+    .table-responsive {
+      table {
+        font-size: 0.85rem;
+      }
+
+      thead {
+        display: none;
+      }
+
+      tbody tr {
+        display: block;
+        margin-bottom: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.375rem;
+      }
+
+      td {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem;
+        border: none;
+        border-bottom: 1px solid #dee2e6;
+
+        &:before {
+          content: attr(data-label);
+          font-weight: 600;
+          width: 30%;
+        }
+
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+    }
+
+    .modal-dialog {
+      margin: 0 1rem;
+    }
+
+    .row {
+      .col-md-6 {
+        -ms-flex: 0 0 100%;
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 1rem;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+  @media (max-width: 576px) {
+    .card-body {
+      padding: 1rem !important;
+    }
+
+    .btn-group {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+
+      .btn {
+        flex: 1;
+        min-width: 120px;
+      }
+    }
+
+    .pagination-info {
+      font-size: 0.85rem;
+    }
+  }
+}
