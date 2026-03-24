@@ -3,7 +3,7 @@ import AppError from '../../core/utils/AppError.js';
 
 const router = express.Router();
 
-router.all('*any', (_req, _res, next) => {
+router.all('*', (_req, _res, next) => {
   next(new AppError('Cart endpoints are not implemented yet.', 501));
 });
 

@@ -319,9 +319,24 @@ const buildDateRangeFilter = ({ dateFrom, dateTo } = {}) => {
   if (!dateFrom && !dateTo) return null;
 
   const range = {};
-  if (dateFrom) range.$gte = new Date(dateFrom);
-  if (dateTo) range.$lte = new Date(dateTo);
 
+  if (dateFrom) {
+    const fromDate = new Date(dateFrom);
+    if (!isNaN(fromDate.getTime())) {
+      range.$gte = fromDate;
+    }
+  }
+
+  if (dateTo) {
+    const toDate = new Date(dateTo);
+    if (!isNaN(toDate.getTime())) {
+      range.$lte = toDate;
+    }
+  }
+
+  if (Object.keys(range).length === 0) {
+    return null;
+  }
   return { placedAt: range };
 };
 
@@ -520,7 +535,7 @@ const serializeOrder = (order) => ({
   trackingNumber: order.trackingNumber,
   placedAt: order.placedAt,
   payingMethod: order.payingMethod,
-  isPaied: order.isPaied,
+  isPaid: order.isPaid,
   items: order.items,
   updatedAt: order.updatedAt,
 });

@@ -24,9 +24,10 @@ router
   .post(authenticate, authorize('seller', 'admin'), createProductValidator, validateRequest, productController.create)
   .get(productController.getAll);
 
-  // Search should come before anything that might interpret 'search' as an ID
-router.route('/search')
-.get(validateProductSearch, handleValidationErrors, productController.search)
+// Search should come before anything that might interpret 'search' as an ID
+router
+  .route('/search')
+  .get(validateProductSearch, handleValidationErrors, productController.search);
 // ─── Get, Update, Delete Product by ID ───────────────────────────────────────
 router
   .route('/:id')

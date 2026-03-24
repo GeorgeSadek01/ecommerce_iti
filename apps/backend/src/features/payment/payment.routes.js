@@ -2,10 +2,10 @@ import express from 'express';
 
 const router = express.Router();
 
-import { webhook, checkout, placeOrder, confirmOrder } from './Controllers/payment.controller.js';
 import authenticate from '../../core/middlewares/authenticate.js';
 import authorize from '../../core/utils/authorize.js';
 import validateRequest from '../../core/middlewares/validateRequest.js';
+import { webhook, checkout, placeOrder, confirmOrder } from './Controllers/payment.controller.js';
 import { checkoutValidator } from './Validators/payment.validators.js';
 
 router.post('/checkout-credit', authenticate, checkoutValidator, validateRequest, checkout);

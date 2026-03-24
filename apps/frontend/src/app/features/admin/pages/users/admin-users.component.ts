@@ -45,23 +45,26 @@ export class AdminUsersComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    this.userService
-      .getUsers(this.currentPage(), this.pageSize(), this.searchQuery() || undefined, this.selectedRole() || undefined)
-      .subscribe({
-        next: (res) => {
-          if (res.data?.items) {
-            this.users.set(res.data.items);
-            if (res.data.meta) {
-              this.totalPages.set(res.data.meta.pages);
-            }
+    const page = this.currentPage();
+    const limit = this.pageSize();
+    const query = this.searchQuery() || undefined;
+    const role = this.selectedRole() || undefined;
+
+    this.userService.getUsers(page, limit, query, role).subscribe({
+      next: (res) => {
+        if (res.data?.items) {
+          this.users.set(res.data.items);
+          if (res.data.meta) {
+            this.totalPages.set(res.data.meta.pages);
           }
-          this.loading.set(false);
-        },
-        error: (err) => {
-          this.error.set(err.error?.message || 'Failed to load users');
-          this.loading.set(false);
-        },
-      });
+        }
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set(err.error?.message || 'Failed to load users');
+        this.loading.set(false);
+      },
+    });
   }
 
   onSearch(): void {

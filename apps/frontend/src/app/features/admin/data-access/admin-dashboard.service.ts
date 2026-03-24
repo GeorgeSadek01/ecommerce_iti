@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment';
 import { DashboardSummary, TimseriesData, TopSeller, AdminOrder, ApiResponse } from './admin.types';
 
@@ -34,12 +35,30 @@ export class AdminDashboardService {
   // Get top sellers
   getTopSellers(limit: number = 5): Observable<ApiResponse<TopSeller[]>> {
     const params = new HttpParams().set('limit', limit.toString());
-    return this.http.get<ApiResponse<TopSeller[]>>(`${this.apiUrl}/top-sellers`, { params });
+    return this.http.get<any>(`${this.apiUrl}/top-sellers`, { params }).pipe(
+      map((res) => {
+        const top = res.data?.topSellers ?? res.data ?? [];
+        return {
+          success: res.status === 'success' || res.success === true,
+          message: res.message ?? '',
+          data: top,
+        } as ApiResponse<TopSeller[]>;
+      })
+    );
   }
 
   // Get recent orders
   getRecentOrders(limit: number = 10): Observable<ApiResponse<AdminOrder[]>> {
     const params = new HttpParams().set('limit', limit.toString());
-    return this.http.get<ApiResponse<AdminOrder[]>>(`${this.apiUrl}/recent-orders`, { params });
+    return this.http.get<any>(`${this.apiUrl}/recent-orders`, { params }).pipe(
+      map((res) => {
+        const recent = res.data?.recentOrders ?? res.data ?? [];
+        return {
+          success: res.status === 'success' || res.success === true,
+          message: res.message ?? '',
+          data: recent,
+        } as ApiResponse<AdminOrder[]>;
+      })
+    );
   }
 }
