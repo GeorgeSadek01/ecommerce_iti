@@ -1,8 +1,8 @@
 import Cart from '../../../core/db/Models/Cart/cart.model.js';
 import CartItem from '../../../core/db/Models/Cart/cartItem.model.js';
 import Product from '../../../core/db/Models/Product/product.model.js';
-import SellerProfile from '../../../core/db/Models/Seller/sellerProfile.model.js';
 import AppError from '../../../core/utils/AppError.js';
+import { assertNotSellerOwnProduct } from '../../../core/utils/assertions.js';
 
 // helper
 
@@ -12,13 +12,7 @@ async function getOrCreateCart(userId) {
   return cart;
 }
 
-async function assertNotSellerOwnProduct(userId, productId) {
-  const sellerProfile = await SellerProfile.findOne({ userId });
-  if (!sellerProfile) return; // not a seller, fine
-
-  const product = await Product.findOne({ _id: productId, sellerProfileId: sellerProfile._id });
-  if (product) throw new AppError('You cannot add your own product to the cart', 403);
-}
+// moved assertNotSellerOwnProduct to core utils
 
 async function getCartWithItems(cartId) {
   return CartItem.find({ cartId }).populate({
@@ -36,7 +30,7 @@ export const getCart = async (userId) => {
 };
 
 export const addCartItem = async (userId, productId, quantity = 1) => {
-  await assertNotSellerOwnProduct(userId, productId);
+  await assertNotSellerOwnProduct(userId, productId, 'You cannot add your own product to the cart');
 
   const product = await Product.findById(productId);
   if (!product) throw new AppError('Product not found', 404);
@@ -124,7 +118,11 @@ export const clearCart = async (userId) => {
 
 export const mergeCart = async (userId, incomingItems) => {
   // incomingItems: [{ productId, quantity }]
-  await Promise.all(incomingItems.map(({ productId }) => assertNotSellerOwnProduct(userId, productId)));
+  await Promise.all(
+    incomingItems.map(({ productId }) =>
+      assertNotSellerOwnProduct(userId, productId, 'You cannot add your own product to the cart')
+    )
+  );
 
   const cart = await getOrCreateCart(userId);
 

@@ -69,16 +69,37 @@ const updateProductStats = async function (productId) {
   }
 };
 
-reviewSchema.post('save', async function () {
-  await updateProductStats(this.productId);
+reviewSchema.post('save', async function (doc, next) {
+  try {
+    const productId = doc ? doc.productId : this.productId;
+    if (productId) await updateProductStats(productId);
+  } catch (err) {
+    // Log the error but don't break the save operation flow
+    // Some callers may pass a `next` callback; call it if provided.
+    // eslint-disable-next-line no-console
+    console.error('Failed to update product stats after review save', err);
+  }
+  if (typeof next === 'function') next();
 });
 
-reviewSchema.post('findOneAndDelete', async function (doc) {
-  if (doc) await updateProductStats(doc.productId);
+reviewSchema.post('findOneAndDelete', async function (doc, next) {
+  try {
+    if (doc && doc.productId) await updateProductStats(doc.productId);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to update product stats after review delete', err);
+  }
+  if (typeof next === 'function') next();
 });
 
-reviewSchema.post('findOneAndUpdate', async function (doc) {
-  if (doc) await updateProductStats(doc.productId);
+reviewSchema.post('findOneAndUpdate', async function (doc, next) {
+  try {
+    if (doc && doc.productId) await updateProductStats(doc.productId);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to update product stats after review update', err);
+  }
+  if (typeof next === 'function') next();
 });
 
 const Review = mongoose.model('Review', reviewSchema);

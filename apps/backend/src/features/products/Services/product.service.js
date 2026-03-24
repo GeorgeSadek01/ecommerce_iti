@@ -4,6 +4,7 @@ import AppError from '../../../core/utils/AppError.js';
 import { calculatePagination, getPaginationMetadata } from '../../../core/utils/pagination.js';
 import asyncHandler from './../../../core/utils/asyncHandler.js';
 import categoryModel from '../../../core/db/Models/Product/category.model.js';
+import sellerProfileModel from '../../../core/db/Models/Seller/sellerProfile.model.js';
 import mongoose from 'mongoose';
 // ─── Create Product ───────────────────────────────────────────────────────────
 
@@ -12,8 +13,25 @@ export const create = async (data) => {
     throw new AppError('Product name is required', 400);
   }
 
-  // Enforce max 10 products per seller (user)
+  // Validate category existence
+  if (!data.categoryId || !mongoose.Types.ObjectId.isValid(data.categoryId)) {
+    throw new AppError('Category ID is required and must be a valid MongoDB ObjectId', 400);
+  }
+  const category = await categoryModel.findById(data.categoryId);
+  if (!category) {
+    throw new AppError('Category not found', 400);
+  }
+
+  // Enforce max 10 products per seller (user) and validate seller profile exists
   if (data.sellerProfileId) {
+    if (!mongoose.Types.ObjectId.isValid(data.sellerProfileId)) {
+      throw new AppError('Seller profile ID must be a valid MongoDB ObjectId', 400);
+    }
+    const seller = await sellerProfileModel.findById(data.sellerProfileId);
+    if (!seller) {
+      throw new AppError('Seller profile not found', 400);
+    }
+
     const existingCount = await productModel.countDocuments({ sellerProfileId: data.sellerProfileId });
     if (existingCount >= 10) {
       throw new AppError('Maximum 10 products allowed per seller', 400);

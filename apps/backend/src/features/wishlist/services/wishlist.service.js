@@ -1,7 +1,7 @@
 import Wishlist from '../../../core/db/Models/Wishlist/wishlist.model.js';
 import Product from '../../../core/db/Models/Product/product.model.js';
-import SellerProfile from '../../../core/db/Models/Seller/sellerProfile.model.js';
 import AppError from '../../../core/utils/AppError.js';
+import { assertNotSellerOwnProduct } from '../../../core/utils/assertions.js';
 
 //  Helpers
 
@@ -11,13 +11,7 @@ async function getOrCreateWishlist(userId) {
   return wishlist;
 }
 
-async function assertNotSellerOwnProduct(userId, productId) {
-  const sellerProfile = await SellerProfile.findOne({ userId });
-  if (!sellerProfile) return;
-
-  const product = await Product.findOne({ _id: productId, sellerProfileId: sellerProfile._id });
-  if (product) throw new AppError('You cannot add your own product to the wishlist', 403);
-}
+// moved assertNotSellerOwnProduct to core utils
 
 export const getWishlist = async (userId) => {
   const wishlist = await getOrCreateWishlist(userId);
@@ -29,7 +23,7 @@ export const getWishlist = async (userId) => {
 };
 
 export const addToWishlist = async (userId, productId) => {
-  await assertNotSellerOwnProduct(userId, productId);
+  await assertNotSellerOwnProduct(userId, productId, 'You cannot add your own product to the wishlist');
 
   const product = await Product.findById(productId);
   if (!product) throw new AppError('Product not found', 404);
@@ -67,7 +61,11 @@ export const clearWishlist = async (userId) => {
 
 export const mergeWishlist = async (userId, incomingProductIds) => {
   // Check seller ownership for all incoming items at once
-  await Promise.all(incomingProductIds.map((productId) => assertNotSellerOwnProduct(userId, productId)));
+  await Promise.all(
+    incomingProductIds.map((productId) =>
+      assertNotSellerOwnProduct(userId, productId, 'You cannot add your own product to the wishlist')
+    )
+  );
 
   const wishlist = await getOrCreateWishlist(userId);
 

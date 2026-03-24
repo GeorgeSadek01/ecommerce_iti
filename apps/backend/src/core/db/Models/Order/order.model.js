@@ -53,10 +53,9 @@ const orderSchema = new Schema(
       index: true,
     },
     addressId: {
-      type: String,
-      // type: Schema.Types.ObjectId,
-      // ref: 'Address',
-      // required: [true, 'Address ID is required'],
+      type: Schema.Types.ObjectId,
+      ref: 'Address',
+      required: [true, 'Address ID is required'],
     },
     promoCodeId: {
       type: Schema.Types.ObjectId,
