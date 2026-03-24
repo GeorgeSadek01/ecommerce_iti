@@ -520,7 +520,7 @@ const serializeOrder = (order) => ({
   trackingNumber: order.trackingNumber,
   placedAt: order.placedAt,
   payingMethod: order.payingMethod,
-  isPaied: order.isPaied,
+  isPaid: order.isPaid,
   items: order.items,
   updatedAt: order.updatedAt,
 });

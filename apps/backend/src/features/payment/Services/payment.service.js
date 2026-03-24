@@ -87,7 +87,7 @@ export const placeOrder = async (userId, addressId) => {
           subtotal,
           total: subtotal,
           payingMethod: 'cash-on-delivery',
-          isPaied: false,
+          isPaid: false,
         },
       ],
       { session: dbSession }
@@ -139,7 +139,7 @@ export const createCheckoutSession = async (userId, addressId) => {
           subtotal,
           total: subtotal,
           payingMethod: 'credit',
-          isPaied: false,
+          isPaid: false,
         },
       ],
       { session: dbSession }
@@ -222,7 +222,7 @@ export const handleSuccessfulPayment = async (session) => {
     }
 
     order.status = 'processing';
-    order.isPaied = true;
+    order.isPaid = true;
     order.sessionURL = null;
     await order.save({ session: dbSession });
 

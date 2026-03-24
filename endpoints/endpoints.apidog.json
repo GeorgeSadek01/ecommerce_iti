@@ -19,12 +19,7 @@
     "securityScheme": {},
     "gateway": [],
     "language": "en-US",
-    "apiStatuses": [
-      "developing",
-      "testing",
-      "released",
-      "deprecated"
-    ],
+    "apiStatuses": ["developing", "testing", "released", "deprecated"],
     "mockSettings": {},
     "preProcessors": [],
     "postProcessors": [],
@@ -179,16 +174,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -476,14 +463,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "email",
-                      "password"
-                    ]
+                    "required": ["email", "password"],
+                    "x-apidog-orders": ["email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -640,12 +621,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "refreshToken"
-                    ],
-                    "x-apidog-orders": [
-                      "refreshToken"
-                    ]
+                    "required": ["refreshToken"],
+                    "x-apidog-orders": ["refreshToken"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -972,16 +949,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -1144,16 +1113,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -1316,16 +1277,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -1488,16 +1441,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -1660,16 +1605,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -1832,16 +1769,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -2004,16 +1933,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -2170,16 +2091,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -2336,16 +2249,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -2508,16 +2413,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -3007,14 +2904,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "description"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "description"
-                    ]
+                    "required": ["name", "description"],
+                    "x-apidog-orders": ["name", "description"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -3204,14 +3095,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "description"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "description"
-                    ]
+                    "required": ["name", "description"],
+                    "x-apidog-orders": ["name", "description"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -3639,12 +3524,8 @@
                             "items": {}
                           }
                         },
-                        "required": [
-                          "images"
-                        ],
-                        "x-apidog-orders": [
-                          "images"
-                        ]
+                        "required": ["images"],
+                        "x-apidog-orders": ["images"]
                       },
                       "required": false,
                       "mediaType": "",
@@ -4304,18 +4185,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "description",
-                      "price",
-                      "categoryId"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "description",
-                      "price",
-                      "categoryId"
-                    ]
+                    "required": ["name", "description", "price", "categoryId"],
+                    "x-apidog-orders": ["name", "description", "price", "categoryId"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -4774,14 +4645,8 @@
                         "type": "integer"
                       }
                     },
-                    "required": [
-                      "name",
-                      "price"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "price"
-                    ]
+                    "required": ["name", "price"],
+                    "x-apidog-orders": ["name", "price"]
                   },
                   "required": false,
                   "additionalContent": [],
@@ -5147,14 +5012,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "items",
-                      "addressId"
-                    ],
-                    "x-apidog-orders": [
-                      "items",
-                      "addressId"
-                    ]
+                    "required": ["items", "addressId"],
+                    "x-apidog-orders": ["items", "addressId"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -5317,7 +5176,7 @@
                 "responseExamples": [
                   {
                     "name": "Created",
-                    "data": "{\"status\":\"success\",\"message\":\"Order created successfully\",\"data\":{\"status\":\"success\",\"data\":{\"order\":{\"userId\":\"69b2676577586b4ca9fa5dfa\",\"addressId\":\"Consider it an address\",\"promoCodeId\":null,\"status\":\"pending\",\"items\":[{\"productId\":\"69b26680326a22ad3bd7b3db\",\"sellerId\":\"69b26680326a22ad3bd7b3d7\",\"productNameSnapshot\":\"Sony WH-1000XM5 Wireless Headphones\",\"priceSnapshot\":279.99,\"quantity\":1,\"lineTotal\":279.99,\"_id\":\"69b2940cd43ca85acc2fab7b\",\"createdAt\":\"2026-03-12T10:23:08.674Z\",\"id\":\"69b2940cd43ca85acc2fab7b\"},{\"productId\":\"69b26680326a22ad3bd7b3de\",\"sellerId\":\"69b26680326a22ad3bd7b3d7\",\"productNameSnapshot\":\"Apple MacBook Air M3 13\\\"\",\"priceSnapshot\":999.99,\"quantity\":1,\"lineTotal\":999.99,\"_id\":\"69b2940cd43ca85acc2fab7c\",\"createdAt\":\"2026-03-12T10:23:08.674Z\",\"id\":\"69b2940cd43ca85acc2fab7c\"}],\"subtotal\":1279.98,\"discountAmount\":0,\"shippingCost\":0,\"total\":1279.98,\"trackingNumber\":null,\"sessionURL\":null,\"payingMethod\":\"cash-on-delivery\",\"isPaied\":false,\"_id\":\"69b2940cd43ca85acc2fab7a\",\"placedAt\":\"2026-03-12T10:23:08.669Z\",\"updatedAt\":\"2026-03-12T10:23:08.674Z\",\"__v\":0,\"id\":\"69b2940cd43ca85acc2fab7a\"}}}}",
+                    "data": "{\"status\":\"success\",\"message\":\"Order created successfully\",\"data\":{\"status\":\"success\",\"data\":{\"order\":{\"userId\":\"69b2676577586b4ca9fa5dfa\",\"addressId\":\"Consider it an address\",\"promoCodeId\":null,\"status\":\"pending\",\"items\":[{\"productId\":\"69b26680326a22ad3bd7b3db\",\"sellerId\":\"69b26680326a22ad3bd7b3d7\",\"productNameSnapshot\":\"Sony WH-1000XM5 Wireless Headphones\",\"priceSnapshot\":279.99,\"quantity\":1,\"lineTotal\":279.99,\"_id\":\"69b2940cd43ca85acc2fab7b\",\"createdAt\":\"2026-03-12T10:23:08.674Z\",\"id\":\"69b2940cd43ca85acc2fab7b\"},{\"productId\":\"69b26680326a22ad3bd7b3de\",\"sellerId\":\"69b26680326a22ad3bd7b3d7\",\"productNameSnapshot\":\"Apple MacBook Air M3 13\\\"\",\"priceSnapshot\":999.99,\"quantity\":1,\"lineTotal\":999.99,\"_id\":\"69b2940cd43ca85acc2fab7c\",\"createdAt\":\"2026-03-12T10:23:08.674Z\",\"id\":\"69b2940cd43ca85acc2fab7c\"}],\"subtotal\":1279.98,\"discountAmount\":0,\"shippingCost\":0,\"total\":1279.98,\"trackingNumber\":null,\"sessionURL\":null,\"payingMethod\":\"cash-on-delivery\",\"isPaid\":false,\"_id\":\"69b2940cd43ca85acc2fab7a\",\"placedAt\":\"2026-03-12T10:23:08.669Z\",\"updatedAt\":\"2026-03-12T10:23:08.674Z\",\"__v\":0,\"id\":\"69b2940cd43ca85acc2fab7a\"}}}}",
                     "responseId": "163264338"
                   }
                 ],
@@ -5436,14 +5295,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "items",
-                      "addressId"
-                    ],
-                    "x-apidog-orders": [
-                      "items",
-                      "addressId"
-                    ]
+                    "required": ["items", "addressId"],
+                    "x-apidog-orders": ["items", "addressId"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -5617,14 +5470,8 @@
                         "x-apidog-orders": []
                       }
                     },
-                    "required": [
-                      "type",
-                      "data"
-                    ],
-                    "x-apidog-orders": [
-                      "type",
-                      "data"
-                    ]
+                    "required": ["type", "data"],
+                    "x-apidog-orders": ["type", "data"]
                   },
                   "required": false,
                   "additionalContent": [],
@@ -5977,16 +5824,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -6143,16 +5982,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -6309,16 +6140,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -6481,16 +6304,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -6653,16 +6468,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -6819,16 +6626,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -6991,16 +6790,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -7157,16 +6948,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -7323,16 +7106,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -7526,16 +7301,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -7698,16 +7465,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -7864,16 +7623,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -8030,16 +7781,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -8196,16 +7939,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -8368,16 +8103,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -8534,16 +8261,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -8743,16 +8462,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -8909,16 +8620,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -9075,16 +8778,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -9247,16 +8942,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -9419,16 +9106,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -9585,16 +9264,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -9757,16 +9428,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -9923,16 +9586,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -10089,16 +9744,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -10261,16 +9908,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -10427,16 +10066,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -10599,16 +10230,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -10765,16 +10388,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -10931,16 +10546,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -11097,16 +10704,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -11263,16 +10862,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -11429,16 +11020,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -11595,16 +11178,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -11767,16 +11342,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -11939,16 +11506,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -12105,16 +11664,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -12271,16 +11822,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -12443,16 +11986,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -12615,16 +12150,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -12787,16 +12314,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -12953,16 +12472,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -13119,16 +12630,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -13291,16 +12794,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -13457,16 +12952,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -13629,16 +13116,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -13801,16 +13280,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -13967,16 +13438,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -14133,16 +13596,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -14305,16 +13760,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -14471,16 +13918,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -14643,16 +14082,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -14809,16 +14240,8 @@
                         "type": "string"
                       }
                     },
-                    "required": [
-                      "name",
-                      "email",
-                      "password"
-                    ],
-                    "x-apidog-orders": [
-                      "name",
-                      "email",
-                      "password"
-                    ]
+                    "required": ["name", "email", "password"],
+                    "x-apidog-orders": ["name", "email", "password"]
                   },
                   "required": false,
                   "mediaType": "",
@@ -14945,9 +14368,7 @@
     {
       "name": "Root",
       "children": [],
-      "ordering": [
-        "requestFolder.9535217"
-      ],
+      "ordering": ["requestFolder.9535217"],
       "items": []
     }
   ],
