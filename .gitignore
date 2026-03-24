@@ -38,3 +38,7 @@ coverage/
 # Docker
 docker-compose.override.yml
 
+# pnpm lockfiles
+pnpm-lock.yaml
+**/pnpm-lock.yaml
+
