@@ -82,8 +82,11 @@ export const deleteProduct = asyncHandler(async (req, res) => {
   const product = await productService.getById(req.params.id);
 
   // Check ownership: only owner or admin can delete
-  if (req.user.role !== 'admin' && product.sellerId?.toString() !== req.user.id?.toString()) {
-    throw new AppError('You do not have permission to delete this product', 403);
+  if (req.user.role !== 'admin') {
+    const sellerProfile = await SellerProfile.findOne({ userId: req.user._id });
+    if (!sellerProfile || product.sellerProfileId?.toString() !== sellerProfile._id?.toString()) {
+      throw new AppError('You do not have permission to delete this product', 403);
+    }
   }
 
   await productService.deleteProduct(req.params.id);
