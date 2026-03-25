@@ -2,11 +2,7 @@ import express from 'express';
 import authenticate from '../../core/middlewares/authenticate.js';
 import authorize from '../../core/utils/authorize.js';
 import validateRequest from '../../core/middlewares/validateRequest.js';
-import {
-  addCartItemValidator,
-  cartItemParamValidator,
-  mergeCartValidator,
-} from './validators/cart.validators.js';
+import { addCartItemValidator, cartItemParamValidator, mergeCartValidator } from './validators/cart.validators.js';
 import {
   getCart,
   addCartItem,
