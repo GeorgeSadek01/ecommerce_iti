@@ -73,7 +73,8 @@ app.use('/api/v1/seller', sellerPanelRoutes);
 app.use('/api/v1/promo-codes', promoCodeRoutes);
 
 // ─── 404 handler ───────────────────────────────────────────────────────────
-app.all('*', (req, _res, next) => {
+// Use generic middleware for 404 to avoid path-to-regexp parsing issues
+app.use((req, _res, next) => {
   next(new AppError(`Cannot find ${req.method} ${req.originalUrl} on this server.`, 404));
 });
 
