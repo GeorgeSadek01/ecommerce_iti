@@ -1,0 +1,99 @@
+<div class="search-page">
+  <div class="container">
+    <div class="search-layout">
+      
+      <!-- Side Filters -->
+      <aside class="filters-sidebar">
+        <div class="filter-group">
+          <h3>Categories</h3>
+          <div class="filter-list">
+            <button 
+              class="filter-item" 
+              [class.active]="activeCategory() === null"
+              (click)="toggleCategory('')"
+            >
+              All Categories
+            </button>
+            @for (cat of categories(); track cat._id) {
+              <button 
+                class="filter-item" 
+                [class.active]="activeCategory() === cat._id"
+                (click)="toggleCategory(cat._id)"
+              >
+                {{ cat.name }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="filter-group">
+          <h3>Price Range</h3>
+          <div class="price-inputs">
+            <input type="number" placeholder="Min" (change)="loadResults()" />
+            <span>-</span>
+            <input type="number" placeholder="Max" (change)="loadResults()" />
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main Results -->
+      <main class="results-content">
+        <div class="results-header">
+          <div class="results-info">
+            <h1>Search Results</h1>
+            <p>Showing {{ products().length }} products for "{{ searchQuery() }}"</p>
+          </div>
+          <div class="results-sort">
+            <label>Sort by:</label>
+            <select (change)="applySort($event)" [value]="sortBy()">
+              <option value="newest">Newest First</option>
+              <option value="price_asc">Price: Low to High</option>
+              <option value="price_desc">Price: High to Low</option>
+              <option value="name_asc">Name: A to Z</option>
+            </select>
+          </div>
+        </div>
+
+        @if (isLoading()) {
+          <div class="results-grid skeleton">
+            @for (n of [1,2,3,4,5,6]; track n) {
+              <div class="skeleton-card"></div>
+            }
+          </div>
+        }
+
+        @if (!isLoading() && products().length === 0) {
+          <div class="empty-results">
+            <span class="material-icons">search_off</span>
+            <h2>No products found</h2>
+            <p>Try adjusting your filters or search terms.</p>
+          </div>
+        }
+
+        <div class="results-grid">
+          @for (product of products(); track product._id) {
+            <article class="product-card" [routerLink]="['/products', product._id]">
+              <div class="card-image-wrap">
+                @if (getPrimaryImage(product)) {
+                  <img [src]="getPrimaryImage(product)" [alt]="product.name" />
+                } @else {
+                  <div class="placeholder"><span class="material-icons">shopping_bag</span></div>
+                }
+              </div>
+              <div class="card-body">
+                <span class="card-cat">{{ getCategoryName(product.categoryId) }}</span>
+                <h3 class="card-name">{{ product.name }}</h3>
+                <div class="card-footer">
+                  <span class="card-price">${{ product.price | number:'1.2-2' }}</span>
+                  <span class="card-stock" [class.out]="product.stock <= 0">
+                    {{ product.stock > 0 ? 'In Stock' : 'Out of Stock' }}
+                  </span>
+                </div>
+              </div>
+            </article>
+          }
+        </div>
+      </main>
+    </div>
+  </div>
+</div>

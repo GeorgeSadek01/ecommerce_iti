@@ -1,0 +1,172 @@
+<!-- ─── Hero ──────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-content">
+    <span class="hero-badge">
+      <span class="material-icons" style="font-size: 14px; vertical-align: middle;">auto_awesome</span>
+      New Arrivals Every Week
+    </span>
+    <h1 class="hero-title">
+      Shop Smarter.<br />
+      <span class="gradient-text">Live Better.</span>
+    </h1>
+    <p class="hero-subtitle">
+      Discover thousands of products from verified sellers — electronics,
+      fashion, home goods, and more.
+    </p>
+
+    <!-- Search bar moved to navbar -->
+
+    @if (!isLoggedIn()) {
+      <div class="hero-cta">
+        <a class="btn-hero-primary" routerLink="/auth/register">Start Shopping</a>
+        <a class="btn-hero-outline" routerLink="/auth/login">Sign In</a>
+      </div>
+    }
+    <!-- Floating stats -->
+    <div class="hero-stats">
+      <div class="stat">
+        <strong>10k+</strong>
+        <span>Products</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <strong>500+</strong>
+        <span>Sellers</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat">
+        <strong>99%</strong>
+        <span>Happy Customers</span>
+      </div>
+    </div>
+  </div>
+  <!-- Decorative blobs -->
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+</section>
+
+<!-- ─── Categories ───────────────────────────────────────── -->
+<section class="section">
+  <div class="section-container">
+    <h2 class="section-title">Shop by Category</h2>
+    <div class="categories-scroll">
+      <!-- All -->
+      <button
+        class="category-chip"
+        [class.active]="activeCategory() === null"
+        (click)="selectCategory(null)"
+      >
+        <span class="material-icons" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">grid_view</span>
+        All
+      </button>
+
+      @for (cat of categories(); track cat._id) {
+        <button
+          class="category-chip"
+          [class.active]="activeCategory() === cat._id"
+          (click)="selectCategory(cat._id)"
+        >
+          {{ cat.name }}
+        </button>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ─── Featured Products ─────────────────────────────────── -->
+<section class="section products-section">
+  <div class="section-container">
+    <div class="section-header">
+      <h2 class="section-title">
+        @if (activeCategory() === null) { Featured Products } @else {
+          {{ getCategoryLabel() }}
+        }
+      </h2>
+    </div>
+
+    <!-- Loading -->
+    @if (isLoading()) {
+      <div class="skeleton-grid">
+        @for (n of [1, 2, 3, 4, 5, 6, 7, 8]; track n) {
+          <div class="skeleton-card">
+            <div class="skeleton-img"></div>
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line short"></div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Error -->
+    @if (!isLoading() && error()) {
+      <div class="error-state">
+        <span class="material-icons" style="font-size: 48px; display: block; margin-bottom: 12px; color: #f87171;">warning</span>
+        <p>{{ error() }}</p>
+        <button class="btn-retry" (click)="selectCategory(activeCategory())">Retry</button>
+      </div>
+    }
+
+    <!-- Products Grid -->
+    @if (!isLoading() && !error() && products().length > 0) {
+      <div class="products-grid">
+        @for (product of products(); track product._id) {
+          <article class="product-card" [routerLink]="['/products', product._id]">
+            <div class="card-image-wrap">
+              @if (getPrimaryImage(product)) {
+                <img
+                  [src]="getPrimaryImage(product)"
+                  [alt]="product.name"
+                  class="card-image"
+                  loading="lazy"
+                />
+              } @else {
+                <div class="card-image-placeholder">
+                  <span class="material-icons" style="font-size: 48px; color: rgba(124, 58, 237, 0.2);">shopping_bag</span>
+                </div>
+              }
+              <div class="card-overlay">
+                <button class="overlay-btn">Quick View</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <span class="card-category">{{ getCategoryName(product) }}</span>
+              <h3 class="card-name">{{ product.name }}</h3>
+              <p class="card-desc">{{ product.description }}</p>
+              <div class="card-footer">
+                <span class="card-price">${{ product.price | number: '1.2-2' }}</span>
+                @if (product.stock > 0) {
+                  <span class="card-stock in-stock">In Stock</span>
+                } @else {
+                  <span class="card-stock out-of-stock">Out of Stock</span>
+                }
+              </div>
+            </div>
+          </article>
+        }
+      </div>
+    }
+
+    <!-- Empty -->
+    @if (!isLoading() && !error() && products().length === 0) {
+      <div class="empty-state">
+        <span class="material-icons" style="font-size: 48px; display: block; margin-bottom: 12px; color: #94a3b8;">inventory_2</span>
+        <p>No products found in this category.</p>
+        <button class="btn-retry" (click)="selectCategory(null)">View All Products</button>
+      </div>
+    }
+  </div>
+</section>
+
+<!-- ─── Footer ───────────────────────────────────────────── -->
+<footer class="footer">
+  <div class="footer-inner">
+    <span class="footer-brand">ShopITI</span>
+    <p>© 2026 ShopITI. Built as an ITI project.</p>
+    <div class="footer-links">
+      <a routerLink="/auth/login">Login</a>
+      <a routerLink="/auth/register">Register</a>
+    </div>
+  </div>
+</footer>

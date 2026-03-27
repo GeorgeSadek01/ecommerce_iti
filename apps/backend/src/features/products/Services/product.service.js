@@ -296,7 +296,7 @@ export const search = async (filters) => {
   const pagination = getPaginationMetadata(total, page, pageLimit);
 
   return {
-    data: products,
+    products,
     pagination,
   };
 };
