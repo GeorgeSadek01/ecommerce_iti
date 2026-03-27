@@ -1,0 +1,109 @@
+<div class="details-page">
+  <div class="container">
+    @if (isLoading()) {
+      <div class="skeleton-details">
+        <div class="skeleton-gallery"></div>
+        <div class="skeleton-info">
+          <div class="skeleton-line title"></div>
+          <div class="skeleton-line short"></div>
+          <div class="skeleton-line price"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-line"></div>
+          <div class="skeleton-btn"></div>
+        </div>
+      </div>
+    }
+
+    @if (!isLoading() && error()) {
+      <div class="error-container">
+        <span class="material-icons">error_outline</span>
+        <h2>Oops!</h2>
+        <p>{{ error() }}</p>
+        <a routerLink="/home" class="btn-back">Return Home</a>
+      </div>
+    }
+
+    @if (!isLoading() && product(); as prod) {
+      <nav class="breadcrumb">
+        <a routerLink="/home">Home</a>
+        <span class="material-icons">chevron_right</span>
+        <span>{{ getCategoryName(prod.categoryId) }}</span>
+        <span class="material-icons">chevron_right</span>
+        <span class="current">{{ prod.name }}</span>
+      </nav>
+
+      <div class="product-grid">
+        <!-- Gallery -->
+        <div class="gallery-section">
+          <div class="main-image-wrap">
+            @if (activeImage()) {
+              <img [src]="activeImage()" [alt]="prod.name" class="main-image" />
+            } @else {
+              <div class="placeholder-icon">
+                <span class="material-icons">shopping_bag</span>
+              </div>
+            }
+          </div>
+          <div class="thumbnails">
+            @for (img of prod.images; track img.id) {
+              <button 
+                class="thumb-btn" 
+                [class.active]="activeImage() === img.url"
+                (click)="setActiveImage(img.url)"
+              >
+                <img [src]="img.url" alt="Thumbnail" />
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Info -->
+        <div class="info-section">
+          <span class="category-tag">{{ getCategoryName(prod.categoryId) }}</span>
+          <h1 class="product-title">{{ prod.name }}</h1>
+          
+          <div class="price-wrap">
+            <span class="price">${{ prod.price | number:'1.2-2' }}</span>
+            @if (prod.stock > 0) {
+              <span class="stock-badge in-stock">
+                <span class="material-icons">check_circle</span>
+                In Stock ({{ prod.stock }} available)
+              </span>
+            } @else {
+              <span class="stock-badge out-of-stock">
+                <span class="material-icons">cancel</span>
+                Out of Stock
+              </span>
+            }
+          </div>
+
+          <div class="description-box">
+            <h3>Description</h3>
+            <p>{{ prod.description }}</p>
+          </div>
+
+          <div class="actions">
+            <button class="btn-add-cart" [disabled]="prod.stock <= 0">
+              <span class="material-icons">add_shopping_cart</span>
+              Add to Cart
+            </button>
+            <button class="btn-buy-now" [disabled]="prod.stock <= 0">
+              Buy It Now
+            </button>
+          </div>
+
+          <div class="security-badges">
+            <div class="badge">
+              <span class="material-icons">verified_user</span>
+              <span>Secure Payment</span>
+            </div>
+            <div class="badge">
+              <span class="material-icons">local_shipping</span>
+              <span>Fast Delivery</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

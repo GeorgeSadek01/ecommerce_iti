@@ -1,8 +1,27 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
-import { roleGuard } from './core/guards/role.guard';
 
 export const routes: Routes = [
+  {
+    path: 'home',
+    loadComponent: () => import('./features/home/home.component').then((m) => m.HomeComponent),
+  },
+  {
+    path: 'products/:id',
+    loadComponent: () => import('./features/products/product-details/product-details.component').then((m) => m.ProductDetailsComponent),
+  },
+  {
+    path: 'search',
+    loadComponent: () => import('./features/search/search.component').then((m) => m.SearchComponent),
+  },
+  {
+    path: 'cart',
+    loadComponent: () => import('./features/home/home.component').then((m) => m.HomeComponent), // Placeholder
+  },
+  {
+    path: 'orders',
+    loadComponent: () => import('./features/home/home.component').then((m) => m.HomeComponent), // Placeholder
+  },
   {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then((m) => m.authRoutes),
@@ -24,10 +43,10 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'auth/login',
+    redirectTo: 'home',
   },
   {
     path: '**',
-    redirectTo: 'auth/login',
+    redirectTo: 'home',
   },
 ];

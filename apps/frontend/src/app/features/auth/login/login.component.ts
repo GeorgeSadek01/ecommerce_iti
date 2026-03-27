@@ -73,7 +73,7 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
       return;
     }
 
-    this.router.navigate(['/profile']);
+    this.router.navigate(['/home']);
   }
 
   private initializeGoogleSignIn(): void {
