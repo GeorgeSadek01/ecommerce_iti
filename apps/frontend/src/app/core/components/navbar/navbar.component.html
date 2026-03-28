@@ -26,6 +26,20 @@
     <!-- Actions (Right) -->
     <div class="nav-auth">
       @if (isLoggedIn()) {
+        @if (showWishlistNav()) {
+          <a class="nav-btn-link" routerLink="/wishlist">
+            <div class="cart-icon-wrap">
+              <span class="material-icons" style="color: #e11d48;">favorite</span>
+              @if ((wishlistCount$ | async); as wc) {
+                @if (wc > 0) {
+                  <span class="cart-badge">{{ wc }}</span>
+                }
+              }
+            </div>
+            <span class="btn-text">Wishlist</span>
+          </a>
+        }
+
         <a class="nav-btn-link" routerLink="/orders">
           <span class="material-icons">receipt_long</span>
           <span class="btn-text">Orders</span>
@@ -86,6 +100,17 @@
     </div>
 
     @if (isLoggedIn()) {
+      @if (showWishlistNav()) {
+        <a class="mobile-wishlist-row" routerLink="/wishlist" (click)="closeMenu()">
+          <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px; color: #e11d48;">favorite</span>
+          Wishlist
+          @if ((wishlistCount$ | async); as wc) {
+            @if (wc > 0) {
+              <span class="mobile-wishlist-badge">{{ wc }}</span>
+            }
+          }
+        </a>
+      }
       <a routerLink="/orders" (click)="closeMenu()">
         <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px;">receipt_long</span>
         My Orders

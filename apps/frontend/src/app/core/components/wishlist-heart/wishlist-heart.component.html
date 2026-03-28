@@ -1,0 +1,12 @@
+@if (visible()) {
+  <button
+    type="button"
+    class="wishlist-heart-btn"
+    [class.wishlist-heart-btn--active]="inList()"
+    (click)="onClick($event)"
+    [attr.aria-label]="inList() ? 'Remove from wishlist' : 'Add to wishlist'"
+    [attr.aria-pressed]="inList()"
+  >
+    <span class="material-icons">{{ inList() ? 'favorite' : 'favorite_border' }}</span>
+  </button>
+}

@@ -1,6 +1,7 @@
 import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
+import { WishlistHeartComponent } from '../../core/components/wishlist-heart/wishlist-heart.component';
 import { ProductService } from '../../core/services/product.service';
 import { AuthService } from '../../core/services/auth-api.service';
 import { Product, Category } from '../../core/types/product.types';
@@ -8,7 +9,7 @@ import { Product, Category } from '../../core/types/product.types';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, WishlistHeartComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })

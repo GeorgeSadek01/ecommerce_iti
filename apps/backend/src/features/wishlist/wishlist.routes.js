@@ -17,7 +17,7 @@ import {
 
 const router = express.Router();
 
-router.use(authorize('user', 'seller')); // admins have no access on wishlist , it's for only customers
+router.use(authorize('customer', 'seller')); // admins have no access on wishlist , it's for only customers
 
 router.route('/').get(getWishlist).post(productIdBodyValidator, validateRequest, addToWishlist);
 router.delete('/clear', clearWishlist);
