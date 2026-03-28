@@ -1,7 +1,8 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../services/auth-api.service';
+import { CartService } from '../../services/cart.service';
 
 @Component({
   selector: 'app-navbar',
@@ -10,18 +11,26 @@ import { AuthService } from '../../services/auth-api.service';
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
   protected isMenuOpen = false;
   protected searchQuery = signal('');
 
   protected readonly isLoggedIn = computed(() => this.authService.isAuthenticated());
   protected readonly currentUser = computed(() => this.authService.currentUser());
   protected readonly currentRole = computed(() => this.authService.currentRole());
+  protected readonly cartCount = computed(() => this.cartService.itemCount());
 
   constructor(
     private readonly authService: AuthService,
+    private readonly cartService: CartService,
     private readonly router: Router
   ) {}
+
+  ngOnInit(): void {
+    if (this.authService.isAuthenticated()) {
+      this.cartService.loadCart().subscribe({ error: () => {} });
+    }
+  }
 
   protected toggleMenu(): void {
     this.isMenuOpen = !this.isMenuOpen;

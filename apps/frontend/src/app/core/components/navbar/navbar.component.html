@@ -34,7 +34,9 @@
         <a class="nav-btn-link" routerLink="/cart">
           <div class="cart-icon-wrap">
             <span class="material-icons">shopping_cart</span>
-            <span class="cart-badge">0</span>
+            @if (cartCount() > 0) {
+              <span class="cart-badge">{{ cartCount() }}</span>
+            }
           </div>
           <span class="btn-text">Cart</span>
         </a>

@@ -6,6 +6,7 @@ import {
   getAllOrders,
   getOrder,
   getUserOrders,
+  getMyOrders,
   updateOrder,
   cancelOrder,
   confirmOrder,
@@ -16,6 +17,7 @@ const router = express.Router();
 router.use(authenticate);
 
 router.post('/place-order', placeOrder); // any auth user
+router.get('/me', getMyOrders); // logged-in user fetches their own orders
 router.get('/', authorize('admin'), getAllOrders); // admin only
 router.get('/:id', getOrder); // own order or admin
 router.patch('/:id', authorize('admin'), updateOrder); // admin only
