@@ -9,8 +9,19 @@ export interface Category {
   name: string;
   description?: string;
   imageUrl?: string;
+  image?: {
+    url: string;
+    cloudinaryPublicId?: string;
+  };
+  ancestors?: Category[];
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface SellerProfile {
+  _id: string;
+  storeName: string;
+  logoUrl?: string;
 }
 
 export interface Product {
@@ -18,9 +29,11 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  discount?: number;
+  calculatedPrice?: number;
   stock: number;
   categoryId: string | Category;
-  sellerProfileId: string;
+  sellerProfileId: string | SellerProfile;
   images: ProductImage[];
   createdAt?: string;
   updatedAt?: string;

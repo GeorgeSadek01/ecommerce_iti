@@ -26,8 +26,12 @@
     @if (!isLoading() && product(); as prod) {
       <nav class="breadcrumb">
         <a routerLink="/home">Home</a>
+        @for (ancestor of getCategoryAncestors(prod.categoryId); track ancestor._id) {
+          <span class="material-icons">chevron_right</span>
+          <a [routerLink]="['/category', ancestor._id]">{{ ancestor.name }}</a>
+        }
         <span class="material-icons">chevron_right</span>
-        <span>{{ getCategoryName(prod.categoryId) }}</span>
+        <a [routerLink]="['/category', getCategoryId(prod.categoryId)]">{{ getCategoryName(prod.categoryId) }}</a>
         <span class="material-icons">chevron_right</span>
         <span class="current">{{ prod.name }}</span>
       </nav>
@@ -38,10 +42,16 @@
           <div class="main-image-wrap">
             @if (activeImage()) {
               <img [src]="activeImage()" [alt]="prod.name" class="main-image" />
+              @if (prod.images && prod.images.length > 1) {
+                <button class="gallery-arrow left" (click)="prevImage($event)">
+                  <span class="material-icons">chevron_left</span>
+                </button>
+                <button class="gallery-arrow right" (click)="nextImage($event)">
+                  <span class="material-icons">chevron_right</span>
+                </button>
+              }
             } @else {
-              <div class="placeholder-icon">
-                <span class="material-icons">shopping_bag</span>
-              </div>
+              <div class="placeholder-icon" style="background: transparent;"></div>
             }
           </div>
           <div class="thumbnails">
@@ -62,8 +72,23 @@
           <span class="category-tag">{{ getCategoryName(prod.categoryId) }}</span>
           <h1 class="product-title">{{ prod.name }}</h1>
           
+          <div class="store-badge">
+            <span class="material-icons">storefront</span>
+            <span>Sold by <strong>{{ getStoreName(prod.sellerProfileId) }}</strong></span>
+          </div>
+          
           <div class="price-wrap">
-            <span class="price">${{ prod.price | number:'1.2-2' }}</span>
+            @if (prod.discount && prod.discount > 0) {
+              <div class="pricing-group">
+                <div class="pricing">
+                  <span class="price-discounted">${{ prod.calculatedPrice | number:'1.2-2' }}</span>
+                  <span class="price-original">${{ prod.price | number:'1.2-2' }}</span>
+                </div>
+                <span class="discount-badge-detail">-{{ prod.discount }}% OFF</span>
+              </div>
+            } @else {
+              <span class="price">${{ prod.price | number:'1.2-2' }}</span>
+            }
             @if (prod.stock > 0) {
               <span class="stock-badge in-stock">
                 <span class="material-icons">check_circle</span>
@@ -86,9 +111,6 @@
             <button class="btn-add-cart" [disabled]="prod.stock <= 0">
               <span class="material-icons">add_shopping_cart</span>
               Add to Cart
-            </button>
-            <button class="btn-buy-now" [disabled]="prod.stock <= 0">
-              Buy It Now
             </button>
           </div>
 

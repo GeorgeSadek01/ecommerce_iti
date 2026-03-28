@@ -62,8 +62,28 @@ export class SearchComponent implements OnInit {
 
     this.productService.searchProducts(filters).subscribe({
       next: (res: ApiResponse<PaginatedProducts>) => {
-        this.products.set(res.data?.products ?? []);
+        const prods = res.data?.products ?? [];
+        this.products.set(prods);
         this.isLoading.set(false);
+
+        prods.forEach((prod: Product) => {
+          this.productService.getProductImages(prod._id).subscribe({
+            next: (imgRes: any) => {
+              const images = imgRes.data?.images ?? imgRes.images ?? [];
+              if (images.length > 0) {
+                this.products.update(curr => {
+                  const idx = curr.findIndex(p => p._id === prod._id);
+                  if (idx !== -1) {
+                    const copy = [...curr];
+                    copy[idx] = { ...copy[idx], images: images };
+                    return copy;
+                  }
+                  return curr;
+                });
+              }
+            }
+          });
+        });
       },
       error: () => {
         this.error.set('Failed to load search results');

@@ -1,74 +1,62 @@
-<!-- ─── Hero ──────────────────────────────────────────────── -->
-<section class="hero">
-  <div class="hero-bg"></div>
-  <div class="hero-content">
-    <span class="hero-badge">
-      <span class="material-icons" style="font-size: 14px; vertical-align: middle;">auto_awesome</span>
-      New Arrivals Every Week
-    </span>
-    <h1 class="hero-title">
-      Shop Smarter.<br />
-      <span class="gradient-text">Live Better.</span>
-    </h1>
-    <p class="hero-subtitle">
-      Discover thousands of products from verified sellers — electronics,
-      fashion, home goods, and more.
-    </p>
-
-    <!-- Search bar moved to navbar -->
-
-    @if (!isLoggedIn()) {
-      <div class="hero-cta">
-        <a class="btn-hero-primary" routerLink="/auth/register">Start Shopping</a>
-        <a class="btn-hero-outline" routerLink="/auth/login">Sign In</a>
+<!-- ─── Hero Carousel ──────────────────────────────────────── -->
+<section class="hero-carousel">
+  <div class="carousel-track" [style.transform]="'translateX(-' + (currentBannerSlide() * 100) + '%)'">
+    @for (slide of bannerSlides; track slide.title) {
+      <div class="carousel-slide">
+        <img [src]="slide.image" [alt]="slide.title" class="slide-bg">
+        <div class="slide-overlay"></div>
+        <div class="slide-content">
+          <span class="hero-badge"><span class="material-icons" style="font-size: 14px; margin-right: 4px;">auto_awesome</span>{{ slide.badge }}</span>
+          <h1 class="hero-title-new">{{ slide.title }}</h1>
+          <p class="hero-subtitle-new">{{ slide.subtitle }}</p>
+          <a class="btn-hero-primary" [routerLink]="slide.link">
+            {{ slide.buttonText }} <span class="material-icons" style="font-size: 1.1rem; margin-left: 0.4rem; vertical-align: middle;">arrow_forward</span>
+          </a>
+        </div>
       </div>
     }
-    <!-- Floating stats -->
-    <div class="hero-stats">
-      <div class="stat">
-        <strong>10k+</strong>
-        <span>Products</span>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat">
-        <strong>500+</strong>
-        <span>Sellers</span>
-      </div>
-      <div class="stat-divider"></div>
-      <div class="stat">
-        <strong>99%</strong>
-        <span>Happy Customers</span>
-      </div>
-    </div>
   </div>
-  <!-- Decorative blobs -->
-  <div class="blob blob-1"></div>
-  <div class="blob blob-2"></div>
+
+  <button class="carousel-arrow left" (click)="prevBanner()">
+    <span class="material-icons">chevron_left</span>
+  </button>
+  <button class="carousel-arrow right" (click)="nextBanner()">
+    <span class="material-icons">chevron_right</span>
+  </button>
+
+  <div class="carousel-indicators">
+    @for (slide of bannerSlides; track slide.title; let i = $index) {
+      <button 
+        class="indicator-dot" 
+        [class.active]="currentBannerSlide() === i"
+        (click)="goToBanner(i)">
+      </button>
+    }
+  </div>
 </section>
 
 <!-- ─── Categories ───────────────────────────────────────── -->
 <section class="section">
   <div class="section-container">
     <h2 class="section-title">Shop by Category</h2>
-    <div class="categories-scroll">
-      <!-- All -->
-      <button
-        class="category-chip"
-        [class.active]="activeCategory() === null"
-        (click)="selectCategory(null)"
-      >
-        <span class="material-icons" style="font-size: 16px; vertical-align: middle; margin-right: 4px;">grid_view</span>
-        All
-      </button>
+    <div class="categories-grid">
 
       @for (cat of categories(); track cat._id) {
-        <button
-          class="category-chip"
-          [class.active]="activeCategory() === cat._id"
-          (click)="selectCategory(cat._id)"
+        <div 
+          class="category-card"
+          [routerLink]="['/category', cat._id]"
         >
-          {{ cat.name }}
-        </button>
+          <div class="category-image-wrap">
+            @if (cat.imageUrl || cat.image?.url) {
+               <img [src]="cat.imageUrl || cat.image?.url" [alt]="cat.name" class="category-image" loading="lazy" />
+            } @else {
+               <div class="category-placeholder">
+                 <span class="material-icons" style="font-size: 48px;">category</span>
+               </div>
+            }
+          </div>
+          <span class="category-name">{{ cat.name }}</span>
+        </div>
       }
     </div>
   </div>
@@ -122,20 +110,28 @@
                   loading="lazy"
                 />
               } @else {
-                <div class="card-image-placeholder">
-                  <span class="material-icons" style="font-size: 48px; color: rgba(124, 58, 237, 0.2);">shopping_bag</span>
-                </div>
+                <div class="card-image-placeholder" style="background: transparent;"></div>
               }
               <div class="card-overlay">
                 <button class="overlay-btn">Quick View</button>
               </div>
+              @if (product.discount && product.discount > 0) {
+                <div class="discount-badge-card">-{{ product.discount }}%</div>
+              }
             </div>
             <div class="card-body">
               <span class="card-category">{{ getCategoryName(product) }}</span>
               <h3 class="card-name">{{ product.name }}</h3>
               <p class="card-desc">{{ product.description }}</p>
               <div class="card-footer">
-                <span class="card-price">${{ product.price | number: '1.2-2' }}</span>
+                <div class="card-pricing">
+                  @if (product.discount && product.discount > 0) {
+                    <span class="card-price-discounted">${{ product.calculatedPrice | number: '1.2-2' }}</span>
+                    <span class="card-price-original">${{ product.price | number: '1.2-2' }}</span>
+                  } @else {
+                    <span class="card-price">${{ product.price | number: '1.2-2' }}</span>
+                  }
+                </div>
                 @if (product.stock > 0) {
                   <span class="card-stock in-stock">In Stock</span>
                 } @else {

@@ -1,7 +1,8 @@
-.search-page {
-  padding: 3rem 0;
+.category-page {
   background: #f8f9fc;
-  min-height: calc(100vh - 64px);
+  min-height: 100vh;
+  padding: 3rem 0;
+  color: #1e2640;
 }
 
 .container {
@@ -10,7 +11,42 @@
   padding: 0 1.5rem;
 }
 
-.search-layout {
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #1e2640;
+  margin: 0;
+}
+
+.btn-back {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #fff;
+  border: 1.5px solid #e8edf5;
+  border-radius: 8px;
+  color: #5a6385;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-back:hover {
+  background: #f5f3ff;
+  border-color: #c4b5fd;
+  color: #7c3aed;
+}
+
+/* ─── category Layout ───────────────────────────────────────── */
+.category-layout {
   display: grid;
   grid-template-columns: 260px 1fr;
   gap: 2.5rem;
@@ -23,7 +59,7 @@
   gap: 2.5rem;
 }
 
-.filter-group h3 {
+.filter-group-vertical h3 {
   font-size: 1rem;
   font-weight: 800;
   color: #1e2640;
@@ -39,6 +75,7 @@
 }
 
 .filter-item {
+  display: block;
   text-align: left;
   padding: 0.6rem 1rem;
   border-radius: 10px;
@@ -47,6 +84,7 @@
   color: #5a6385;
   font-size: 0.9rem;
   font-weight: 600;
+  text-decoration: none;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -71,9 +109,19 @@
   border: 1.5px solid #eef2ff;
   outline: none;
   font-size: 0.9rem;
+  transition: border-color 0.2s;
 }
 
-/* Main Content */
+.price-inputs input:focus {
+  border-color: #7c3aed;
+}
+
+.price-inputs span {
+  color: #8898b3;
+  font-weight: 600;
+}
+
+/* Main Content Header */
 .results-header {
   display: flex;
   justify-content: space-between;
@@ -83,16 +131,10 @@
   border-bottom: 1px solid #eef2ff;
 }
 
-.results-info h1 {
-  font-size: 2rem;
-  font-weight: 900;
-  color: #1e2640;
-  margin: 0 0 0.5rem;
-}
-
 .results-info p {
   color: #8898b3;
   margin: 0;
+  font-weight: 600;
 }
 
 .results-sort label {
@@ -112,8 +154,13 @@
   cursor: pointer;
 }
 
+@media (max-width: 900px) {
+  .category-layout { grid-template-columns: 1fr; }
+  .filters-sidebar { display: none; }
+}
+
 /* ─── Grid & Cards ─────────────────────────────────────────── */
-.results-grid {
+.products-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2rem;
@@ -241,30 +288,43 @@
 .in-stock  { background: #dcfce7; color: #16a34a; }
 .out-of-stock { background: #fee2e2; color: #dc2626; }
 
-/* Empty State */
-.empty-results {
-  text-align: center;
-  padding: 5rem 0;
-  color: #cbd5e1;
+/* ─── Skeleton & States ────────────────────────────────────── */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
 }
-
-.empty-results .material-icons {
-  font-size: 4rem;
-  margin-bottom: 1rem;
-}
-
-/* Skeleton */
 .skeleton-card {
-  height: 320px;
-  background: white;
+  background: #fff;
+  border: 1px solid #e8edf5;
   border-radius: 16px;
-  animation: pulse 1.5s infinite;
+  overflow: hidden;
+  padding-bottom: 1rem;
+}
+.skeleton-img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e8edf5 50%, #f1f5f9 75%);
+  background-size: 200%;
+  animation: shimmer 1.4s infinite;
+}
+.skeleton-line {
+  height: 12px;
+  border-radius: 6px;
+  margin: 0.75rem 1rem 0;
+  background: linear-gradient(90deg, #f1f5f9 25%, #e8edf5 50%, #f1f5f9 75%);
+  background-size: 200%;
+  animation: shimmer 1.4s infinite;
+}
+.skeleton-line.short { width: 55%; }
+
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
 }
 
-@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-
-/* Responsive */
-@media (max-width: 900px) {
-  .search-layout { grid-template-columns: 1fr; }
-  .filters-sidebar { display: none; } /* Hide filters on mobile for now */
+.error-state, .empty-state {
+  text-align: center;
+  padding: 4rem 1rem;
+  color: #8898b3;
 }
