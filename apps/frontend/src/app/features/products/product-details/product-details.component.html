@@ -86,38 +86,27 @@
         <!-- Info -->
         <div class="info-section">
           <span class="category-tag">{{ getCategoryName(prod.categoryId) }}</span>
+
           <div class="product-title-row">
             <h1 class="product-title">{{ prod.name }}</h1>
             <app-wishlist-heart [productId]="prod._id" />
           </div>
-          
+
           <div class="price-wrap">
-            <span class="price">${{ prod.price | number:'1.2-2' }}</span>
+            <span class="price">${{ prod.price | number : '1.2-2' }}</span>
+
             @if (prod.stock > 0) {
-              <span class="stock-badge in-stock">
-                <span class="material-icons">check_circle</span>
-                In Stock ({{ prod.stock }} available)
-              </span>
+            <span class="stock-badge in-stock">
+              <span class="material-icons">check_circle</span>
+              In Stock ({{ prod.stock }} available)
+            </span>
             } @else {
-              <span class="stock-badge out-of-stock">
-                <span class="material-icons">cancel</span>
-                Out of Stock
-              </span>
+            <span class="stock-badge out-of-stock">
+              <span class="material-icons">cancel</span>
+              Out of Stock
+            </span>
             }
           </div>
-          } @else {
-          <span class="price">${{ prod.price | number : '1.2-2' }}</span>
-          } @if (prod.stock > 0) {
-          <span class="stock-badge in-stock">
-            <span class="material-icons">check_circle</span>
-            In Stock ({{ prod.stock }} available)
-          </span>
-          } @else {
-          <span class="stock-badge out-of-stock">
-            <span class="material-icons">cancel</span>
-            Out of Stock
-          </span>
-          }
         </div>
 
         <div class="description-box">

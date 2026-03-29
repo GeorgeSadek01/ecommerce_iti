@@ -108,49 +108,43 @@
 
     <!-- Products Grid -->
     @if (!isLoading() && !error() && products().length > 0) {
-      <div class="products-grid">
-        @for (product of products(); track product._id) {
-          <article class="product-card" [routerLink]="['/products', product._id]">
-            <div class="card-image-wrap">
-              <div class="card-wishlist-corner">
-                <app-wishlist-heart [productId]="product._id" />
-              </div>
-              @if (getPrimaryImage(product)) {
-                <img
-                  [src]="getPrimaryImage(product)"
-                  [alt]="product.name"
-                  class="card-image"
-                  loading="lazy"
-                />
-              } @else {
-                <div class="card-image-placeholder">
-                  <span class="material-icons" style="font-size: 48px; color: rgba(124, 58, 237, 0.2);">shopping_bag</span>
-                </div>
-              }
-              <div class="card-overlay">
-                <button class="overlay-btn">Quick View</button>
-              </div>
-            </div>
-            <div class="card-body">
-              <span class="card-category">{{ getCategoryName(product) }}</span>
-              <h3 class="card-name">{{ product.name }}</h3>
-              <p class="card-desc">{{ product.description }}</p>
-              <div class="card-footer">
-                <span class="card-price">${{ product.price | number: '1.2-2' }}</span>
-                @if (product.stock > 0) {
-                  <span class="card-stock in-stock">In Stock</span>
-                } @else {
-                  <span class="card-stock out-of-stock">Out of Stock</span>
-                }
-              </div>
-            </div>
-          </article>
-        }
-      </div>
-      <button class="carousel-btn carousel-btn-next" (click)="scrollTopDeals('right')" title="Next">
-        <span class="material-icons">chevron_right</span>
-      </button>
+    <div class="products-grid">
+      @for (product of products(); track product._id) {
+      <article class="product-card" [routerLink]="['/products', product._id]">
+        <div class="card-image-wrap">
+          <div class="card-wishlist-corner">
+            <app-wishlist-heart [productId]="product._id" />
+          </div>
+          @if (getPrimaryImage(product)) {
+          <img [src]="getPrimaryImage(product)" [alt]="product.name" class="card-image" loading="lazy" />
+          } @else {
+          <div class="card-image-placeholder">
+            <span class="material-icons" style="font-size: 48px; color: rgba(124, 58, 237, 0.2)">shopping_bag</span>
+          </div>
+          }
+          <div class="card-overlay">
+            <button class="overlay-btn">Quick View</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <span class="card-category">{{ getCategoryName(product) }}</span>
+          <h3 class="card-name">{{ product.name }}</h3>
+          <p class="card-desc">{{ product.description }}</p>
+          <div class="card-footer">
+            <span class="card-price">${{ product.price | number : '1.2-2' }}</span>
+            @if (product.stock > 0) {
+            <span class="card-stock in-stock">In Stock</span>
+            } @else {
+            <span class="card-stock out-of-stock">Out of Stock</span>
+            }
+          </div>
+        </div>
+      </article>
+      }
     </div>
+    <button class="carousel-btn carousel-btn-next" (click)="scrollTopDeals('right')" title="Next">
+      <span class="material-icons">chevron_right</span>
+    </button>
     }
 
     <!-- Empty -->

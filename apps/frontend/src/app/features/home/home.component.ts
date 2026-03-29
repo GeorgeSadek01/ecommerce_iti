@@ -10,7 +10,7 @@ import { ProductCardComponent } from '../../core/components/product-card/product
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, WishlistHeartComponent],
+  imports: [CommonModule, RouterLink, WishlistHeartComponent, ProductCardComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })

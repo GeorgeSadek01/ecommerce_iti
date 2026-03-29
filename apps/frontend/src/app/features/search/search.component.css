@@ -51,7 +51,8 @@
   transition: all 0.2s;
 }
 
-.filter-item:hover, .filter-item.active {
+.filter-item:hover,
+.filter-item.active {
   background: #7c3aed;
   color: white;
   border-color: #7c3aed;
@@ -167,7 +168,9 @@
   opacity: 0;
   transition: opacity 0.25s;
 }
-.product-card:hover .card-overlay { opacity: 1; }
+.product-card:hover .card-overlay {
+  opacity: 1;
+}
 .overlay-btn {
   padding: 0.55rem 1.25rem;
   border-radius: 8px;
@@ -180,7 +183,9 @@
   transform: translateY(6px);
   transition: transform 0.25s;
 }
-.product-card:hover .overlay-btn { transform: translateY(0); }
+.product-card:hover .overlay-btn {
+  transform: translateY(0);
+}
 
 .discount-badge-card {
   position: absolute;
@@ -204,17 +209,22 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: rgba(255,255,255,0.95);
-  border: 1px solid rgba(124,58,237,0.08);
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(124, 58, 237, 0.08);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
-  transition: transform 0.15s, background 0.15s;
+  transition: transform 0.15s;
 }
-.save-btn .material-icons { color: #7c3aed; font-size: 20px; }
-.save-btn:hover { transform: translateY(-2px); background: white; }
+.save-btn .material-icons {
+  color: #7c3aed;
+  font-size: 20px;
+}
+.save-btn:hover {
+  transform: translateY(-2px);
+  background: white;
 }
 
 .card-body {
@@ -250,7 +260,8 @@
   align-items: center;
   gap: 0.6rem;
 }
-.card-price, .card-price-discounted {
+.card-price,
+.card-price-discounted {
   font-size: 1.05rem;
   font-weight: 800;
   color: #7c3aed;
@@ -267,8 +278,14 @@
   padding: 0.2rem 0.6rem;
   border-radius: 99px;
 }
-.in-stock  { background: #dcfce7; color: #16a34a; }
-.out-of-stock { background: #fee2e2; color: #dc2626; }
+.in-stock {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.out-of-stock {
+  background: #fee2e2;
+  color: #dc2626;
+}
 
 /* Empty State */
 .empty-results {
@@ -290,10 +307,24 @@
   animation: pulse 1.5s infinite;
 }
 
-@keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
 
 /* Responsive */
 @media (max-width: 900px) {
-  .search-layout { grid-template-columns: 1fr; }
-  .filters-sidebar { display: none; } /* Hide filters on mobile for now */
+  .search-layout {
+    grid-template-columns: 1fr;
+  }
+  .filters-sidebar {
+    display: none;
+  } /* Hide filters on mobile for now */
 }
