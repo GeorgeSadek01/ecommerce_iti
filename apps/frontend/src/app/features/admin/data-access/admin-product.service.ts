@@ -13,23 +13,73 @@ export class AdminProductService {
 
   constructor(private http: HttpClient) {}
 
+  private mapProduct(p: any): AdminProduct {
+    const seller = p.seller ?? p.sellerProfile ?? null;
+    const sellerUser = seller?.user ?? null;
+    const category = p.category ?? null;
+
+    return {
+      _id: p._id ?? p.id,
+      name: p.name,
+      slug: p.slug,
+      sellerId: p.sellerId ?? p.sellerProfileId,
+      seller: seller
+        ? {
+            id: seller.id ?? seller._id,
+            storeName: seller.storeName ?? 'Unknown seller',
+            status: seller.status,
+            user: sellerUser
+              ? {
+                  _id: sellerUser._id ?? sellerUser.id,
+                  firstName: sellerUser.firstName ?? '',
+                  lastName: sellerUser.lastName ?? '',
+                  email: sellerUser.email ?? '',
+                  role: sellerUser.role ?? 'seller',
+                }
+              : undefined,
+          }
+        : undefined,
+      categoryId: p.categoryId?.id ?? p.categoryId?._id ?? p.categoryId,
+      category: category
+        ? {
+            id: category.id ?? category._id,
+            name: category.name ?? '',
+            slug: category.slug,
+          }
+        : undefined,
+      price: Number(p.price ?? 0),
+      discountedPrice: p.discountedPrice ?? null,
+      stock: Number(p.stock ?? 0),
+      status: p.status,
+      isActive: Boolean(p.isActive),
+      description: p.description,
+      images: p.images,
+      createdAt: p.createdAt,
+      updatedAt: p.updatedAt,
+    };
+  }
+
   // Get all products with pagination and filters
   getProducts(
     page: number = 1,
     limit: number = 10,
-    status?: string,
-    category?: string,
+    search?: string,
+    sellerProfileId?: string,
+    productId?: string,
     minPrice?: number,
     maxPrice?: number,
-    query?: string
+    isActive?: boolean
   ): Observable<ApiResponse<ListResponse<AdminProduct>>> {
     let params = new HttpParams().set('page', page.toString()).set('limit', limit.toString());
 
-    if (status) {
-      params = params.set('status', status);
+    if (search) {
+      params = params.set('search', search);
     }
-    if (category) {
-      params = params.set('category', category);
+    if (sellerProfileId) {
+      params = params.set('sellerProfileId', sellerProfileId);
+    }
+    if (productId) {
+      params = params.set('productId', productId);
     }
     if (minPrice !== undefined) {
       params = params.set('minPrice', minPrice.toString());
@@ -37,27 +87,14 @@ export class AdminProductService {
     if (maxPrice !== undefined) {
       params = params.set('maxPrice', maxPrice.toString());
     }
-    if (query) {
-      params = params.set('query', query);
+    if (isActive !== undefined) {
+      params = params.set('isActive', String(isActive));
     }
 
     return this.http.get<any>(this.apiUrl, { params }).pipe(
       map((res) => {
         const products = res.data?.products ?? res.data?.items ?? [];
-        const items: AdminProduct[] = (products || []).map((p: any) => ({
-          _id: p._id ?? p.id,
-          name: p.name,
-          slug: p.slug,
-          sellerId: p.sellerId ?? p.sellerProfileId,
-          categoryId: p.categoryId,
-          price: p.price,
-          status: p.status,
-          isActive: p.isActive,
-          description: p.description,
-          images: p.images,
-          createdAt: p.createdAt,
-          updatedAt: p.updatedAt,
-        }));
+        const items: AdminProduct[] = (products || []).map((p: any) => this.mapProduct(p));
 
         const pagination = res.data?.pagination ?? res.data?.meta ?? res.meta ?? {};
         const meta = {
@@ -83,54 +120,28 @@ export class AdminProductService {
         const p = res.data?.product ?? res.data ?? null;
         if (!p) return { success: res.status === 'success', message: res.message ?? '' } as ApiResponse<AdminProduct>;
 
-        const product: AdminProduct = {
-          _id: p._id ?? p.id,
-          name: p.name,
-          slug: p.slug,
-          sellerId: p.sellerId ?? p.sellerProfileId,
-          categoryId: p.categoryId,
-          price: p.price,
-          status: p.status,
-          isActive: p.isActive,
-          description: p.description,
-          images: p.images,
-          createdAt: p.createdAt,
-          updatedAt: p.updatedAt,
-        };
-
         return {
           success: res.status === 'success' || res.success === true,
           message: res.message ?? '',
-          data: product,
+          data: this.mapProduct(p),
         } as ApiResponse<AdminProduct>;
       })
     );
   }
 
-  // Update product moderation status
-  updateProductModeration(id: string, status: string, reason?: string): Observable<ApiResponse<AdminProduct>> {
-    return this.http.patch<any>(`${this.apiUrl}/${id}/moderation`, { status, reason }).pipe(
+  // Update moderated product fields (stock, price, active state, etc.)
+  updateProductModeration(
+    id: string,
+    updates: Partial<Pick<AdminProduct, 'name' | 'description' | 'price' | 'discountedPrice' | 'stock' | 'isActive' | 'categoryId'>>
+  ): Observable<ApiResponse<AdminProduct>> {
+    return this.http.patch<any>(`${this.apiUrl}/${id}/moderation`, updates).pipe(
       map((res) => {
         const p = res.data?.product ?? res.data ?? null;
         if (!p) return { success: res.status === 'success', message: res.message ?? '' } as ApiResponse<AdminProduct>;
-        const product: AdminProduct = {
-          _id: p._id ?? p.id,
-          name: p.name,
-          slug: p.slug,
-          sellerId: p.sellerId ?? p.sellerProfileId,
-          categoryId: p.categoryId,
-          price: p.price,
-          status: p.status,
-          isActive: p.isActive,
-          description: p.description,
-          images: p.images,
-          createdAt: p.createdAt,
-          updatedAt: p.updatedAt,
-        };
         return {
           success: res.status === 'success' || res.success === true,
           message: res.message ?? '',
-          data: product,
+          data: this.mapProduct(p),
         } as ApiResponse<AdminProduct>;
       })
     );
@@ -142,24 +153,10 @@ export class AdminProductService {
       map((res) => {
         const p = res.data?.product ?? res.data ?? null;
         if (!p) return { success: res.status === 'success', message: res.message ?? '' } as ApiResponse<AdminProduct>;
-        const product: AdminProduct = {
-          _id: p._id ?? p.id,
-          name: p.name,
-          slug: p.slug,
-          sellerId: p.sellerId ?? p.sellerProfileId,
-          categoryId: p.categoryId,
-          price: p.price,
-          status: p.status,
-          isActive: p.isActive,
-          description: p.description,
-          images: p.images,
-          createdAt: p.createdAt,
-          updatedAt: p.updatedAt,
-        };
         return {
           success: res.status === 'success' || res.success === true,
           message: res.message ?? '',
-          data: product,
+          data: this.mapProduct(p),
         } as ApiResponse<AdminProduct>;
       })
     );

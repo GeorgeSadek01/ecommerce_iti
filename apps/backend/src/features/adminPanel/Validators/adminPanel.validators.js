@@ -80,12 +80,16 @@ export const adminSellerStatusValidator = [
 ];
 
 export const adminDashboardSummaryValidator = [
+  query('startDate').optional().isISO8601().withMessage('startDate must be a valid ISO-8601 date.'),
+  query('endDate').optional().isISO8601().withMessage('endDate must be a valid ISO-8601 date.'),
   query('dateFrom').optional().isISO8601().withMessage('dateFrom must be a valid ISO-8601 date.'),
   query('dateTo').optional().isISO8601().withMessage('dateTo must be a valid ISO-8601 date.'),
 ];
 
 export const adminDashboardTimeseriesValidator = [
   query('interval').optional().isIn(['day', 'week', 'month']).withMessage('interval must be day, week, or month.'),
+  query('startDate').optional().isISO8601().withMessage('startDate must be a valid ISO-8601 date.'),
+  query('endDate').optional().isISO8601().withMessage('endDate must be a valid ISO-8601 date.'),
   query('dateFrom').optional().isISO8601().withMessage('dateFrom must be a valid ISO-8601 date.'),
   query('dateTo').optional().isISO8601().withMessage('dateTo must be a valid ISO-8601 date.'),
 ];
@@ -96,6 +100,8 @@ export const adminRecentOrdersValidator = [
 
 export const adminTopSellersValidator = [
   query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('limit must be between 1 and 100.'),
+  query('startDate').optional().isISO8601().withMessage('startDate must be a valid ISO-8601 date.'),
+  query('endDate').optional().isISO8601().withMessage('endDate must be a valid ISO-8601 date.'),
   query('dateFrom').optional().isISO8601().withMessage('dateFrom must be a valid ISO-8601 date.'),
   query('dateTo').optional().isISO8601().withMessage('dateTo must be a valid ISO-8601 date.'),
 ];
@@ -106,8 +112,20 @@ export const adminProductsListValidator = [
   query('page').optional().isInt({ min: 1 }).withMessage('page must be a positive integer.'),
   query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('limit must be between 1 and 100.'),
   query('search').optional().trim().isLength({ min: 1, max: 100 }).withMessage('search must be 1-100 chars.'),
+  query('productId').optional().isMongoId().withMessage('productId must be a valid ID.'),
+  query('sellerId').optional().isMongoId().withMessage('sellerId must be a valid ID.'),
   query('sellerProfileId').optional().isMongoId().withMessage('sellerProfileId must be a valid ID.'),
   query('categoryId').optional().isMongoId().withMessage('categoryId must be a valid ID.'),
+  query('minPrice').optional().isFloat({ min: 0 }).withMessage('minPrice must be a non-negative number.'),
+  query('maxPrice').optional().isFloat({ min: 0 }).withMessage('maxPrice must be a non-negative number.'),
+  query().custom((value) => {
+    if (value.minPrice !== undefined && value.maxPrice !== undefined) {
+      if (Number(value.minPrice) > Number(value.maxPrice)) {
+        throw new Error('minPrice cannot be greater than maxPrice.');
+      }
+    }
+    return true;
+  }),
   booleanStringValidator('isActive'),
 ];
 
@@ -159,8 +177,11 @@ export const adminOrdersListValidator = [
     .optional()
     .isIn(['pending', 'processing', 'shipped', 'delivered', 'cancelled'])
     .withMessage('status is invalid.'),
+  query('orderId').optional().isMongoId().withMessage('orderId must be a valid ID.'),
   query('userId').optional().isMongoId().withMessage('userId must be a valid ID.'),
   query('sellerId').optional().isMongoId().withMessage('sellerId must be a valid ID.'),
+  query('startDate').optional().isISO8601().withMessage('startDate must be a valid ISO-8601 date.'),
+  query('endDate').optional().isISO8601().withMessage('endDate must be a valid ISO-8601 date.'),
   query('dateFrom').optional().isISO8601().withMessage('dateFrom must be a valid ISO-8601 date.'),
   query('dateTo').optional().isISO8601().withMessage('dateTo must be a valid ISO-8601 date.'),
 ];

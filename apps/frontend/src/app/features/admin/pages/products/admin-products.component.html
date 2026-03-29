@@ -18,42 +18,55 @@
     <div class="card border-0 shadow-sm mb-4">
         <div class="card-body">
             <div class="row g-3">
-                <div class="col-md-6">
+                <div class="col-lg-3 col-md-6">
                     <label for="searchInput" class="form-label">Search Product</label>
-                    <input id="searchInput" type="text" class="form-control" placeholder="Search by name..."
-                        [(ngModel)]="searchQuery" (keyup.enter)="onSearch()" [disabled]="loading()" />
+                    <input id="searchInput" type="text" class="form-control"
+                        placeholder="Search by name, slug, description" [ngModel]="searchQuery()"
+                        (ngModelChange)="searchQuery.set($event)" (keyup.enter)="onSearch()" [disabled]="loading()" />
                 </div>
-                <div class="col-md-6">
-                    <label for="statusFilter" class="form-label">Filter by Status</label>
-                    <select id="statusFilter" class="form-select" [(ngModel)]="selectedStatus"
-                        (change)="onFilterChange()" [disabled]="loading()">
-                        <option value="">All Status</option>
-                        @for (status of statuses; track status) {
-                        <option [value]="status">{{ status }}</option>
+                <div class="col-lg-3 col-md-6">
+                    <label for="sellerFilter" class="form-label">Filter by Seller ID</label>
+                    <input id="sellerFilter" type="text" class="form-control" placeholder="Seller profile ID"
+                        [ngModel]="sellerProfileIdFilter()" (ngModelChange)="sellerProfileIdFilter.set($event)"
+                        (keyup.enter)="onSearch()" [disabled]="loading()" />
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label for="productIdFilter" class="form-label">Filter by Product ID</label>
+                    <input id="productIdFilter" type="text" class="form-control" placeholder="Product ID"
+                        [ngModel]="productIdFilter()" (ngModelChange)="productIdFilter.set($event)"
+                        (keyup.enter)="onSearch()" [disabled]="loading()" />
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <label for="activeFilter" class="form-label">Availability</label>
+                    <select id="activeFilter" class="form-select" [ngModel]="selectedActiveState()"
+                        (ngModelChange)="selectedActiveState.set($event); onFilterChange()" [disabled]="loading()">
+                        @for (state of activeStateOptions; track state.value) {
+                        <option [value]="state.value">{{ state.label }}</option>
                         }
                     </select>
                 </div>
             </div>
             <div class="row g-3 mt-3">
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label for="minPrice" class="form-label">Min Price</label>
-                    <input id="minPrice" type="number" class="form-control" [(ngModel)]="minPrice"
-                        (change)="onFilterChange()" [disabled]="loading()" />
+                    <input id="minPrice" type="number" class="form-control" [ngModel]="minPrice()"
+                        (ngModelChange)="minPrice.set($event === '' ? null : Number($event))"
+                        (change)="onFilterChange()" [disabled]="loading()" min="0" step="0.01" />
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4">
                     <label for="maxPrice" class="form-label">Max Price</label>
-                    <input id="maxPrice" type="number" class="form-control" [(ngModel)]="maxPrice"
-                        (change)="onFilterChange()" [disabled]="loading()" />
+                    <input id="maxPrice" type="number" class="form-control" [ngModel]="maxPrice()"
+                        (ngModelChange)="maxPrice.set($event === '' ? null : Number($event))"
+                        (change)="onFilterChange()" [disabled]="loading()" min="0" step="0.01" />
                 </div>
-                <div class="col-12 mt-2">
+                <div class="col-md-4 d-flex align-items-end mt-2 mt-md-0">
                     <button class="btn btn-primary" (click)="onSearch()" [disabled]="loading()">
                         @if (loading()) {
                         <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                         } Search
                     </button>
-                    <button class="btn btn-outline-secondary ms-2"
-                        (click)="searchQuery.set(''); selectedStatus.set(''); minPrice.set(null); maxPrice.set(null); onSearch()"
-                        [disabled]="loading()">
+                    <button class="btn btn-outline-secondary ms-2" (click)="clearFilters()"
+                        [disabled]="loading() || !hasActiveFilters()">
                         Clear
                     </button>
                 </div>
@@ -76,8 +89,10 @@
                     <thead class="table-light">
                         <tr>
                             <th>Product Name</th>
-                            <th>Status</th>
+                            <th>Product ID</th>
+                            <th>Seller</th>
                             <th>Price</th>
+                            <th>Stock</th>
                             <th>Active</th>
                             <th>Created Date</th>
                             <th>Actions</th>
@@ -87,10 +102,10 @@
                         @for (product of products(); track product._id) {
                         <tr>
                             <td class="fw-semibold">{{ product.name }}</td>
-                            <td>
-                                <app-status-badge [status]="product.status"></app-status-badge>
-                            </td>
+                            <td><code>{{ product._id }}</code></td>
+                            <td>{{ product.seller?.storeName || product.sellerId }}</td>
                             <td>${{ product.price | number: '1.2-2' }}</td>
+                            <td>{{ product.stock ?? 0 }}</td>
                             <td>
                                 @if (product.isActive) {
                                 <span class="badge bg-success">Active</span>
@@ -100,8 +115,9 @@
                             </td>
                             <td>{{ product.createdAt | date: 'short' }}</td>
                             <td>
-                                <button class="btn btn-sm btn-outline-primary me-1"
-                                    (click)="openProductModal(product)">Moderate</button>
+                                <button class="btn btn-sm btn-outline-primary me-1" (click)="openProductModal(product)">
+                                    Review
+                                </button>
                                 <button class="btn btn-sm btn-outline-warning" (click)="deactivateProduct(product._id)"
                                     [disabled]="!product.isActive">Deactivate</button>
                             </td>
@@ -140,6 +156,10 @@
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-6">
+                        <label class="form-label">Product ID</label>
+                        <p class="form-control-plaintext"><code>{{ product._id }}</code></p>
+                    </div>
+                    <div class="mb-3">
                         <div class="mb-3">
                             <label class="form-label">Product Name</label>
                             <p class="form-control-plaintext">{{ product.name }}</p>
@@ -147,66 +167,80 @@
                         <div class="mb-3">
                             <label class="form-label">Slug</label>
                             <p class="form-control-plaintext">{{ product.slug }}</p>
+                            <div class="mb-3">
+                                <label class="form-label">Seller</label>
+                                <p class="form-control-plaintext">{{ product.seller?.storeName || 'Unknown seller' }}
+                                </p>
+                                <small class="text-secondary">{{ product.seller?.user?.email || product.sellerId
+                                    }}</small>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Category</label>
+                                <p class="form-control-plaintext">{{ product.category?.name || product.categoryId }}</p>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Price</label>
                             <p class="form-control-plaintext">${{ product.price | number: '1.2-2' }}</p>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Status</label>
-                            <p class="form-control-plaintext">
-                                <app-status-badge [status]="product.status"></app-status-badge>
-                            </p>
+                            <div class="mb-3">
+                                <label class="form-label">Stock</label>
+                                <p class="form-control-plaintext">{{ product.stock ?? 0 }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Active</label>
+                                    <p class="form-control-plaintext">
+                                        @if (product.isActive) {
+                                        <span class="badge bg-success">Active</span>
+                                        } @else {
+                                        <span class="badge bg-secondary">Inactive</span>
+                                        }
+                                    </p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Created Date</label>
+                                    <p class="form-control-plaintext">{{ product.createdAt | date: 'short' }}</p>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Updated Date</label>
+                                    <p class="form-control-plaintext">{{ product.updatedAt | date: 'short' }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Moderation Section -->
+                        <div class="border-top pt-3 mt-3">
+                            <h6>Moderation</h6>
+                            <div class="mb-3">
+                                <label for="moderationPrice" class="form-label">Update Price</label>
+                                <input id="moderationPrice" type="number" class="form-control"
+                                    [ngModel]="moderationPrice()"
+                                    (ngModelChange)="moderationPrice.set($event === '' ? null : Number($event))"
+                                    min="0.01" step="0.01" />
+                            </div>
+                            <div class="mb-3">
+                                <label for="moderationStock" class="form-label">Update Stock</label>
+                                <input id="moderationStock" type="number" class="form-control"
+                                    [ngModel]="moderationStock()"
+                                    (ngModelChange)="moderationStock.set($event === '' ? null : Number($event))" min="0"
+                                    step="1" />
+                            </div>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="moderationActive"
+                                    [ngModel]="moderationIsActive()"
+                                    (ngModelChange)="moderationIsActive.set(!!$event)" />
+                                <label class="form-check-label" for="moderationActive">Product is active</label>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label">Active</label>
-                            <p class="form-control-plaintext">
-                                @if (product.isActive) {
-                                <span class="badge bg-success">Active</span>
-                                } @else {
-                                <span class="badge bg-secondary">Inactive</span>
-                                }
-                            </p>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Created Date</label>
-                            <p class="form-control-plaintext">{{ product.createdAt | date: 'short' }}</p>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Updated Date</label>
-                            <p class="form-control-plaintext">{{ product.updatedAt | date: 'short' }}</p>
-                        </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" (click)="closeProductModal()">Cancel</button>
+                        <button type="button" class="btn btn-primary" (click)="applyModerationChanges()">Apply
+                            Changes</button>
                     </div>
                 </div>
-
-                <!-- Moderation Section -->
-                <div class="border-top pt-3 mt-3">
-                    <h6>Moderation</h6>
-                    <div class="mb-3">
-                        <label for="statusSelect" class="form-label">Update Status</label>
-                        <select id="statusSelect" class="form-select" [(ngModel)]="selectedStatusForUpdate">
-                            @for (status of statuses; track status) {
-                            <option [value]="status">{{ status }}</option>
-                            }
-                        </select>
-                    </div>
-
-                    @if (selectedStatusForUpdate() === 'rejected') {
-                    <div class="mb-3">
-                        <label for="reasonTextarea" class="form-label">Rejection Reason</label>
-                        <textarea id="reasonTextarea" class="form-control" rows="3" [(ngModel)]="rejectionReason"
-                            placeholder="Explain why this product is being rejected..."></textarea>
-                    </div>
-                    }
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" (click)="closeProductModal()">Cancel</button>
-                <button type="button" class="btn btn-primary" (click)="updateProductStatus()">Update Status</button>
             </div>
         </div>
-    </div>
-</div>
-}
+        }

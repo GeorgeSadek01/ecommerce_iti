@@ -27,15 +27,21 @@ export class AdminOrdersComponent implements OnInit {
   startDate = signal<string>('');
   endDate = signal<string>('');
   userIdFilter = signal<string>('');
+  orderIdFilter = signal<string>('');
   hasActiveFilters = computed(() =>
-    Boolean(this.selectedStatus() || this.startDate() || this.endDate() || this.userIdFilter().trim())
+    Boolean(
+      this.selectedStatus() ||
+        this.startDate() ||
+        this.endDate() ||
+        this.userIdFilter().trim() ||
+        this.orderIdFilter().trim()
+    )
   );
 
   // Modal
   selectedOrder = signal<AdminOrder | null>(null);
   showDetailModal = signal(false);
   selectedStatusForUpdate = signal<string>('');
-  trackingNumber = signal<string>('');
 
   orderStatuses = ['pending', 'processing', 'shipped', 'delivered', 'cancelled'];
   pageSizeOptions = [10, 20, 30, 50];
@@ -47,6 +53,16 @@ export class AdminOrdersComponent implements OnInit {
   }
 
   loadOrders(): void {
+    if (this.startDate() && this.endDate() && this.startDate() > this.endDate()) {
+      this.error.set('Start date cannot be after end date.');
+      return;
+    }
+
+    if (this.orderIdFilter().trim() && !/^[a-fA-F0-9]{24}$/.test(this.orderIdFilter().trim())) {
+      this.error.set('Order ID must be a valid 24-character Mongo ID.');
+      return;
+    }
+
     this.loading.set(true);
     this.error.set(null);
 
@@ -57,7 +73,8 @@ export class AdminOrdersComponent implements OnInit {
         this.selectedStatus() || undefined,
         this.startDate() || undefined,
         this.endDate() || undefined,
-        this.userIdFilter() || undefined
+        this.userIdFilter() || undefined,
+        this.orderIdFilter().trim() || undefined
       )
       .subscribe({
         next: (res) => {
@@ -90,6 +107,7 @@ export class AdminOrdersComponent implements OnInit {
   clearFilters(): void {
     this.selectedStatus.set('');
     this.userIdFilter.set('');
+    this.orderIdFilter.set('');
     this.startDate.set('');
     this.endDate.set('');
     this.currentPage.set(1);
@@ -113,7 +131,6 @@ export class AdminOrdersComponent implements OnInit {
   openOrderModal(order: AdminOrder): void {
     this.selectedOrder.set(order);
     this.selectedStatusForUpdate.set(order.status);
-    this.trackingNumber.set(order.trackingNumber || '');
     this.showDetailModal.set(true);
   }
 
@@ -138,22 +155,6 @@ export class AdminOrdersComponent implements OnInit {
     });
   }
 
-  addTracking(): void {
-    const order = this.selectedOrder();
-    const tracking = this.trackingNumber();
-    if (!order || !tracking) return;
-
-    this.orderService.updateTracking(order._id, tracking).subscribe({
-      next: () => {
-        this.orders.update((o) => o.map((ord) => (ord._id === order._id ? { ...ord, trackingNumber: tracking } : ord)));
-        this.closeOrderModal();
-      },
-      error: (err) => {
-        this.error.set(err.error?.message || 'Failed to add tracking number');
-      },
-    });
-  }
-
   cancelOrder(orderId: string): void {
     if (confirm('Are you sure you want to cancel this order?')) {
       this.orderService.cancelOrder(orderId).subscribe({
@@ -165,5 +166,17 @@ export class AdminOrdersComponent implements OnInit {
         },
       });
     }
+  }
+
+  getAllowedStatuses(order: AdminOrder): string[] {
+    const transitions: Record<string, string[]> = {
+      pending: ['processing', 'cancelled'],
+      processing: ['shipped', 'cancelled'],
+      shipped: ['delivered', 'cancelled'],
+      delivered: [],
+      cancelled: [],
+    };
+
+    return [order.status, ...(transitions[order.status] ?? [])];
   }
 }

@@ -114,7 +114,13 @@ export const getAdminRecentOrdersHandler = asyncHandler(async (req, res) => {
 
 export const getAdminTopSellersHandler = asyncHandler(async (req, res) => {
   const limit = Number(req.query.limit || 10);
-  const topSellers = await getAdminTopSellers({ limit, dateFrom: req.query.dateFrom, dateTo: req.query.dateTo });
+  const topSellers = await getAdminTopSellers({
+    limit,
+    dateFrom: req.query.dateFrom,
+    dateTo: req.query.dateTo,
+    startDate: req.query.startDate,
+    endDate: req.query.endDate,
+  });
   sendSuccess(res, 200, 'Admin top sellers retrieved successfully.', topSellers);
 });
 
