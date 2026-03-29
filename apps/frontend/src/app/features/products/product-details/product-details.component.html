@@ -1,131 +1,169 @@
 <div class="details-page">
   <div class="container">
     @if (isLoading()) {
-      <div class="skeleton-details">
-        <div class="skeleton-gallery"></div>
-        <div class="skeleton-info">
-          <div class="skeleton-line title"></div>
-          <div class="skeleton-line short"></div>
-          <div class="skeleton-line price"></div>
-          <div class="skeleton-line"></div>
-          <div class="skeleton-line"></div>
-          <div class="skeleton-btn"></div>
+    <div class="skeleton-details">
+      <div class="skeleton-gallery"></div>
+      <div class="skeleton-info">
+        <div class="skeleton-line title"></div>
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-line price"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-btn"></div>
+      </div>
+    </div>
+    } @if (!isLoading() && error()) {
+    <div class="error-container">
+      <span class="material-icons">error_outline</span>
+      <h2>Oops!</h2>
+      <p>{{ error() }}</p>
+      <a routerLink="/home" class="btn-back">Return Home</a>
+    </div>
+    } @if (!isLoading() && product(); as prod) {
+    <nav class="breadcrumb">
+      <a routerLink="/home">Home</a>
+      @for (ancestor of getCategoryAncestors(prod.categoryId); track ancestor._id) {
+      <span class="material-icons">chevron_right</span>
+      <a [routerLink]="['/category', ancestor._id]">{{ ancestor.name }}</a>
+      }
+      <span class="material-icons">chevron_right</span>
+      <a [routerLink]="['/category', getCategoryId(prod.categoryId)]">{{ getCategoryName(prod.categoryId) }}</a>
+      <span class="material-icons">chevron_right</span>
+      <span class="current">{{ prod.name }}</span>
+    </nav>
+
+    <div class="product-grid">
+      <!-- Gallery -->
+      <div class="gallery-section">
+        <div class="main-image-wrap">
+          @if (activeImage()) {
+          <img [src]="activeImage()" [alt]="prod.name" class="main-image" />
+          <button class="save-btn detail-save" (click)="$event.stopPropagation(); $event.preventDefault()" title="Save">
+            <span class="material-icons">bookmark_border</span>
+          </button>
+          @if (prod.images && prod.images.length > 1) {
+          <button class="gallery-arrow left" (click)="prevImage($event)">
+            <span class="material-icons">chevron_left</span>
+          </button>
+          <button class="gallery-arrow right" (click)="nextImage($event)">
+            <span class="material-icons">chevron_right</span>
+          </button>
+          } } @else {
+          <div class="placeholder-icon" style="background: transparent"></div>
+          }
+        </div>
+        <div class="thumbnails">
+          @for (img of prod.images; track img.id) {
+          <button class="thumb-btn" [class.active]="activeImage() === img.url" (click)="setActiveImage(img.url)">
+            <img [src]="img.url" alt="Thumbnail" />
+          </button>
+          }
         </div>
       </div>
-    }
 
-    @if (!isLoading() && error()) {
-      <div class="error-container">
-        <span class="material-icons">error_outline</span>
-        <h2>Oops!</h2>
-        <p>{{ error() }}</p>
-        <a routerLink="/home" class="btn-back">Return Home</a>
-      </div>
-    }
+      <!-- Info -->
+      <div class="info-section">
+        <span class="category-tag">{{ getCategoryName(prod.categoryId) }}</span>
+        <h1 class="product-title">{{ prod.name }}</h1>
 
-    @if (!isLoading() && product(); as prod) {
-      <nav class="breadcrumb">
-        <a routerLink="/home">Home</a>
-        @for (ancestor of getCategoryAncestors(prod.categoryId); track ancestor._id) {
-          <span class="material-icons">chevron_right</span>
-          <a [routerLink]="['/category', ancestor._id]">{{ ancestor.name }}</a>
-        }
-        <span class="material-icons">chevron_right</span>
-        <a [routerLink]="['/category', getCategoryId(prod.categoryId)]">{{ getCategoryName(prod.categoryId) }}</a>
-        <span class="material-icons">chevron_right</span>
-        <span class="current">{{ prod.name }}</span>
-      </nav>
-
-      <div class="product-grid">
-        <!-- Gallery -->
-        <div class="gallery-section">
-          <div class="main-image-wrap">
-            @if (activeImage()) {
-              <img [src]="activeImage()" [alt]="prod.name" class="main-image" />
-              @if (prod.images && prod.images.length > 1) {
-                <button class="gallery-arrow left" (click)="prevImage($event)">
-                  <span class="material-icons">chevron_left</span>
-                </button>
-                <button class="gallery-arrow right" (click)="nextImage($event)">
-                  <span class="material-icons">chevron_right</span>
-                </button>
-              }
-            } @else {
-              <div class="placeholder-icon" style="background: transparent;"></div>
-            }
-          </div>
-          <div class="thumbnails">
-            @for (img of prod.images; track img.id) {
-              <button 
-                class="thumb-btn" 
-                [class.active]="activeImage() === img.url"
-                (click)="setActiveImage(img.url)"
-              >
-                <img [src]="img.url" alt="Thumbnail" />
-              </button>
-            }
-          </div>
-        </div>
-
-        <!-- Info -->
-        <div class="info-section">
-          <span class="category-tag">{{ getCategoryName(prod.categoryId) }}</span>
-          <h1 class="product-title">{{ prod.name }}</h1>
-          
+        <div class="seller-row">
           <div class="store-badge">
             <span class="material-icons">storefront</span>
-            <span>Sold by <strong>{{ getStoreName(prod.sellerProfileId) }}</strong></span>
+            <span
+              >Sold by <strong>{{ getStoreName(prod.sellerProfileId) }}</strong></span
+            >
           </div>
-          
-          <div class="price-wrap">
-            @if (prod.discount && prod.discount > 0) {
-              <div class="pricing-group">
-                <div class="pricing">
-                  <span class="price-discounted">${{ prod.calculatedPrice | number:'1.2-2' }}</span>
-                  <span class="price-original">${{ prod.price | number:'1.2-2' }}</span>
+
+          @if (prod.averageRating && prod.averageRating > 0) {
+          <div class="prod-rating">
+            <span class="material-icons">star</span>
+            <span class="prod-rating-value">{{ prod.averageRating | number : '1.1-1' }}</span>
+            <span class="prod-rating-suffix">/ 5</span>
+          </div>
+          }
+        </div>
+
+        <div class="price-wrap">
+          @if (prod.discount && prod.discount > 0) {
+          <div class="pricing-group">
+            <div class="pricing">
+              <span class="price-discounted">${{ prod.calculatedPrice | number : '1.2-2' }}</span>
+              <span class="price-original">${{ prod.price | number : '1.2-2' }}</span>
+            </div>
+            <span class="discount-badge-detail">-{{ prod.discount }}% OFF</span>
+          </div>
+          } @else {
+          <span class="price">${{ prod.price | number : '1.2-2' }}</span>
+          } @if (prod.stock > 0) {
+          <span class="stock-badge in-stock">
+            <span class="material-icons">check_circle</span>
+            In Stock ({{ prod.stock }} available)
+          </span>
+          } @else {
+          <span class="stock-badge out-of-stock">
+            <span class="material-icons">cancel</span>
+            Out of Stock
+          </span>
+          }
+        </div>
+
+        <div class="description-box">
+          <h3>Description</h3>
+          <p>{{ prod.description }}</p>
+        </div>
+
+        <div class="reviews-section">
+          <h3>
+            Reviews <span class="review-count">({{ prod.reviews?.length || 0 }})</span>
+          </h3>
+
+          @if (prod.reviews && prod.reviews.length > 0) {
+          <div class="reviews-list">
+            @for (rev of prod.reviews; track rev._id) {
+            <div class="review-item">
+              <div class="review-avatar">{{ (rev.reviewerName || 'U').charAt(0) }}</div>
+              <div class="review-body">
+                <div class="review-head">
+                  <strong>{{ rev.reviewerName || 'Anonymous' }}</strong>
+                  @if (rev.rating || rev.rating === 0) {
+                  <div class="review-rating">
+                    <span class="material-icons">star</span>
+                    <span class="review-rating-value">{{ rev.rating | number : '1.1-1' }}</span>
+                  </div>
+                  }
                 </div>
-                <span class="discount-badge-detail">-{{ prod.discount }}% OFF</span>
+                <p class="review-text">{{ rev.comment }}</p>
+                <div class="review-meta">{{ rev.createdAt | date : 'mediumDate' }}</div>
               </div>
-            } @else {
-              <span class="price">${{ prod.price | number:'1.2-2' }}</span>
-            }
-            @if (prod.stock > 0) {
-              <span class="stock-badge in-stock">
-                <span class="material-icons">check_circle</span>
-                In Stock ({{ prod.stock }} available)
-              </span>
-            } @else {
-              <span class="stock-badge out-of-stock">
-                <span class="material-icons">cancel</span>
-                Out of Stock
-              </span>
+            </div>
             }
           </div>
-
-          <div class="description-box">
-            <h3>Description</h3>
-            <p>{{ prod.description }}</p>
+          } @else {
+          <div class="no-reviews">
+            <p>No reviews yet. Be the first to review this product.</p>
           </div>
+          }
+        </div>
 
-          <div class="actions">
-            <button class="btn-add-cart" [disabled]="prod.stock <= 0">
-              <span class="material-icons">add_shopping_cart</span>
-              Add to Cart
-            </button>
+        <div class="actions">
+          <button class="btn-add-cart" [disabled]="prod.stock <= 0">
+            <span class="material-icons">add_shopping_cart</span>
+            Add to Cart
+          </button>
+        </div>
+
+        <div class="security-badges">
+          <div class="badge">
+            <span class="material-icons">verified_user</span>
+            <span>Secure Payment</span>
           </div>
-
-          <div class="security-badges">
-            <div class="badge">
-              <span class="material-icons">verified_user</span>
-              <span>Secure Payment</span>
-            </div>
-            <div class="badge">
-              <span class="material-icons">local_shipping</span>
-              <span>Fast Delivery</span>
-            </div>
+          <div class="badge">
+            <span class="material-icons">local_shipping</span>
+            <span>Fast Delivery</span>
           </div>
         </div>
       </div>
+    </div>
     }
   </div>
 </div>

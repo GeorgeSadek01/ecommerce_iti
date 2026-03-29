@@ -188,6 +188,27 @@
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
 }
 
+.save-btn {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 6;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid rgba(124,58,237,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  transition: transform 0.15s, background 0.15s;
+}
+.save-btn .material-icons { color: #7c3aed; font-size: 20px; }
+.save-btn:hover { transform: translateY(-2px); background: white; }
+}
+
 .card-body {
   padding: 1rem 1.1rem 1.2rem;
 }

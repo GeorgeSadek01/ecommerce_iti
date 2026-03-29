@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import './category.model.js';
 const { Schema } = mongoose;
 
-const decimal128Getter = (v) => (v ? parseFloat(v.toString()) : null);
+const decimal128Getter = (v) => (v !== null && v !== undefined ? parseFloat(v.toString()) : 0);
 
 const productSchema = new Schema(
   {
@@ -59,10 +59,11 @@ const productSchema = new Schema(
       index: true,
     },
     averageRating: {
-      type: Number,
+      type: mongoose.Types.Decimal128,
       default: 0,
       min: 0,
       max: 5,
+      get: decimal128Getter,
     },
     reviewCount: {
       type: Number,

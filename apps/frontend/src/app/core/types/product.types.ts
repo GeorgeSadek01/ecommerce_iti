@@ -24,11 +24,22 @@ export interface SellerProfile {
   logoUrl?: string;
 }
 
+export interface Review {
+  _id?: string;
+  reviewerName?: string;
+  userId?: string;
+  rating: number;
+  comment?: string | null;
+  createdAt?: string;
+}
+
 export interface Product {
   _id: string;
   name: string;
   description: string;
   price: number;
+  averageRating?: number;
+  reviews?: Review[];
   discount?: number;
   calculatedPrice?: number;
   stock: number;

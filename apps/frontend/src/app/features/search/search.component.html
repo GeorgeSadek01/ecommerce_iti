@@ -1,27 +1,18 @@
 <div class="search-page">
   <div class="container">
     <div class="search-layout">
-      
       <!-- Side Filters -->
       <aside class="filters-sidebar">
         <div class="filter-group">
           <h3>Categories</h3>
           <div class="filter-list">
-            <button 
-              class="filter-item" 
-              [class.active]="activeCategory() === null"
-              (click)="toggleCategory('')"
-            >
+            <button class="filter-item" [class.active]="activeCategory() === null" (click)="toggleCategory('')">
               All Categories
             </button>
             @for (cat of categories(); track cat._id) {
-              <button 
-                class="filter-item" 
-                [class.active]="activeCategory() === cat._id"
-                (click)="toggleCategory(cat._id)"
-              >
-                {{ cat.name }}
-              </button>
+            <button class="filter-item" [class.active]="activeCategory() === cat._id" (click)="toggleCategory(cat._id)">
+              {{ cat.name }}
+            </button>
             }
           </div>
         </div>
@@ -55,62 +46,27 @@
         </div>
 
         @if (isLoading()) {
-          <div class="results-grid skeleton">
-            @for (n of [1,2,3,4,5,6]; track n) {
-              <div class="skeleton-card"></div>
-            }
-          </div>
-        }
-
-        @if (!isLoading() && products().length === 0) {
-          <div class="empty-results">
-            <span class="material-icons">search_off</span>
-            <h2>No products found</h2>
-            <p>Try adjusting your filters or search terms.</p>
-          </div>
+        <div class="results-grid skeleton">
+          @for (n of [1,2,3,4,5,6]; track n) {
+          <div class="skeleton-card"></div>
+          }
+        </div>
+        } @if (!isLoading() && products().length === 0) {
+        <div class="empty-results">
+          <span class="material-icons">search_off</span>
+          <h2>No products found</h2>
+          <p>Try adjusting your filters or search terms.</p>
+        </div>
         }
 
         <div class="results-grid">
           @for (product of products(); track product._id) {
-            <article class="product-card" [routerLink]="['/products', product._id]">
-              <div class="card-image-wrap">
-                @if (getPrimaryImage(product)) {
-                  <img
-                    [src]="getPrimaryImage(product)"
-                    [alt]="product.name"
-                    class="card-image"
-                    loading="lazy"
-                  />
-                } @else {
-                  <div class="card-image-placeholder" style="background: transparent;"></div>
-                }
-                <div class="card-overlay">
-                  <button class="overlay-btn">Quick View</button>
-                </div>
-                @if (product.discount && product.discount > 0) {
-                  <div class="discount-badge-card">-{{ product.discount }}%</div>
-                }
-              </div>
-              <div class="card-body">
-                <h3 class="card-name">{{ product.name }}</h3>
-                <p class="card-desc">{{ product.description }}</p>
-                <div class="card-footer">
-                  <div class="card-pricing">
-                    @if (product.discount && product.discount > 0) {
-                      <span class="card-price-discounted">${{ product.calculatedPrice | number: '1.2-2' }}</span>
-                      <span class="card-price-original">${{ product.price | number: '1.2-2' }}</span>
-                    } @else {
-                      <span class="card-price">${{ product.price | number: '1.2-2' }}</span>
-                    }
-                  </div>
-                  @if (product.stock > 0) {
-                    <span class="card-stock in-stock">In Stock</span>
-                  } @else {
-                    <span class="card-stock out-of-stock">Out of Stock</span>
-                  }
-                </div>
-              </div>
-            </article>
+          <app-product-card
+            [product]="product"
+            [categoryName]="getCategoryName(product)"
+            [primaryImage]="getPrimaryImage(product)"
+            cssClass="product-card"
+          ></app-product-card>
           }
         </div>
       </main>

@@ -6,7 +6,7 @@
 }
 
 .container {
-  max-width: 1200px;
+  left: 10px;
   margin: 0 auto;
   padding: 0 1.5rem;
 }
@@ -89,7 +89,8 @@
   transition: all 0.2s;
 }
 
-.filter-item:hover, .filter-item.active {
+.filter-item:hover,
+.filter-item.active {
   background: #7c3aed;
   color: white;
   border-color: #7c3aed;
@@ -155,8 +156,12 @@
 }
 
 @media (max-width: 900px) {
-  .category-layout { grid-template-columns: 1fr; }
-  .filters-sidebar { display: none; }
+  .category-layout {
+    grid-template-columns: 1fr;
+  }
+  .filters-sidebar {
+    display: none;
+  }
 }
 
 /* ─── Grid & Cards ─────────────────────────────────────────── */
@@ -206,7 +211,9 @@
   opacity: 0;
   transition: opacity 0.25s;
 }
-.product-card:hover .card-overlay { opacity: 1; }
+.product-card:hover .card-overlay {
+  opacity: 1;
+}
 .overlay-btn {
   padding: 0.55rem 1.25rem;
   border-radius: 8px;
@@ -219,7 +226,9 @@
   transform: translateY(6px);
   transition: transform 0.25s;
 }
-.product-card:hover .overlay-btn { transform: translateY(0); }
+.product-card:hover .overlay-btn {
+  transform: translateY(0);
+}
 
 .discount-badge-card {
   position: absolute;
@@ -268,7 +277,8 @@
   align-items: center;
   gap: 0.6rem;
 }
-.card-price, .card-price-discounted {
+.card-price,
+.card-price-discounted {
   font-size: 1.05rem;
   font-weight: 800;
   color: #7c3aed;
@@ -285,8 +295,40 @@
   padding: 0.2rem 0.6rem;
   border-radius: 99px;
 }
-.in-stock  { background: #dcfce7; color: #16a34a; }
-.out-of-stock { background: #fee2e2; color: #dc2626; }
+.in-stock {
+  background: #dcfce7;
+  color: #16a34a;
+}
+.out-of-stock {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
+.save-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 6;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(124, 58, 237, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+  transition: transform 0.15s, background 0.15s;
+}
+.save-btn .material-icons {
+  color: #7c3aed;
+  font-size: 20px;
+}
+.save-btn:hover {
+  transform: translateY(-2px);
+  background: white;
+}
 
 /* ─── Skeleton & States ────────────────────────────────────── */
 .skeleton-grid {
@@ -316,14 +358,21 @@
   background-size: 200%;
   animation: shimmer 1.4s infinite;
 }
-.skeleton-line.short { width: 55%; }
-
-@keyframes shimmer {
-  from { background-position: 200% 0; }
-  to   { background-position: -200% 0; }
+.skeleton-line.short {
+  width: 55%;
 }
 
-.error-state, .empty-state {
+@keyframes shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.error-state,
+.empty-state {
   text-align: center;
   padding: 4rem 1rem;
   color: #8898b3;

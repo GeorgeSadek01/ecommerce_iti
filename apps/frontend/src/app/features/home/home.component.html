@@ -1,19 +1,25 @@
 <!-- ─── Hero Carousel ──────────────────────────────────────── -->
 <section class="hero-carousel">
-  <div class="carousel-track" [style.transform]="'translateX(-' + (currentBannerSlide() * 100) + '%)'">
+  <div class="carousel-track" [style.transform]="'translateX(-' + currentBannerSlide() * 100 + '%)'">
     @for (slide of bannerSlides; track slide.title) {
-      <div class="carousel-slide">
-        <img [src]="slide.image" [alt]="slide.title" class="slide-bg">
-        <div class="slide-overlay"></div>
-        <div class="slide-content">
-          <span class="hero-badge"><span class="material-icons" style="font-size: 14px; margin-right: 4px;">auto_awesome</span>{{ slide.badge }}</span>
-          <h1 class="hero-title-new">{{ slide.title }}</h1>
-          <p class="hero-subtitle-new">{{ slide.subtitle }}</p>
-          <a class="btn-hero-primary" [routerLink]="slide.link">
-            {{ slide.buttonText }} <span class="material-icons" style="font-size: 1.1rem; margin-left: 0.4rem; vertical-align: middle;">arrow_forward</span>
-          </a>
-        </div>
+    <div class="carousel-slide">
+      <img [src]="slide.image" [alt]="slide.title" class="slide-bg" />
+      <div class="slide-overlay"></div>
+      <div class="slide-content">
+        <span class="hero-badge"
+          ><span class="material-icons" style="font-size: 14px; margin-right: 4px">auto_awesome</span
+          >{{ slide.badge }}</span
+        >
+        <h1 class="hero-title-new">{{ slide.title }}</h1>
+        <p class="hero-subtitle-new">{{ slide.subtitle }}</p>
+        <a class="btn-hero-primary" [routerLink]="slide.link">
+          {{ slide.buttonText }}
+          <span class="material-icons" style="font-size: 1.1rem; margin-left: 0.4rem; vertical-align: middle"
+            >arrow_forward</span
+          >
+        </a>
       </div>
+    </div>
     }
   </div>
 
@@ -26,11 +32,7 @@
 
   <div class="carousel-indicators">
     @for (slide of bannerSlides; track slide.title; let i = $index) {
-      <button 
-        class="indicator-dot" 
-        [class.active]="currentBannerSlide() === i"
-        (click)="goToBanner(i)">
-      </button>
+    <button class="indicator-dot" [class.active]="currentBannerSlide() === i" (click)="goToBanner(i)"></button>
     }
   </div>
 </section>
@@ -39,122 +41,138 @@
 <section class="section">
   <div class="section-container">
     <h2 class="section-title">Shop by Category</h2>
-    <div class="categories-grid">
-
-      @for (cat of categories(); track cat._id) {
-        <div 
-          class="category-card"
-          [routerLink]="['/category', cat._id]"
-        >
-          <div class="category-image-wrap">
-            @if (cat.imageUrl || cat.image?.url) {
-               <img [src]="cat.imageUrl || cat.image?.url" [alt]="cat.name" class="category-image" loading="lazy" />
-            } @else {
-               <div class="category-placeholder">
-                 <span class="material-icons" style="font-size: 48px;">category</span>
-               </div>
-            }
+    <div class="carousel-wrapper">
+      <button class="carousel-btn carousel-btn-prev" (click)="scrollCategories('left')" title="Previous">
+        <span class="material-icons">chevron_left</span>
+      </button>
+      <div class="carousel-container" id="categoriesCarousel">
+        <div class="carousel-track">
+          @for (cat of categories(); track cat._id) {
+          <div class="category-card" [routerLink]="['/category', cat._id]">
+            <div class="category-image-wrap">
+              @if (cat.imageUrl || cat.image?.url) {
+              <img [src]="cat.imageUrl || cat.image?.url" [alt]="cat.name" class="category-image" loading="lazy" />
+              } @else {
+              <div class="category-placeholder">
+                <span class="material-icons" style="font-size: 48px">category</span>
+              </div>
+              }
+            </div>
+            <span class="category-name">{{ cat.name }}</span>
           </div>
-          <span class="category-name">{{ cat.name }}</span>
+          }
         </div>
-      }
+      </div>
+      <button class="carousel-btn carousel-btn-next" (click)="scrollCategories('right')" title="Next">
+        <span class="material-icons">chevron_right</span>
+      </button>
     </div>
   </div>
 </section>
 
-<!-- ─── Featured Products ─────────────────────────────────── -->
+<!-- ─── Top Deals ─────────────────────────────────── -->
 <section class="section products-section">
   <div class="section-container">
     <div class="section-header">
       <h2 class="section-title">
-        @if (activeCategory() === null) { Featured Products } @else {
-          {{ getCategoryLabel() }}
+        @if (activeCategory() === null) { Top Deals } @else {
+        {{ getCategoryLabel() }}
         }
       </h2>
     </div>
 
     <!-- Loading -->
     @if (isLoading()) {
-      <div class="skeleton-grid">
-        @for (n of [1, 2, 3, 4, 5, 6, 7, 8]; track n) {
-          <div class="skeleton-card">
-            <div class="skeleton-img"></div>
-            <div class="skeleton-line short"></div>
-            <div class="skeleton-line"></div>
-            <div class="skeleton-line short"></div>
-          </div>
-        }
+    <div class="skeleton-grid">
+      @for (n of [1, 2, 3, 4, 5, 6, 7, 8]; track n) {
+      <div class="skeleton-card">
+        <div class="skeleton-img"></div>
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-line"></div>
+        <div class="skeleton-line short"></div>
       </div>
+      }
+    </div>
     }
 
     <!-- Error -->
     @if (!isLoading() && error()) {
-      <div class="error-state">
-        <span class="material-icons" style="font-size: 48px; display: block; margin-bottom: 12px; color: #f87171;">warning</span>
-        <p>{{ error() }}</p>
-        <button class="btn-retry" (click)="selectCategory(activeCategory())">Retry</button>
-      </div>
+    <div class="error-state">
+      <span class="material-icons" style="font-size: 48px; display: block; margin-bottom: 12px; color: #f87171"
+        >warning</span
+      >
+      <p>{{ error() }}</p>
+      <button class="btn-retry" (click)="selectCategory(activeCategory())">Retry</button>
+    </div>
     }
 
     <!-- Products Grid -->
     @if (!isLoading() && !error() && products().length > 0) {
-      <div class="products-grid">
-        @for (product of products(); track product._id) {
-          <article class="product-card" [routerLink]="['/products', product._id]">
-            <div class="card-image-wrap">
-              @if (getPrimaryImage(product)) {
-                <img
-                  [src]="getPrimaryImage(product)"
-                  [alt]="product.name"
-                  class="card-image"
-                  loading="lazy"
-                />
-              } @else {
-                <div class="card-image-placeholder" style="background: transparent;"></div>
-              }
-              <div class="card-overlay">
-                <button class="overlay-btn">Quick View</button>
-              </div>
-              @if (product.discount && product.discount > 0) {
-                <div class="discount-badge-card">-{{ product.discount }}%</div>
-              }
-            </div>
-            <div class="card-body">
-              <span class="card-category">{{ getCategoryName(product) }}</span>
-              <h3 class="card-name">{{ product.name }}</h3>
-              <p class="card-desc">{{ product.description }}</p>
-              <div class="card-footer">
-                <div class="card-pricing">
-                  @if (product.discount && product.discount > 0) {
-                    <span class="card-price-discounted">${{ product.calculatedPrice | number: '1.2-2' }}</span>
-                    <span class="card-price-original">${{ product.price | number: '1.2-2' }}</span>
-                  } @else {
-                    <span class="card-price">${{ product.price | number: '1.2-2' }}</span>
-                  }
-                </div>
-                @if (product.stock > 0) {
-                  <span class="card-stock in-stock">In Stock</span>
-                } @else {
-                  <span class="card-stock out-of-stock">Out of Stock</span>
-                }
-              </div>
-            </div>
-          </article>
-        }
+    <div class="carousel-wrapper top-deals-carousel">
+      <button class="carousel-btn carousel-btn-prev" (click)="scrollTopDeals('left')" title="Previous">
+        <span class="material-icons">chevron_left</span>
+      </button>
+      <div class="carousel-container" id="topDealsCarousel">
+        <div class="carousel-track">
+          @for (product of products(); track product._id) {
+          <app-product-card
+            [product]="product"
+            [categoryName]="getCategoryName(product)"
+            [primaryImage]="getPrimaryImage(product)"
+            cssClass="product-card"
+          ></app-product-card>
+          }
+        </div>
       </div>
+      <button class="carousel-btn carousel-btn-next" (click)="scrollTopDeals('right')" title="Next">
+        <span class="material-icons">chevron_right</span>
+      </button>
+    </div>
     }
 
     <!-- Empty -->
     @if (!isLoading() && !error() && products().length === 0) {
-      <div class="empty-state">
-        <span class="material-icons" style="font-size: 48px; display: block; margin-bottom: 12px; color: #94a3b8;">inventory_2</span>
-        <p>No products found in this category.</p>
-        <button class="btn-retry" (click)="selectCategory(null)">View All Products</button>
-      </div>
+    <div class="empty-state">
+      <span class="material-icons" style="font-size: 48px; display: block; margin-bottom: 12px; color: #94a3b8"
+        >inventory_2</span
+      >
+      <p>No products found in this category.</p>
+      <button class="btn-retry" (click)="selectCategory(null)">View All Products</button>
+    </div>
     }
   </div>
 </section>
 
+<!-- ─── Top Ranked Products ───────────────────────────────── -->
+@if (!isLoading() && !error() && topRankedProducts().length > 0) {
+<section class="section">
+  <div class="section-container">
+    <div class="section-header">
+      <h2 class="section-title">Top Ranked</h2>
+    </div>
+    <div class="carousel-wrapper">
+      <button class="carousel-btn carousel-btn-prev" (click)="scrollTopRanked('left')" title="Previous">
+        <span class="material-icons">chevron_left</span>
+      </button>
+      <div class="carousel-container" id="topRankedCarousel">
+        <div class="carousel-track">
+          @for (product of topRankedProducts(); track product._id) {
+          <app-product-card
+            [product]="product"
+            [categoryName]="getCategoryName(product)"
+            [primaryImage]="getPrimaryImage(product)"
+            cssClass="product-card"
+          ></app-product-card>
+          }
+        </div>
+      </div>
+      <button class="carousel-btn carousel-btn-next" (click)="scrollTopRanked('right')" title="Next">
+        <span class="material-icons">chevron_right</span>
+      </button>
+    </div>
+  </div>
+</section>
+}
 <!-- ─── Footer ───────────────────────────────────────────── -->
 <footer class="footer">
   <div class="footer-inner">

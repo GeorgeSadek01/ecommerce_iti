@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ProductService } from '../../../core/services/product.service';
 import { Product, Category } from '../../../core/types/product.types';
+import { ProductCardComponent } from '../../../core/components/product-card/product-card.component';
 
 @Component({
   selector: 'app-category',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, ProductCardComponent],
   templateUrl: './category.component.html',
   styleUrl: './category.component.css',
 })
@@ -22,13 +23,10 @@ export class CategoryComponent implements OnInit {
   protected readonly maxPrice = signal<number | null>(null);
   protected readonly sortBy = signal<any>('newest');
 
-  constructor(
-    private readonly route: ActivatedRoute,
-    private readonly productService: ProductService
-  ) {}
+  constructor(private readonly route: ActivatedRoute, private readonly productService: ProductService) {}
 
   ngOnInit(): void {
-    this.route.paramMap.subscribe(params => {
+    this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       if (id) {
         // Reset filters when changing category
@@ -68,14 +66,14 @@ export class CategoryComponent implements OnInit {
 
   private loadCategoryData(id: string): void {
     this.isLoading.set(true);
-    
+
     this.productService.getCategories().subscribe({
       next: (res) => {
         const cats = res.data?.categories ?? [];
         this.categoriesList.set(cats);
-        const cat = cats.find(c => c._id === id);
+        const cat = cats.find((c) => c._id === id);
         if (cat) this.category.set(cat);
-      }
+      },
     });
 
     const filters = {
@@ -83,7 +81,7 @@ export class CategoryComponent implements OnInit {
       limit: 24,
       minPrice: this.minPrice() || undefined,
       maxPrice: this.maxPrice() || undefined,
-      sort: this.sortBy()
+      sort: this.sortBy(),
     };
 
     this.productService.searchProducts(filters).subscribe({
@@ -97,8 +95,8 @@ export class CategoryComponent implements OnInit {
             next: (imgRes: any) => {
               const images = imgRes.data?.images ?? imgRes.images ?? [];
               if (images.length > 0) {
-                this.products.update(curr => {
-                  const idx = curr.findIndex(p => p._id === prod._id);
+                this.products.update((curr) => {
+                  const idx = curr.findIndex((p) => p._id === prod._id);
                   if (idx !== -1) {
                     const copy = [...curr];
                     copy[idx] = { ...copy[idx], images: images };
@@ -107,19 +105,24 @@ export class CategoryComponent implements OnInit {
                   return curr;
                 });
               }
-            }
+            },
           });
         });
       },
       error: () => {
         this.error.set('Failed to load products for this category.');
         this.isLoading.set(false);
-      }
+      },
     });
   }
 
   protected getPrimaryImage(product: Product): string {
     const primary = product.images?.find((img) => img.isPrimary);
     return primary?.url ?? product.images?.[0]?.url ?? '';
+  }
+
+  protected getCategoryName(product: Product): string {
+    // In category view, all products are from the same category
+    return this.category()?.name ?? 'Category';
   }
 }
