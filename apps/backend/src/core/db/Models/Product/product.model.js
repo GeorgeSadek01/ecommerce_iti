@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import './category.model.js';
 const { Schema } = mongoose;
 
-const decimal128Getter = (v) => (v ? parseFloat(v.toString()) : null);
+const decimal128Getter = (v) => (v !== null && v !== undefined ? parseFloat(v.toString()) : 0);
 
 const productSchema = new Schema(
   {
@@ -42,7 +42,7 @@ const productSchema = new Schema(
       required: [true, 'Price is required'],
       get: decimal128Getter,
     },
-    discountedPrice: {
+    discount: {
       type: mongoose.Types.Decimal128,
       default: null,
       get: decimal128Getter,
@@ -59,10 +59,11 @@ const productSchema = new Schema(
       index: true,
     },
     averageRating: {
-      type: Number,
+      type: mongoose.Types.Decimal128,
       default: 0,
       min: 0,
       max: 5,
+      get: decimal128Getter,
     },
     reviewCount: {
       type: Number,
@@ -86,19 +87,16 @@ productSchema.index({ name: 'text', description: 'text' });
 // Range queries on price
 productSchema.index({ price: 1 });
 
-// Validate price > 0 and discountedPrice < price
+// Validate price > 0 and discount between 0 and 100
 productSchema.pre('save', async function () {
   const price = parseFloat(this.price.toString());
   if (price <= 0) {
     throw new Error('Price must be greater than 0');
   }
-  if (this.discountedPrice !== null && this.discountedPrice !== undefined) {
-    const discountedPrice = parseFloat(this.discountedPrice.toString());
-    if (discountedPrice <= 0) {
-      throw new Error('Discounted price must be greater than 0');
-    }
-    if (discountedPrice >= price) {
-      throw new Error('Discounted price must be less than the original price');
+  if (this.discount !== null && this.discount !== undefined) {
+    const discount = parseFloat(this.discount.toString());
+    if (discount < 0 || discount > 100) {
+      throw new Error('Discount percentage must be between 0 and 100');
     }
   }
 });
@@ -109,25 +107,24 @@ productSchema.pre('save', async function () {
 const validatePriceUpdate = async function () {
   const update = this.getUpdate();
   const rawPrice = update?.price ?? update?.$set?.price;
-  const rawDiscountedPrice = update?.discountedPrice ?? update?.$set?.discountedPrice;
+  const rawDiscount = update?.discount ?? update?.$set?.discount;
 
   // Only validate if at least one price field is part of this update
-  if (rawPrice === undefined && rawDiscountedPrice === undefined) return;
+  if (rawPrice === undefined && rawDiscount === undefined) return;
 
   // Fetch the current document to fill in whichever field isn't being updated
   const existing = await this.model.findOne(this.getQuery()).lean();
 
   const priceVal = rawPrice !== undefined ? rawPrice : existing?.price;
-  const discountedVal = rawDiscountedPrice !== undefined ? rawDiscountedPrice : existing?.discountedPrice;
+  const discountVal = rawDiscount !== undefined ? rawDiscount : existing?.discount;
 
   if (priceVal !== undefined && priceVal !== null) {
     const price = parseFloat(priceVal.toString());
     if (price <= 0) throw new Error('Price must be greater than 0');
 
-    if (discountedVal !== null && discountedVal !== undefined) {
-      const discountedPrice = parseFloat(discountedVal.toString());
-      if (discountedPrice <= 0) throw new Error('Discounted price must be greater than 0');
-      if (discountedPrice >= price) throw new Error('Discounted price must be less than the original price');
+    if (discountVal !== null && discountVal !== undefined) {
+      const discount = parseFloat(discountVal.toString());
+      if (discount < 0 || discount > 100) throw new Error('Discount percentage must be between 0 and 100');
     }
   }
 };

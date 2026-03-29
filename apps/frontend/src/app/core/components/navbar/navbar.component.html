@@ -2,17 +2,17 @@
   <div class="nav-container">
     <!-- Brand (Left) -->
     <a class="nav-brand" routerLink="/home" (click)="closeMenu()">
-      <span class="material-icons brand-icon" style="color: #7c3aed;">shopping_basket</span>
+      <span class="material-icons brand-icon" style="color: #7c3aed">shopping_basket</span>
       <span class="brand-name">ShopITI</span>
     </a>
-    
+
     <!-- Navbar Search (Center) -->
     <div class="nav-search-wrap">
       <div class="nav-search-bar">
-        <input 
-          type="text" 
-          placeholder="Search products..." 
-          [value]="searchQuery()" 
+        <input
+          type="text"
+          placeholder="Search products..."
+          [value]="searchQuery()"
           (input)="updateSearchQuery($event)"
           (keyup.enter)="onSearch()"
         />
@@ -47,43 +47,46 @@
       }
 
       @if (isLoggedIn()) {
-        <a class="nav-btn-link" routerLink="/orders">
-          <span class="material-icons">receipt_long</span>
-          <span class="btn-text">Orders</span>
-        </a>
-        
-        <a class="nav-btn-link" routerLink="/cart">
-          <div class="cart-icon-wrap">
-            <span class="material-icons">shopping_cart</span>
-            <span class="cart-badge">0</span>
-          </div>
-          <span class="btn-text">Cart</span>
-        </a>
+      <a class="nav-btn-link" routerLink="/orders">
+        <span class="material-icons">receipt_long</span>
+        <span class="btn-text">Orders</span>
+      </a>
 
-        <a class="nav-btn-link" [routerLink]="getDashboardRoute()">
-          <span class="material-icons">account_circle</span>
-          <span class="btn-text">Profile</span>
-        </a>
+      <a class="nav-btn-link" routerLink="/cart">
+        <div class="cart-icon-wrap">
+          <span class="material-icons">shopping_cart</span>
+          <span class="cart-badge">0</span>
+        </div>
+        <span class="btn-text">Cart</span>
+      </a>
 
-        <button class="nav-btn-link logout-btn-v3" (click)="logout()">
-          <span class="material-icons" style="color: #ef4444;">logout</span>
-          <span class="btn-text" style="color: #ef4444;">Log Out</span>
-        </button>
+      <a class="nav-btn-link" routerLink="/wishlist">
+        <div class="cart-icon-wrap">
+          <span class="material-icons">bookmark</span>
+          <span class="cart-badge">0</span>
+        </div>
+        <span class="btn-text">Wishlist</span>
+      </a>
+
+      <a class="nav-btn-link" [routerLink]="getDashboardRoute()">
+        <span class="material-icons">account_circle</span>
+        <span class="btn-text">Profile</span>
+      </a>
+
+      <button class="nav-btn-link logout-btn-v3" (click)="logout()">
+        <span class="material-icons" style="color: #ef4444">logout</span>
+        <span class="btn-text" style="color: #ef4444">Log Out</span>
+      </button>
       } @else {
-        <a class="nav-btn-link" routerLink="/auth/login">
-          <span class="material-icons">login</span>
-          <span class="btn-text">Login</span>
-        </a>
+      <a class="nav-btn-link" routerLink="/auth/login">
+        <span class="material-icons">login</span>
+        <span class="btn-text">Login</span>
+      </a>
       }
     </div>
 
     <!-- Hamburger -->
-    <button
-      class="hamburger"
-      [class.open]="isMenuOpen"
-      (click)="toggleMenu()"
-      aria-label="Toggle menu"
-    >
+    <button class="hamburger" [class.open]="isMenuOpen" (click)="toggleMenu()" aria-label="Toggle menu">
       <span></span>
       <span></span>
       <span></span>
@@ -94,10 +97,10 @@
   <div class="mobile-menu" [class.open]="isMenuOpen">
     <!-- Mobile Search -->
     <div class="mobile-search-wrap">
-      <input 
-        type="text" 
-        placeholder="Search products..." 
-        [value]="searchQuery()" 
+      <input
+        type="text"
+        placeholder="Search products..."
+        [value]="searchQuery()"
         (input)="updateSearchQuery($event)"
         (keyup.enter)="onSearch()"
       />
@@ -121,31 +124,41 @@
     }
 
     @if (isLoggedIn()) {
-      <a routerLink="/orders" (click)="closeMenu()">
-        <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px;">receipt_long</span>
-        My Orders
-      </a>
-      <a routerLink="/cart" (click)="closeMenu()">
-        <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px;">shopping_cart</span>
-        Cart
-      </a>
-      <a [routerLink]="getDashboardRoute()" (click)="closeMenu()">
-        <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px;">account_circle</span>
-        Profile
-      </a>
-      <button (click)="logout(); closeMenu()">
-        <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px;">logout</span>
-        Log Out
-      </button>
+    <a routerLink="/orders" (click)="closeMenu()">
+      <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px"
+        >receipt_long</span
+      >
+      My Orders
+    </a>
+    <a routerLink="/cart" (click)="closeMenu()">
+      <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px"
+        >shopping_cart</span
+      >
+      Cart
+    </a>
+    <a routerLink="/wishlist" (click)="closeMenu()">
+      <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px">bookmark</span>
+      Wishlist
+    </a>
+    <a [routerLink]="getDashboardRoute()" (click)="closeMenu()">
+      <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px"
+        >account_circle</span
+      >
+      Profile
+    </a>
+    <button (click)="logout(); closeMenu()">
+      <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px">logout</span>
+      Log Out
+    </button>
     } @else {
-      <a routerLink="/auth/login" (click)="closeMenu()">
-        <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px;">login</span>
-        Sign In
-      </a>
-      <a routerLink="/auth/register" (click)="closeMenu()">
-        <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px;">person_add</span>
-        Get Started
-      </a>
+    <a routerLink="/auth/login" (click)="closeMenu()">
+      <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px">login</span>
+      Sign In
+    </a>
+    <a routerLink="/auth/register" (click)="closeMenu()">
+      <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px">person_add</span>
+      Get Started
+    </a>
     }
   </div>
 </nav>

@@ -9,8 +9,28 @@ export interface Category {
   name: string;
   description?: string;
   imageUrl?: string;
+  image?: {
+    url: string;
+    cloudinaryPublicId?: string;
+  };
+  ancestors?: Category[];
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface SellerProfile {
+  _id: string;
+  storeName: string;
+  logoUrl?: string;
+}
+
+export interface Review {
+  _id?: string;
+  reviewerName?: string;
+  userId?: string;
+  rating: number;
+  comment?: string | null;
+  createdAt?: string;
 }
 
 export interface Product {
@@ -18,9 +38,13 @@ export interface Product {
   name: string;
   description: string;
   price: number;
+  averageRating?: number;
+  reviews?: Review[];
+  discount?: number;
+  calculatedPrice?: number;
   stock: number;
   categoryId: string | Category;
-  sellerProfileId: string;
+  sellerProfileId: string | SellerProfile;
   images: ProductImage[];
   createdAt?: string;
   updatedAt?: string;

@@ -84,7 +84,14 @@ export const create = async (data) => {
 // ─── Get Product By ID ────────────────────────────────────────────────────────
 
 export const getById = async (id) => {
-  const product = await productModel.findById(id).populate('categoryId');
+  const product = await productModel
+    .findById(id)
+    .populate({
+      path: 'categoryId',
+      populate: { path: 'ancestors', select: 'name slug' }
+    })
+    .populate('sellerProfileId', 'storeName logoUrl');
+    
   if (!product) {
     throw new AppError('Product not found', 404);
   }

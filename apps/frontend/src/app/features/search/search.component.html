@@ -1,27 +1,18 @@
 <div class="search-page">
   <div class="container">
     <div class="search-layout">
-      
       <!-- Side Filters -->
       <aside class="filters-sidebar">
         <div class="filter-group">
           <h3>Categories</h3>
           <div class="filter-list">
-            <button 
-              class="filter-item" 
-              [class.active]="activeCategory() === null"
-              (click)="toggleCategory('')"
-            >
+            <button class="filter-item" [class.active]="activeCategory() === null" (click)="toggleCategory('')">
               All Categories
             </button>
             @for (cat of categories(); track cat._id) {
-              <button 
-                class="filter-item" 
-                [class.active]="activeCategory() === cat._id"
-                (click)="toggleCategory(cat._id)"
-              >
-                {{ cat.name }}
-              </button>
+            <button class="filter-item" [class.active]="activeCategory() === cat._id" (click)="toggleCategory(cat._id)">
+              {{ cat.name }}
+            </button>
             }
           </div>
         </div>
@@ -55,19 +46,17 @@
         </div>
 
         @if (isLoading()) {
-          <div class="results-grid skeleton">
-            @for (n of [1,2,3,4,5,6]; track n) {
-              <div class="skeleton-card"></div>
-            }
-          </div>
-        }
-
-        @if (!isLoading() && products().length === 0) {
-          <div class="empty-results">
-            <span class="material-icons">search_off</span>
-            <h2>No products found</h2>
-            <p>Try adjusting your filters or search terms.</p>
-          </div>
+        <div class="results-grid skeleton">
+          @for (n of [1,2,3,4,5,6]; track n) {
+          <div class="skeleton-card"></div>
+          }
+        </div>
+        } @if (!isLoading() && products().length === 0) {
+        <div class="empty-results">
+          <span class="material-icons">search_off</span>
+          <h2>No products found</h2>
+          <p>Try adjusting your filters or search terms.</p>
+        </div>
         }
 
         <div class="results-grid">
