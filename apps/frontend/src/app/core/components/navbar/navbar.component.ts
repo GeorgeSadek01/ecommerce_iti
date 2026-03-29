@@ -1,13 +1,13 @@
-import { Component, computed, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, computed, signal } from '@angular/core';
+import { AsyncPipe, CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../../services/auth-api.service';
-import { CartService } from '../../services/cart.service';
+import { WishlistService } from '../../services/wishlist.service';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, RouterLink, RouterLinkActive],
+  imports: [CommonModule, AsyncPipe, RouterLink, RouterLinkActive],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
 })
@@ -20,9 +20,19 @@ export class NavbarComponent implements OnInit {
   protected readonly currentRole = computed(() => this.authService.currentRole());
   protected readonly cartCount = computed(() => this.cartService.itemCount());
 
+  protected readonly wishlistCount$ = this.wishlistService.count$;
+
+  /** Shoppers: server wishlist. Guests: local wishlist. Admins: hidden. */
+  protected readonly showWishlistNav = computed(() => {
+    if (!this.authService.isAuthenticated()) return true;
+    const role = this.authService.currentRole();
+    return role === 'customer' || role === 'seller';
+  });
+
   constructor(
     private readonly authService: AuthService,
     private readonly cartService: CartService,
+    private readonly wishlistService: WishlistService,
     private readonly router: Router
   ) {}
 
@@ -42,10 +52,14 @@ export class NavbarComponent implements OnInit {
 
   protected logout(): void {
     this.authService.logout().subscribe({
-      next: () => this.router.navigate(['/home']),
+      next: () => {
+        this.wishlistService.clearLocal();
+        void this.router.navigate(['/home']);
+      },
       error: () => {
         this.authService.clearSession();
-        this.router.navigate(['/home']);
+        this.wishlistService.clearLocal();
+        void this.router.navigate(['/home']);
       },
     });
   }

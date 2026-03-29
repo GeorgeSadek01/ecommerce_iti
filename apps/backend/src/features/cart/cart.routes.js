@@ -19,7 +19,7 @@ const router = express.Router();
 router.use(authenticate);
 
 // Admins cannot access cart at all
-router.use(authorize('user', 'seller'));
+router.use(authorize('customer', 'seller'));
 
 router.get('/', getCart);
 router.post('/', addCartItemValidator, validateRequest, addCartItem);

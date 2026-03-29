@@ -32,9 +32,28 @@ export interface AdminProduct {
   name: string;
   slug: string;
   sellerId: string;
+  seller?: {
+    id: string;
+    storeName: string;
+    status?: 'pending' | 'approved' | 'suspended';
+    user?: {
+      _id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      role: 'customer' | 'seller' | 'admin';
+    };
+  };
   categoryId: string;
+  category?: {
+    id: string;
+    name: string;
+    slug?: string;
+  };
   price: number;
-  status: 'pending' | 'approved' | 'rejected';
+  discountedPrice?: number | null;
+  stock?: number;
+  status?: 'pending' | 'approved' | 'rejected';
   isActive: boolean;
   description: string;
   images?: string[];
@@ -43,14 +62,62 @@ export interface AdminProduct {
 }
 
 // Admin Order
+export interface AdminOrderUser {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: 'customer' | 'seller' | 'admin';
+}
+
+export interface AdminOrderAddress {
+  id: string;
+  street: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
+}
+
+export interface AdminOrderPromoCode {
+  id: string;
+  code: string;
+  discountType: 'percentage' | 'fixed';
+  discountValue: number;
+  isActive?: boolean;
+  expiresAt?: string;
+}
+
+export interface AdminOrderItem {
+  id: string;
+  productId: string;
+  productNameSnapshot: string;
+  priceSnapshot: number;
+  quantity: number;
+  lineTotal: number;
+  sellerId: string;
+  seller?: {
+    id: string;
+    storeName: string;
+  };
+}
+
 export interface AdminOrder {
   _id: string;
   userId: string;
-  sellerId: string;
+  user?: AdminOrderUser;
+  addressId?: string;
+  address?: AdminOrderAddress;
+  promoCodeId?: string;
+  promoCode?: AdminOrderPromoCode;
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
   trackingNumber?: string;
   total: number;
-  items: any[];
+  subtotal?: number;
+  discountAmount?: number;
+  shippingCost?: number;
+  isPaid?: boolean;
+  items: AdminOrderItem[];
   placedAt: string;
   updatedAt: string;
 }
@@ -77,6 +144,8 @@ export interface TopSeller {
   sellerId: string;
   storeName: string;
   totalEarnings: number;
+  totalOrders?: number;
+  itemsSold?: number;
   avatar?: string;
 }
 
@@ -97,6 +166,7 @@ export interface AdminPromoCode {
 // Admin Banner
 export interface AdminBanner {
   _id: string;
+  title?: string;
   imageUrl: string;
   redirectUrl?: string;
   order: number;
@@ -114,6 +184,15 @@ export interface AdminRefund {
   reason: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface AdminCategory {
+  _id: string;
+  name: string;
+  slug: string;
+  parentId?: string | null;
+  parentName?: string | null;
+  isActive?: boolean;
 }
 
 // Pagination

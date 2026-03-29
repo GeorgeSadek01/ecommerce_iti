@@ -15,7 +15,27 @@ export class AdminDashboardService {
 
   // Get dashboard summary
   getSummary(): Observable<ApiResponse<DashboardSummary>> {
-    return this.http.get<ApiResponse<DashboardSummary>>(`${this.apiUrl}/summary`);
+    return this.http.get<any>(`${this.apiUrl}/summary`).pipe(
+      map((res) => {
+        const summary = res.data?.summary ?? res.data ?? {};
+        const totalOrders = Number(summary.orders?.total ?? summary.totalOrders ?? 0);
+        const deliveredOrders = Number(summary.orders?.delivered ?? summary.deliveredOrders ?? 0);
+        const cancelledOrders = Number(summary.orders?.cancelled ?? summary.cancelledOrders ?? 0);
+
+        return {
+          success: res.status === 'success' || res.success === true,
+          message: res.message ?? '',
+          data: {
+            totalUsers: Number(summary.users?.total ?? summary.totalUsers ?? 0),
+            totalSellers: Number(summary.sellers?.total ?? summary.totalSellers ?? 0),
+            totalOrders,
+            totalRevenue: Number(summary.revenue?.delivered ?? summary.totalRevenue ?? 0),
+            pendingOrders: Number(summary.pendingOrders ?? Math.max(totalOrders - deliveredOrders - cancelledOrders, 0)),
+            activeProducts: Number(summary.products?.active ?? summary.activeProducts ?? 0),
+          },
+        } as ApiResponse<DashboardSummary>;
+      })
+    );
   }
 
   // Get timeseries data
@@ -23,13 +43,29 @@ export class AdminDashboardService {
     let params = new HttpParams();
 
     if (startDate) {
-      params = params.set('startDate', startDate);
+      params = params.set('dateFrom', startDate);
     }
     if (endDate) {
-      params = params.set('endDate', endDate);
+      params = params.set('dateTo', endDate);
     }
 
-    return this.http.get<ApiResponse<TimseriesData[]>>(`${this.apiUrl}/timeseries`, { params });
+    return this.http.get<any>(`${this.apiUrl}/timeseries`, { params }).pipe(
+      map((res) => {
+        const data = res.data?.timeseries ?? res.data ?? {};
+        const points = data.points ?? data ?? [];
+        const normalized = (points || []).map((point: any) => ({
+          date: point.date ?? point.bucket ?? '',
+          revenue: Number(point.revenue ?? point.deliveredRevenue ?? 0),
+          orders: Number(point.orders ?? point.ordersCount ?? 0),
+        }));
+
+        return {
+          success: res.status === 'success' || res.success === true,
+          message: res.message ?? '',
+          data: normalized,
+        } as ApiResponse<TimseriesData[]>;
+      })
+    );
   }
 
   // Get top sellers
@@ -38,10 +74,19 @@ export class AdminDashboardService {
     return this.http.get<any>(`${this.apiUrl}/top-sellers`, { params }).pipe(
       map((res) => {
         const top = res.data?.topSellers ?? res.data ?? [];
+        const mapped = (top || []).map((sellerRow: any) => ({
+          sellerId: String(sellerRow.sellerId ?? sellerRow.seller?._id ?? ''),
+          storeName: sellerRow.seller?.storeName ?? 'Unknown seller',
+          totalEarnings: Number(sellerRow.revenue ?? sellerRow.totalEarnings ?? 0),
+          totalOrders: Number(sellerRow.totalOrders ?? 0),
+          itemsSold: Number(sellerRow.itemsSold ?? 0),
+          avatar: sellerRow.seller?.logoUrl,
+        }));
+
         return {
           success: res.status === 'success' || res.success === true,
           message: res.message ?? '',
-          data: top,
+          data: mapped,
         } as ApiResponse<TopSeller[]>;
       })
     );
@@ -52,7 +97,26 @@ export class AdminDashboardService {
     const params = new HttpParams().set('limit', limit.toString());
     return this.http.get<any>(`${this.apiUrl}/recent-orders`, { params }).pipe(
       map((res) => {
-        const recent = res.data?.recentOrders ?? res.data ?? [];
+        const recentRaw = res.data?.recentOrders ?? res.data ?? [];
+        const recent = (recentRaw || []).map((order: any) => ({
+          _id: order._id ?? order.id,
+          userId: order.userId?._id ?? order.userId ?? '',
+          user: order.userId?._id
+            ? {
+                _id: order.userId._id,
+                firstName: order.userId.firstName ?? '',
+                lastName: order.userId.lastName ?? '',
+                email: order.userId.email ?? '',
+                role: order.userId.role ?? 'customer',
+              }
+            : undefined,
+          status: order.status,
+          total: Number(order.total ?? 0),
+          items: order.items ?? [],
+          placedAt: order.placedAt,
+          updatedAt: order.updatedAt ?? order.placedAt,
+        } as AdminOrder));
+
         return {
           success: res.status === 'success' || res.success === true,
           message: res.message ?? '',

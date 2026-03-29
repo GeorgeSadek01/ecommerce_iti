@@ -114,10 +114,14 @@
                             </td>
                             <td>{{ user.createdAt | date: 'short' }}</td>
                             <td>
+                                @if (canManageUser(user)) {
                                 <button class="btn btn-sm btn-outline-primary me-1" (click)="openUserModal(user)">Edit
                                     Role</button>
                                 <button class="btn btn-sm btn-outline-danger"
                                     (click)="deleteUser(user._id)">Delete</button>
+                                } @else {
+                                <span class="badge text-bg-secondary">Protected admin</span>
+                                }
                             </td>
                         </tr>
                         }
@@ -174,7 +178,8 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" (click)="closeUserModal()">Cancel</button>
-                <button type="button" class="btn btn-primary" (click)="updateUserRole()">Update Role</button>
+                <button type="button" class="btn btn-primary" (click)="updateUserRole()"
+                    [disabled]="!canManageUser(user)">Update Role</button>
             </div>
         </div>
     </div>

@@ -10,6 +10,15 @@ const wishlistSchema = new Schema(
       required: [true, 'User ID is required'],
       unique: true, // one wishlist per user
     },
+    items: [
+      {
+        productId: {
+          type: Schema.Types.ObjectId,
+          ref: 'Product',
+          required: true,
+        },
+      },
+    ],
   },
   {
     timestamps: { createdAt: true, updatedAt: false },

@@ -87,7 +87,7 @@ export interface SellerProduct {
   slug: string;
   description: string | null;
   price: number;
-  discountedPrice: number | null;
+  discount: number | null;
   stock: number;
   isActive: boolean;
   createdAt: string;
@@ -110,7 +110,7 @@ export interface SellerProductPayload {
   name: string;
   description?: string;
   price: number;
-  discountedPrice?: number;
+  discount?: number;
   stock: number;
   categoryId: string;
   isActive?: boolean;

@@ -7,12 +7,20 @@ export const routes: Routes = [
     loadComponent: () => import('./features/home/home.component').then((m) => m.HomeComponent),
   },
   {
+    path: 'category/:id',
+    loadComponent: () => import('./features/categories/category/category.component').then((m) => m.CategoryComponent),
+  },
+  {
     path: 'products/:id',
     loadComponent: () => import('./features/products/product-details/product-details.component').then((m) => m.ProductDetailsComponent),
   },
   {
     path: 'search',
     loadComponent: () => import('./features/search/search.component').then((m) => m.SearchComponent),
+  },
+  {
+    path: 'wishlist',
+    loadComponent: () => import('./features/wishlist/wishlist-page.component').then((m) => m.WishlistPageComponent),
   },
   {
     path: 'cart',

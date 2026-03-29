@@ -41,6 +41,13 @@
                         (keyup.enter)="onFilterChange()" [disabled]="loading()" />
                 </div>
 
+                <div class="col-lg-3 col-md-6">
+                    <label for="orderFilter" class="form-label">Filter by Order ID</label>
+                    <input id="orderFilter" type="text" class="form-control" placeholder="Enter full order ID..."
+                        [ngModel]="orderIdFilter()" (ngModelChange)="orderIdFilter.set($event)"
+                        (keyup.enter)="onFilterChange()" [disabled]="loading()" />
+                </div>
+
                 <div class="col-lg-2 col-md-6">
                     <label for="startDate" class="form-label">Start Date</label>
                     <input id="startDate" type="date" class="form-control" [ngModel]="startDate()"
@@ -80,6 +87,9 @@
                 @if (userIdFilter().trim()) {
                 <span class="filter-chip">User: {{ userIdFilter() }}</span>
                 }
+                @if (orderIdFilter().trim()) {
+                <span class="filter-chip">Order: {{ orderIdFilter() }}</span>
+                }
                 @if (startDate()) {
                 <span class="filter-chip">From: {{ startDate() }}</span>
                 }
@@ -108,26 +118,18 @@
                             <th>Date</th>
                             <th>Status</th>
                             <th>Total</th>
-                            <th>Tracking</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @for (order of orders(); track order._id) {
                         <tr>
-                            <td class="fw-semibold">{{ order._id | slice: 0:8 }}...</td>
+                            <td class="fw-semibold"><code>{{ order._id }}</code></td>
                             <td>{{ order.placedAt | date: 'short' }}</td>
                             <td>
                                 <app-status-badge [status]="order.status"></app-status-badge>
                             </td>
                             <td>${{ order.total | number: '1.2-2' }}</td>
-                            <td>
-                                @if (order.trackingNumber) {
-                                <span class="badge tracking-chip">{{ order.trackingNumber }}</span>
-                                } @else {
-                                <span class="text-muted">-</span>
-                                }
-                            </td>
                             <td>
                                 <button class="btn btn-sm btn-outline-primary me-1"
                                     (click)="openOrderModal(order)">Manage</button>
@@ -163,12 +165,16 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Order: {{ order._id | slice: 0:12 }}...</h5>
+                <h5 class="modal-title">Order: {{ order._id }}</h5>
                 <button type="button" class="btn-close" (click)="closeOrderModal()"></button>
             </div>
             <div class="modal-body">
                 <div class="row">
                     <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Order ID</label>
+                            <p class="form-control-plaintext"><code>{{ order._id }}</code></p>
+                        </div>
                         <div class="mb-3">
                             <label class="form-label">Order Date</label>
                             <p class="form-control-plaintext">{{ order.placedAt | date: 'medium' }}</p>
@@ -181,6 +187,13 @@
                             <label class="form-label">Items Count</label>
                             <p class="form-control-plaintext">{{ order.items.length || 0 }} item(s)</p>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Customer</label>
+                            <p class="form-control-plaintext mb-1">
+                                {{ order.user?.firstName }} {{ order.user?.lastName }}
+                            </p>
+                            <small class="text-secondary">{{ order.user?.email || order.userId }}</small>
+                        </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
@@ -190,10 +203,59 @@
                             </p>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Tracking Number</label>
-                            <p class="form-control-plaintext">{{ order.trackingNumber || 'Not set' }}</p>
+                            <label class="form-label">Payment</label>
+                            <p class="form-control-plaintext">
+                                {{ order.isPaid ? 'Paid' : 'Not paid' }}
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Promo Code</label>
+                            <p class="form-control-plaintext">{{ order.promoCode?.code || 'No promo code' }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Address</label>
+                            <p class="form-control-plaintext text-break">
+                                @if (order.address) {
+                                {{ order.address.street }}, {{ order.address.city }}, {{ order.address.state }},
+                                {{ order.address.country }} {{ order.address.zipCode }}
+                                } @else {
+                                Not available
+                                }
+                            </p>
                         </div>
                     </div>
+                </div>
+
+                <div class="border-top pt-3 mt-3">
+                    <h6 class="mb-3">Order Items</h6>
+                    @if (order.items?.length) {
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Seller</th>
+                                    <th>Qty</th>
+                                    <th>Price</th>
+                                    <th>Line Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (item of order.items; track item.id) {
+                                <tr>
+                                    <td>{{ item.productNameSnapshot || item.productId }}</td>
+                                    <td>{{ item.seller?.storeName || item.sellerId }}</td>
+                                    <td>{{ item.quantity }}</td>
+                                    <td>${{ item.priceSnapshot | number: '1.2-2' }}</td>
+                                    <td>${{ item.lineTotal | number: '1.2-2' }}</td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    } @else {
+                    <div class="text-secondary">No order items available.</div>
+                    }
                 </div>
 
                 <div class="border-top pt-3 mt-3">
@@ -203,25 +265,15 @@
                         <label for="statusSelect" class="form-label">Update Status</label>
                         <select id="statusSelect" class="form-select" [ngModel]="selectedStatusForUpdate()"
                             (ngModelChange)="selectedStatusForUpdate.set($event)">
-                            @for (status of orderStatuses; track status) {
+                            @for (status of getAllowedStatuses(order); track status) {
                             <option [value]="status">{{ status }}</option>
                             }
                         </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="trackingInput" class="form-label">Tracking Number</label>
-                        <input id="trackingInput" type="text" class="form-control" [ngModel]="trackingNumber()"
-                            (ngModelChange)="trackingNumber.set($event)"
-                            placeholder="Enter tracking number (e.g., FDX123456789)" />
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" (click)="closeOrderModal()">Close</button>
-                @if (trackingNumber() && trackingNumber() !== order.trackingNumber) {
-                <button type="button" class="btn btn-info" (click)="addTracking()">Add Tracking</button>
-                }
                 @if (selectedStatusForUpdate() !== order.status) {
                 <button type="button" class="btn btn-primary" (click)="updateOrderStatus()">Update Status</button>
                 }

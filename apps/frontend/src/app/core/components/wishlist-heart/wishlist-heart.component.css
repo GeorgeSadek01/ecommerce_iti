@@ -1,0 +1,73 @@
+.wishlist-heart-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 9999px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.92);
+  color: #64748b;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.12);
+  transition:
+    color 0.2s,
+    background 0.2s,
+    transform 0.15s;
+}
+
+.wishlist-heart-btn:hover {
+  color: #e11d48;
+  transform: scale(1.06);
+}
+
+.wishlist-heart-btn .material-icons {
+  font-size: 22px;
+}
+
+.wishlist-heart-btn--active {
+  color: #e11d48;
+  background: rgba(254, 226, 226, 0.95);
+}
+.wishlist-heart-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border: none;
+  border-radius: 50%; /* Circle */
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.7); /* Translucent background */
+  backdrop-filter: blur(8px); /* Glass effect */
+  color: #94a3b8; /* Slate-400 for inactive */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.wishlist-heart-btn:hover {
+  color: #f43f5e; /* Rose-500 */
+  background: white;
+  transform: translateY(-2px); /* Slight lift */
+  box-shadow: 0 6px 15px rgba(244, 63, 94, 0.2);
+}
+
+.wishlist-heart-btn--active {
+  color: #e11d48; /* Rose-600 */
+  background: #fff1f2; /* Rose-50 background */
+}
+
+/* Pulse animation when clicking */
+.wishlist-heart-btn:active {
+  transform: scale(0.9);
+}
+
+.wishlist-heart-btn .material-icons {
+  font-size: 24px;
+  /* Use fill for active state if icon supports it */
+  font-variation-settings: 'FILL' 0, 'wght' 400; 
+}
+
+.wishlist-heart-btn--active .material-icons {
+  font-variation-settings: 'FILL' 1, 'wght' 400; /* Fill the heart if using Material Symbols */
+}
