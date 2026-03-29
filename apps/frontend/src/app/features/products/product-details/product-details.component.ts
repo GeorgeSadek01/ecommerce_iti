@@ -3,8 +3,11 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { WishlistHeartComponent } from '../../../core/components/wishlist-heart/wishlist-heart.component';
 import { ProductService } from '../../../core/services/product.service';
+import { CartService } from '../../../core/services/cart.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { Product, Category } from '../../../core/types/product.types';
 import { ApiResponse } from '../../../core/types/auth.types';
+import { extractApiErrorMessage } from '../../../core/utils/http-error.util';
 
 @Component({
   selector: 'app-product-details',
@@ -18,10 +21,13 @@ export class ProductDetailsComponent implements OnInit {
   protected readonly isLoading = signal(true);
   protected readonly error = signal<string | null>(null);
   protected readonly activeImage = signal<string | null>(null);
+  protected readonly isAddingToCart = signal(false);
 
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly productService: ProductService
+    private readonly productService: ProductService,
+    private readonly cartService: CartService,
+    private readonly toast: ToastService
   ) {}
 
   ngOnInit(): void {
@@ -47,7 +53,7 @@ export class ProductDetailsComponent implements OnInit {
               this.product.set({ ...prod, images });
               const primary = images.find((i: any) => i.isPrimary) || images[0];
               this.activeImage.set(primary?.url || null);
-            }
+            },
           });
         } else {
           this.error.set('Product not found');
@@ -105,5 +111,21 @@ export class ProductDetailsComponent implements OnInit {
   protected getStoreName(profile: any): string {
     if (profile && typeof profile === 'object' && profile.storeName) return profile.storeName;
     return 'Official Store';
+  }
+
+  protected addToCart(productId: string): void {
+    if (this.isAddingToCart()) return;
+
+    this.isAddingToCart.set(true);
+    this.cartService.addItem(productId, 1).subscribe({
+      next: () => {
+        this.isAddingToCart.set(false);
+        this.toast.success('Added to cart');
+      },
+      error: (err: unknown) => {
+        this.isAddingToCart.set(false);
+        this.toast.error(extractApiErrorMessage(err, 'Could not add item to cart.'));
+      },
+    });
   }
 }

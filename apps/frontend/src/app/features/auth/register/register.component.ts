@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../../core/services/auth-api.service';
+import { ToastService } from '../../../core/services/toast.service';
 import { extractApiErrorMessage } from '../../../core/utils/http-error.util';
 
 @Component({
@@ -28,12 +29,14 @@ export class RegisterComponent {
   constructor(
     private readonly fb: FormBuilder,
     private readonly authService: AuthService,
+    private readonly toast: ToastService,
     private readonly router: Router
   ) {}
 
   protected submit(): void {
     if (this.registerForm.invalid) {
       this.registerForm.markAllAsTouched();
+      this.toast.warn('Please fix the highlighted fields and try again.');
       return;
     }
 
@@ -47,10 +50,13 @@ export class RegisterComponent {
       .subscribe({
         next: (response) => {
           this.successMessage.set(response.message);
+          this.toast.success(response.message || 'Registration successful.');
           this.registerForm.reset();
         },
         error: (error: unknown) => {
-          this.errorMessage.set(extractApiErrorMessage(error, 'Registration failed.'));
+          const message = extractApiErrorMessage(error, 'Registration failed.');
+          this.errorMessage.set(message);
+          this.toast.error(message);
         },
       });
   }

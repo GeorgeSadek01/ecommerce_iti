@@ -1,9 +1,10 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink, Router } from '@angular/router';
+import { ActivatedRoute, RouterLink, Router } from '@angular/router';
 import { OrderService } from '../../core/services/order.service';
 import { AuthService } from '../../core/services/auth-api.service';
 import { Order, OrderStatus } from '../../core/types/cart.types';
+import { extractApiErrorMessage } from '../../core/utils/http-error.util';
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
   pending: 'Pending',
@@ -29,6 +30,7 @@ export class OrdersComponent implements OnInit {
   protected readonly totalPages = signal(1);
   protected readonly selectedStatus = signal<string>('');
   protected readonly expandedOrderId = signal<string | null>(null);
+  protected readonly routeOrderId = signal<string | null>(null);
   protected readonly cancellingId = signal<string | null>(null);
   protected readonly cancelError = signal<string | null>(null);
 
@@ -43,23 +45,70 @@ export class OrdersComponent implements OnInit {
   constructor(
     private readonly orderService: OrderService,
     private readonly authService: AuthService,
+    private readonly route: ActivatedRoute,
     private readonly router: Router
   ) {}
 
   ngOnInit(): void {
-    if (!this.authService.isAuthenticated()) {
-      this.router.navigate(['/auth/login']);
-      return;
-    }
-    this.loadOrders();
+    this.authService.ensureAuthenticated().subscribe((isAuthenticated) => {
+      if (!isAuthenticated) {
+        this.router.navigate(['/auth/login']);
+        return;
+      }
+
+      const orderId = this.route.snapshot.paramMap.get('id');
+      this.routeOrderId.set(orderId);
+
+      if (orderId) {
+        this.loadOrderById(orderId);
+        return;
+      }
+
+      this.loadOrders();
+    });
+  }
+
+  private loadOrderById(orderId: string): void {
+    this.isLoading.set(true);
+    this.error.set(null);
+    this.cancelError.set(null);
+
+    this.orderService.getOrderById(orderId).subscribe({
+      next: (res: import('../../core/types/auth.types').ApiResponse<{ order: Order }>) => {
+        const order = res.data?.order;
+        if (!order) {
+          this.error.set('Order not found.');
+          this.orders.set([]);
+          this.isLoading.set(false);
+          return;
+        }
+
+        this.orders.set([order]);
+        this.total.set(1);
+        this.currentPage.set(1);
+        this.totalPages.set(1);
+        this.expandedOrderId.set(order._id);
+        this.isLoading.set(false);
+      },
+      error: (err: unknown) => {
+        this.error.set(extractApiErrorMessage(err, 'Failed to load order details.'));
+        this.orders.set([]);
+        this.isLoading.set(false);
+      },
+    });
   }
 
   private loadOrders(): void {
     this.isLoading.set(true);
     this.error.set(null);
+    this.expandedOrderId.set(null);
     const status = this.selectedStatus() || undefined;
     this.orderService.getMyOrders(status, this.currentPage()).subscribe({
-      next: (res: import('../../core/types/auth.types').ApiResponse<import('../../core/services/order.service').OrdersResponse>) => {
+      next: (
+        res: import('../../core/types/auth.types').ApiResponse<
+          import('../../core/services/order.service').OrdersResponse
+        >
+      ) => {
         const data = res.data;
         this.orders.set(data?.orders ?? []);
         this.total.set(data?.total ?? 0);
@@ -87,7 +136,22 @@ export class OrdersComponent implements OnInit {
   }
 
   protected toggleExpand(orderId: string): void {
+    if (!this.isSingleOrderView()) return;
     this.expandedOrderId.update((id: string | null) => (id === orderId ? null : orderId));
+  }
+
+  protected openOrder(orderId: string, event?: Event): void {
+    event?.stopPropagation();
+    if (this.routeOrderId() === orderId) return;
+    this.router.navigate(['/orders', orderId]);
+  }
+
+  protected goToOrdersList(): void {
+    this.router.navigate(['/orders']);
+  }
+
+  protected isSingleOrderView(): boolean {
+    return Boolean(this.routeOrderId());
   }
 
   protected isExpanded(orderId: string): boolean {

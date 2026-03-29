@@ -8,6 +8,7 @@ import Payment from '../../../core/db/Models/Payment/payment.model.js';
 import slugify from '../../../core/utils/slugify.js';
 import AppError from '../../../core/utils/AppError.js';
 import { getPaginationParams, buildPaginationMeta } from '../../../core/utils/pagination.js';
+import { confirmOrder } from '../../orders/services/order.service.js';
 
 const ORDER_STATUS_TRANSITIONS = {
   pending: ['processing', 'cancelled'],
@@ -728,7 +729,11 @@ export const getAdminProducts = async (query) => {
     Product.find(filters)
       .populate({
         path: 'sellerProfileId',
-        populate: { path: 'userId', options: { includeDeleted: true }, select: 'firstName lastName email role isDeleted' },
+        populate: {
+          path: 'userId',
+          options: { includeDeleted: true },
+          select: 'firstName lastName email role isDeleted',
+        },
       })
       .populate({ path: 'categoryId' })
       .sort({ createdAt: -1 })
@@ -867,9 +872,18 @@ export const updateAdminOrderStatus = async (orderId, status) => {
   const order = await Order.findById(orderId);
   if (!order) throw new AppError('Order not found.', 404);
 
+  if (order.status === status) {
+    return serializeOrder(order);
+  }
+
   const allowedNext = ORDER_STATUS_TRANSITIONS[order.status] || [];
   if (!allowedNext.includes(status)) {
     throw new AppError(`Invalid status transition from ${order.status} to ${status}.`, 400);
+  }
+
+  if (order.status === 'processing' && status === 'shipped') {
+    const confirmedOrder = await confirmOrder(orderId);
+    return serializeOrder(confirmedOrder);
   }
 
   order.status = status;
@@ -887,9 +901,6 @@ export const updateAdminOrderTracking = async (orderId, trackingNumber) => {
   }
 
   order.trackingNumber = trackingNumber;
-  if (order.status === 'pending' || order.status === 'processing') {
-    order.status = 'shipped';
-  }
 
   await order.save();
   return serializeOrder(order);

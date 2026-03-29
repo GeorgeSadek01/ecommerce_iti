@@ -1,13 +1,14 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { AsyncPipe, CommonModule } from '@angular/common';
-import { RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../services/auth-api.service';
+import { CartService } from '../../services/cart.service';
 import { WishlistService } from '../../services/wishlist.service';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [CommonModule, AsyncPipe, RouterLink, RouterLinkActive],
+  imports: [CommonModule, AsyncPipe, RouterLink],
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
 })
@@ -37,9 +38,7 @@ export class NavbarComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    if (this.authService.isAuthenticated()) {
-      this.cartService.loadCart().subscribe({ error: () => {} });
-    }
+    this.cartService.loadCart().subscribe({ error: () => {} });
   }
 
   protected toggleMenu(): void {
@@ -54,11 +53,13 @@ export class NavbarComponent implements OnInit {
     this.authService.logout().subscribe({
       next: () => {
         this.wishlistService.clearLocal();
+        this.cartService.loadCart().subscribe({ error: () => {} });
         void this.router.navigate(['/home']);
       },
       error: () => {
         this.authService.clearSession();
         this.wishlistService.clearLocal();
+        this.cartService.loadCart().subscribe({ error: () => {} });
         void this.router.navigate(['/home']);
       },
     });

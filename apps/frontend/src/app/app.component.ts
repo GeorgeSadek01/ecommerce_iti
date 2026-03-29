@@ -1,14 +1,15 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, computed } from '@angular/core';
+import { RouterOutlet, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { ToastComponent } from './core/components/toast/toast.component';
 import { NavbarComponent } from './core/components/navbar/navbar.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, NavbarComponent, ToastComponent],
+  imports: [CommonModule, RouterOutlet, NavbarComponent, ToastComponent],
   template: `
-    <app-navbar />
+    <app-navbar *ngIf="showNavbar()" />
     <main>
       <router-outlet />
     </main>
@@ -16,4 +17,8 @@ import { NavbarComponent } from './core/components/navbar/navbar.component';
   `,
   styleUrl: './app.component.css',
 })
-export class AppComponent {}
+export class AppComponent {
+  protected readonly showNavbar = computed(() => !this.router.url.startsWith('/admin'));
+
+  constructor(private readonly router: Router) {}
+}

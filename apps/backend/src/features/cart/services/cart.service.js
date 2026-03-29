@@ -6,9 +6,38 @@ import { assertNotSellerOwnProduct } from '../../../core/utils/assertions.js';
 
 // helper
 
+async function findPrimaryUserCart(userId) {
+  return Cart.findOne({ userId }).sort({ updatedAt: -1, _id: -1 });
+}
+
+async function findAllUserCartIds(userId) {
+  const carts = await Cart.find({ userId }).select('_id').sort({ updatedAt: -1, _id: -1 });
+  return carts.map((cart) => cart._id);
+}
+
 async function getOrCreateCart(userId) {
-  let cart = await Cart.findOne({ userId });
-  if (!cart) cart = await Cart.create({ userId });
+  if (!userId) {
+    throw new AppError('Authentication required. Please log in.', 401);
+  }
+
+  let cart = await findPrimaryUserCart(userId);
+  if (!cart) {
+    try {
+      cart = await Cart.create({ userId });
+    } catch (err) {
+      // In concurrent add/get requests, another request may have created the cart first.
+      if (err?.code === 11000) {
+        cart = await findPrimaryUserCart(userId);
+      } else {
+        throw err;
+      }
+    }
+  }
+
+  if (!cart) {
+    throw new AppError('Could not initialize cart. Please try again.', 500);
+  }
+
   return cart;
 }
 
@@ -38,13 +67,15 @@ export const addCartItem = async (userId, productId, quantity = 1) => {
   if (product.stock < quantity) throw new AppError(`Only ${product.stock} items in stock`, 400);
 
   const cart = await getOrCreateCart(userId);
+  const cartIds = await findAllUserCartIds(userId);
 
   // If item already exists → increment quantity
-  const existing = await CartItem.findOne({ cartId: cart._id, productId });
+  const existing = await CartItem.findOne({ cartId: { $in: cartIds }, productId }).sort({ updatedAt: -1, _id: -1 });
   if (existing) {
     const newQty = existing.quantity + quantity;
     if (product.stock < newQty) throw new AppError(`Only ${product.stock} items in stock`, 400);
 
+    existing.cartId = cart._id;
     existing.quantity = newQty;
     await existing.save();
     return existing;
@@ -63,20 +94,20 @@ export const addCartItem = async (userId, productId, quantity = 1) => {
 };
 
 export const removeCartItem = async (userId, cartItemId) => {
-  const cart = await Cart.findOne({ userId });
-  if (!cart) throw new AppError('Cart not found', 404);
+  const cartIds = await findAllUserCartIds(userId);
+  if (!cartIds.length) throw new AppError('Cart not found', 404);
 
-  const item = await CartItem.findOne({ _id: cartItemId, cartId: cart._id });
+  const item = await CartItem.findOne({ _id: cartItemId, cartId: { $in: cartIds } });
   if (!item) throw new AppError('Cart item not found', 404);
 
   await CartItem.findByIdAndDelete(cartItemId);
 };
 
 export const increaseQuantity = async (userId, cartItemId) => {
-  const cart = await Cart.findOne({ userId });
-  if (!cart) throw new AppError('Cart not found', 404);
+  const cartIds = await findAllUserCartIds(userId);
+  if (!cartIds.length) throw new AppError('Cart not found', 404);
 
-  const item = await CartItem.findOne({ _id: cartItemId, cartId: cart._id });
+  const item = await CartItem.findOne({ _id: cartItemId, cartId: { $in: cartIds } });
   if (!item) throw new AppError('Cart item not found', 404);
 
   const product = await Product.findById(item.productId);
@@ -92,10 +123,10 @@ export const increaseQuantity = async (userId, cartItemId) => {
 };
 
 export const decreaseQuantity = async (userId, cartItemId) => {
-  const cart = await Cart.findOne({ userId });
-  if (!cart) throw new AppError('Cart not found', 404);
+  const cartIds = await findAllUserCartIds(userId);
+  if (!cartIds.length) throw new AppError('Cart not found', 404);
 
-  const item = await CartItem.findOne({ _id: cartItemId, cartId: cart._id });
+  const item = await CartItem.findOne({ _id: cartItemId, cartId: { $in: cartIds } });
   if (!item) throw new AppError('Cart item not found', 404);
 
   if (item.quantity === 1) {
@@ -110,10 +141,10 @@ export const decreaseQuantity = async (userId, cartItemId) => {
 };
 
 export const clearCart = async (userId) => {
-  const cart = await Cart.findOne({ userId });
-  if (!cart) throw new AppError('Cart not found', 404);
+  const cartIds = await findAllUserCartIds(userId);
+  if (!cartIds.length) throw new AppError('Cart not found', 404);
 
-  await CartItem.deleteMany({ cartId: cart._id });
+  await CartItem.deleteMany({ cartId: { $in: cartIds } });
 };
 
 export const mergeCart = async (userId, incomingItems) => {

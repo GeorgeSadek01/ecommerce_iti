@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../../core/services/auth-api.service';
+import { CartService } from '../../../core/services/cart.service';
 import { extractApiErrorMessage } from '../../../core/utils/http-error.util';
 import { environment } from '../../../../environments/environment';
 import { ToastService } from '../../../core/services/toast.service';
@@ -42,10 +43,18 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
   constructor(
     private readonly fb: FormBuilder,
     private readonly authService: AuthService,
+    private readonly cartService: CartService,
     private readonly router: Router,
     private readonly ngZone: NgZone,
     private readonly toast: ToastService
   ) {}
+
+  private finalizeLoginFlow(): void {
+    this.cartService.mergeGuestCart().subscribe({
+      next: () => this.navigateAfterLogin(),
+      error: () => this.navigateAfterLogin(),
+    });
+  }
 
   ngAfterViewInit(): void {
     this.initializeGoogleSignIn();
@@ -124,7 +133,7 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
           // callback from external script may be outside Angular zone
           this.ngZone.run(() => {
             this.toast.success('Signed in with Google');
-            this.navigateAfterLogin();
+            this.finalizeLoginFlow();
           });
         },
         error: (error: unknown) => {
@@ -150,7 +159,7 @@ export class LoginComponent implements AfterViewInit, OnDestroy {
       .login(this.loginForm.getRawValue())
       .pipe(finalize(() => this.isSubmitting.set(false)))
       .subscribe({
-        next: () => this.navigateAfterLogin(),
+        next: () => this.finalizeLoginFlow(),
         error: (error: unknown) => {
           const msg = extractApiErrorMessage(error, 'Login failed.');
           this.errorMessage.set(msg);

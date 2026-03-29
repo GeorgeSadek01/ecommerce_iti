@@ -101,7 +101,7 @@
                     <div class="mb-3">
                         <label for="bannerOrder" class="form-label">Display Order</label>
                         <input id="bannerOrder" type="number" class="form-control" [ngModel]="formData().order"
-                            (ngModelChange)="updateFormField('order', Number($event))" placeholder="0" />
+                            (ngModelChange)="updateFormField('order', $event === '' ? 0 : +$event)" placeholder="0" />
                     </div>
 
                     <div class="mb-3">

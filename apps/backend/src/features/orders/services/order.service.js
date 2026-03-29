@@ -65,8 +65,15 @@ export async function applyPromoCode(code, userId, orderItems, subtotal) {
   };
 }
 
-async function clearCartAfterOrder(cartId, dbSession) {
-  await CartItem.deleteMany({ cartId }, { session: dbSession });
+async function clearCartAfterOrder(userId, dbSession) {
+  const carts = await Cart.find({ userId }).select('_id').session(dbSession);
+  const cartIds = carts.map((cart) => cart._id);
+
+  if (!cartIds.length) {
+    return;
+  }
+
+  await CartItem.deleteMany({ cartId: { $in: cartIds } }, { session: dbSession });
 }
 
 // helpers
@@ -78,7 +85,7 @@ export async function getUserEmailInfo(userId) {
 }
 
 export async function bringOrderItems(userId) {
-  const cart = await Cart.findOne({ userId });
+  const cart = await Cart.findOne({ userId }).sort({ updatedAt: -1, _id: -1 });
   if (!cart) throw new AppError('Cart not found', 404);
 
   const cartItems = await CartItem.find({ cartId: cart._id }).populate({
@@ -120,7 +127,7 @@ export async function bringOrderItems(userId) {
     })
   );
 
-  return { orderItems, subtotal, cart };
+  return { orderItems, subtotal };
 }
 
 // place Order (Cash on Delivery)
@@ -132,7 +139,7 @@ export const placeOrder = async (userId, addressId, promoCodeInput = null) => {
     throw new AppError("Invalid address , or this address doesn't belong to this user", 400);
   }
 
-  const { orderItems, subtotal, cart } = await bringOrderItems(userId);
+  const { orderItems, subtotal } = await bringOrderItems(userId);
   const user = await getUserEmailInfo(userId);
 
   // ── Validate & calculate promo code BEFORE transaction ──
@@ -168,7 +175,7 @@ export const placeOrder = async (userId, addressId, promoCodeInput = null) => {
       await PromoCode.findByIdAndUpdate(promoCode._id, { $inc: { usageCount: 1 } }, { session: dbSession });
     }
 
-    await clearCartAfterOrder(cart._id, dbSession);
+    await clearCartAfterOrder(userId, dbSession);
     await dbSession.commitTransaction();
   } catch (err) {
     await dbSession.abortTransaction();

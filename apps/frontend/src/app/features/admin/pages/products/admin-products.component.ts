@@ -3,12 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminProductService } from '../../data-access/admin-product.service';
 import { AdminProduct } from '../../data-access/admin.types';
-import { StatusBadgeComponent } from '../../shared/status-badge.component';
 
 @Component({
   selector: 'app-admin-products',
   standalone: true,
-  imports: [CommonModule, FormsModule, StatusBadgeComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './admin-products.component.html',
   styleUrl: './admin-products.component.css',
 })
@@ -29,16 +28,15 @@ export class AdminProductsComponent implements OnInit {
   selectedActiveState = signal<'all' | 'active' | 'inactive'>('all');
   minPrice = signal<number | null>(null);
   maxPrice = signal<number | null>(null);
-  hasActiveFilters = computed(
-    () =>
-      Boolean(
-        this.searchQuery().trim() ||
-          this.sellerProfileIdFilter().trim() ||
-          this.productIdFilter().trim() ||
-          this.selectedActiveState() !== 'all' ||
-          this.minPrice() !== null ||
-          this.maxPrice() !== null
-      )
+  hasActiveFilters = computed(() =>
+    Boolean(
+      this.searchQuery().trim() ||
+        this.sellerProfileIdFilter().trim() ||
+        this.productIdFilter().trim() ||
+        this.selectedActiveState() !== 'all' ||
+        this.minPrice() !== null ||
+        this.maxPrice() !== null
+    )
   );
 
   // Modal
@@ -75,8 +73,7 @@ export class AdminProductsComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    const activeFlag =
-      this.selectedActiveState() === 'all' ? undefined : this.selectedActiveState() === 'active';
+    const activeFlag = this.selectedActiveState() === 'all' ? undefined : this.selectedActiveState() === 'active';
 
     this.productService
       .getProducts(
