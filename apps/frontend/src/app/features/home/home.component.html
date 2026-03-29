@@ -114,6 +114,9 @@
         @for (product of products(); track product._id) {
           <article class="product-card" [routerLink]="['/products', product._id]">
             <div class="card-image-wrap">
+              <div class="card-wishlist-corner">
+                <app-wishlist-heart [productId]="product._id" />
+              </div>
               @if (getPrimaryImage(product)) {
                 <img
                   [src]="getPrimaryImage(product)"

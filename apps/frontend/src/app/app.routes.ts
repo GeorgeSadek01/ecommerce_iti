@@ -15,6 +15,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/search/search.component').then((m) => m.SearchComponent),
   },
   {
+    path: 'wishlist',
+    loadComponent: () => import('./features/wishlist/wishlist-page.component').then((m) => m.WishlistPageComponent),
+  },
+  {
     path: 'cart',
     loadComponent: () => import('./features/home/home.component').then((m) => m.HomeComponent), // Placeholder
   },

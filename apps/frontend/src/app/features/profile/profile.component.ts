@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { finalize } from 'rxjs';
 import { AuthService } from '../../core/services/auth-api.service';
 import { ToastService } from '../../core/services/toast.service';
+import { WishlistService } from '../../core/services/wishlist.service';
 import { Address, AddressPayload } from '../../core/types/auth.types';
 import { extractApiErrorMessage } from '../../core/utils/http-error.util';
 
@@ -43,7 +44,8 @@ export class ProfileComponent implements OnInit {
     private readonly fb: FormBuilder,
     protected readonly authService: AuthService,
     private readonly toast: ToastService,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly wishlistService: WishlistService
   ) {}
 
   ngOnInit(): void {
@@ -96,10 +98,14 @@ export class ProfileComponent implements OnInit {
           if (newEmail && newEmail !== this.originalEmail) {
             this.toast.info('Email changed — you will be logged out to confirm the new address.');
             this.authService.logout().subscribe({
-              next: () => this.router.navigate(['/auth/login']),
+              next: () => {
+                this.wishlistService.clearLocal();
+                void this.router.navigate(['/auth/login']);
+              },
               error: () => {
                 this.authService.clearSession();
-                this.router.navigate(['/auth/login']);
+                this.wishlistService.clearLocal();
+                void this.router.navigate(['/auth/login']);
               },
             });
           }
@@ -115,11 +121,13 @@ export class ProfileComponent implements OnInit {
   protected logout(): void {
     this.authService.logout().subscribe({
       next: () => {
-        this.router.navigate(['/auth/login']);
+        this.wishlistService.clearLocal();
+        void this.router.navigate(['/auth/login']);
       },
       error: () => {
         this.authService.clearSession();
-        this.router.navigate(['/auth/login']);
+        this.wishlistService.clearLocal();
+        void this.router.navigate(['/auth/login']);
       },
     });
   }

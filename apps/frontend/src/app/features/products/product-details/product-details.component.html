@@ -60,7 +60,10 @@
         <!-- Info -->
         <div class="info-section">
           <span class="category-tag">{{ getCategoryName(prod.categoryId) }}</span>
-          <h1 class="product-title">{{ prod.name }}</h1>
+          <div class="product-title-row">
+            <h1 class="product-title">{{ prod.name }}</h1>
+            <app-wishlist-heart [productId]="prod._id" />
+          </div>
           
           <div class="price-wrap">
             <span class="price">${{ prod.price | number:'1.2-2' }}</span>
