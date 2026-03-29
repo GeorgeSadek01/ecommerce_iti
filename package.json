@@ -8,6 +8,7 @@
     "dev": "npx nodemon apps/backend/src/server.js",
     "start": "node apps/backend/src/server.js",
     "start:prod": "NODE_ENV=production node apps/backend/src/server.js",
+    "seed": "node seed.js",
     "test": "vitest run --reporter=verbose",
     "test:watch": "vitest",
     "test:api": "newman run endpoints/ecommerce.postman.json -e endpoints/ecommerce.local.postman_environment.json --reporters cli",

@@ -59,30 +59,11 @@
   overflow: hidden;
   border: 1px solid #eef2ff;
 }
-.detail-save {
+.detail-wishlist {
   position: absolute;
   top: 12px;
   left: 12px;
   z-index: 12;
-  width: 44px;
-  height: 44px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(124, 58, 237, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
-  transition: transform 0.15s, background 0.15s;
-}
-.detail-save .material-icons {
-  color: #7c3aed;
-  font-size: 22px;
-}
-.detail-save:hover {
-  transform: translateY(-2px);
-  background: white;
 }
 .main-image {
   width: 100%;

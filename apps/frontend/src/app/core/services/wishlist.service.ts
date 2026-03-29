@@ -85,6 +85,7 @@ export class WishlistService {
   loadWishlist(): Observable<WishlistProduct[]> {
     return this.http.get<ApiResponse<{ wishlist: WishlistDocument }>>(`${this.base}/wishlist`).pipe(
       map((res) => this.normalizeWishlist(res.data?.wishlist)),
+      switchMap((items) => this.enrichWishlistWithImages(items)),
       tap((items) => this.itemsSubject.next(items))
     );
   }
@@ -200,11 +201,29 @@ export class WishlistService {
         )
       )
     ).subscribe((products) => {
-      const mapped = products
-        .filter((p): p is Product => p !== null)
-        .map((p) => this.productToWishlistProduct(p));
-      this.itemsSubject.next(mapped);
+      const mapped = products.filter((p): p is Product => p !== null).map((p) => this.productToWishlistProduct(p));
+
+      this.enrichWishlistWithImages(mapped).subscribe({
+        next: (enriched) => this.itemsSubject.next(enriched),
+        error: () => this.itemsSubject.next(mapped),
+      });
     });
+  }
+
+  private enrichWishlistWithImages(items: WishlistProduct[]): Observable<WishlistProduct[]> {
+    if (!items.length) return of([]);
+
+    return forkJoin(
+      items.map((item) =>
+        this.productService.getProductImages(item._id).pipe(
+          map((imgRes: any) => {
+            const images = imgRes?.data?.images ?? imgRes?.images ?? item.images ?? [];
+            return { ...item, images };
+          }),
+          catchError(() => of(item))
+        )
+      )
+    );
   }
 
   private readGuestIds(): string[] {

@@ -1,120 +1,84 @@
-<div class="flex min-h-screen flex-col bg-gradient-to-b from-slate-50 via-white to-violet-50/40 text-slate-900">
-  <div class="mx-auto flex w-full max-w-6xl flex-1 flex-col px-4 py-10 sm:px-6 lg:px-8">
-    <!-- Page header -->
-    <header class="mb-8 shrink-0 sm:mb-10">
-      <p class="text-xs font-semibold uppercase tracking-widest text-violet-600">Saved for later</p>
-      <div class="mt-1 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <h1 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">Your wishlist</h1>
-        <button
-          type="button"
-          class="inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-200/90 bg-white/60 px-3 py-2 text-sm font-medium text-slate-600 shadow-sm backdrop-blur-sm transition hover:border-violet-200 hover:bg-violet-50/80 hover:text-violet-800"
-          (click)="refresh()"
-        >
-          <span class="material-icons text-[18px] text-slate-500">sync</span>
-          Refresh
-        </button>
+<section class="wishlist-page py-4 py-lg-5">
+  <div class="container-lg">
+    @if (items$ | async; as items) {
+    <header class="card border-0 shadow-sm wishlist-header mb-4">
+      <div
+        class="card-body p-3 p-md-4 d-flex flex-column flex-lg-row justify-content-between align-items-start align-items-lg-center gap-3">
+        <div>
+          <p class="wishlist-kicker mb-1">Saved for later</p>
+          <h1 class="h3 mb-2">Your wishlist</h1>
+          <p class="text-secondary mb-0">Items stay here until you remove them. Sign in to sync across devices.</p>
+        </div>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+          <span class="badge rounded-pill text-bg-light border wishlist-count">
+            {{ items.length }} {{ items.length === 1 ? 'item' : 'items' }}
+          </span>
+          <button type="button" class="btn btn-outline-secondary d-inline-flex align-items-center gap-2"
+            (click)="refresh()" aria-label="Refresh wishlist">
+            <span class="material-icons">sync</span>
+            Refresh
+          </button>
+        </div>
       </div>
-      <p class="mt-3 max-w-xl text-sm leading-relaxed text-slate-600">
-        Items stay here until you remove them.
-        <span class="text-slate-400">Sign in to sync across devices.</span>
-      </p>
     </header>
 
-    @if (items$ | async; as items) {
-      @if (items.length === 0) {
-        <!-- Empty state: centered, large faint heart background -->
-        <div
-          class="relative flex min-h-0 flex-1 flex-col items-center justify-center px-4 py-12 sm:min-h-[min(65vh,520px)] sm:py-16"
-        >
-          <span
-            class="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
-            aria-hidden="true"
-          >
-            <span
-              class="material-icons select-none text-[140px] text-violet-300/35 sm:text-[220px] md:text-[280px]"
-              >favorite</span
-            >
-          </span>
-
-          <div class="relative z-10 flex max-w-md flex-col items-center text-center">
-            <h2 class="text-xl font-semibold text-slate-800 sm:text-2xl">No saved items yet</h2>
-            <p class="mt-3 text-sm text-slate-600 sm:text-base">
-              Explore products and tap the heart to keep them here.
-            </p>
-            <a
-              routerLink="/home"
-              class="mt-8 inline-flex items-center gap-2 rounded-xl bg-violet-600 px-5 py-3 text-sm font-bold text-white shadow-lg shadow-violet-600/25 transition hover:bg-violet-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-600 active:bg-violet-800"
-            >
-              <span class="material-icons text-lg">storefront</span>
-              Continue shopping
-            </a>
-          </div>
+    @if (items.length === 0) {
+    <div class="card border-0 shadow-sm wishlist-empty text-center">
+      <div class="card-body py-5 px-4">
+        <div class="empty-icon mx-auto mb-3" aria-hidden="true">
+          <span class="material-icons">favorite_border</span>
         </div>
-      } @else {
-        <p class="mb-4 text-sm font-medium text-slate-500">
-          {{ items.length }} {{ items.length === 1 ? 'item' : 'items' }}
+        <h2 class="h4 mb-2">No saved items yet</h2>
+        <p class="text-secondary mx-auto mb-4 empty-copy">
+          Browse products and tap the heart icon to keep your favorites in one place.
         </p>
-        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          @for (product of items; track product._id) {
-            <article
-              class="group flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-md shadow-slate-200/50 ring-1 ring-slate-100/80 transition hover:-translate-y-0.5 hover:border-violet-200 hover:shadow-xl hover:shadow-violet-100/60"
-            >
-              <a [routerLink]="['/products', product._id]" class="relative block aspect-[4/3] overflow-hidden bg-slate-100">
-                @if (getPrimaryImage(product)) {
-                  <img
-                    [src]="getPrimaryImage(product)"
-                    [alt]="product.name"
-                    class="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
-                    loading="lazy"
-                  />
-                } @else {
-                  <div class="flex h-full w-full items-center justify-center text-slate-300">
-                    <span class="material-icons text-5xl">shopping_bag</span>
-                  </div>
-                }
-                @if (product.isActive === false) {
-                  <span
-                    class="absolute left-3 top-3 rounded-lg bg-slate-900/85 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur-sm"
-                  >
-                    Unavailable
-                  </span>
-                }
-              </a>
-              <div class="flex flex-1 flex-col gap-3 p-4">
-                <a [routerLink]="['/products', product._id]" class="block">
-                  <h2 class="line-clamp-2 text-base font-semibold text-slate-900 transition group-hover:text-violet-700">
-                    {{ product.name }}
-                  </h2>
-                </a>
-                <div class="mt-auto flex flex-wrap items-center gap-2">
-                  @if (product.discountedPrice != null && product.discountedPrice < product.price) {
-                    <span class="text-lg font-bold text-violet-700">${{ product.discountedPrice | number: '1.2-2' }}</span>
-                    <span class="text-sm text-slate-400 line-through">${{ product.price | number: '1.2-2' }}</span>
-                  } @else {
-                    <span class="text-lg font-bold text-slate-900">${{ product.price | number: '1.2-2' }}</span>
-                  }
-                  @if (product.averageRating != null) {
-                    <span
-                      class="ml-auto inline-flex items-center gap-0.5 rounded-full bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-800 ring-1 ring-amber-100"
-                    >
-                      <span class="material-icons text-sm">star</span>
-                      {{ product.averageRating | number: '1.1-1' }}
-                    </span>
-                  }
-                </div>
-                <button
-                  type="button"
-                  class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-rose-200 bg-rose-50/90 px-3 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
-                  (click)="remove(product._id)"
-                >
-                  <span class="material-icons text-lg">delete_outline</span>
-                  Remove from wishlist
-                </button>
-              </div>
-            </article>
-          }
-        </div>
+        <a routerLink="/home" class="btn btn-primary btn-lg d-inline-flex align-items-center gap-2 px-4">
+          <span class="material-icons">storefront</span>
+          Continue shopping
+        </a>
+      </div>
+    </div>
+    } @else {
+    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 mb-3">
+      <p class="text-secondary mb-0">Move items to your cart or remove them whenever you want.</p>
+      <button type="button" class="btn btn-outline-danger d-inline-flex align-items-center gap-2"
+        (click)="clearAll(items)" aria-label="Clear wishlist">
+        <span class="material-icons">delete_sweep</span>
+        Clear all
+      </button>
+    </div>
+
+    <div class="row g-3 g-md-4">
+      @for (product of items; track product._id) {
+      <div class="col-12">
+        <article class="card border-0 shadow-sm wishlist-item-card h-100">
+          <div class="card-body p-0">
+            <app-product-card cssClass="product-card--list" [product]="product"
+              [primaryImage]="getPrimaryImage(product)"></app-product-card>
+          </div>
+          <div class="card-footer bg-white border-0 pt-0 px-3 px-md-4 pb-3 pb-md-4">
+            <div class="d-grid d-sm-flex justify-content-sm-end gap-2">
+              <button type="button"
+                class="btn btn-primary d-inline-flex align-items-center justify-content-center gap-2"
+                (click)="addToCart(product._id)" aria-label="Open product to add to cart">
+                <span class="material-icons">shopping_cart</span>
+                Add to cart
+              </button>
+
+              <button type="button"
+                class="btn btn-outline-danger d-inline-flex align-items-center justify-content-center gap-2"
+                (click)="remove(product._id)" aria-label="Remove from wishlist">
+                <span class="material-icons">delete_outline</span>
+                Remove
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
       }
+    </div>
+    }
     }
   </div>
-</div>
+</section>

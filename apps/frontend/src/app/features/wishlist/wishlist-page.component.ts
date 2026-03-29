@@ -1,7 +1,8 @@
-import { AsyncPipe, DecimalPipe } from '@angular/common';
-import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
-import { Observable } from 'rxjs';
+import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+import { RouterLink, Router } from '@angular/router';
+import { ProductCardComponent } from '../../core/components/product-card/product-card.component';
+import { forkJoin, Observable } from 'rxjs';
 import { WishlistService } from '../../core/services/wishlist.service';
 import { WishlistProduct } from '../../core/types/wishlist.types';
 import { ToastService } from '../../core/services/toast.service';
@@ -10,14 +11,20 @@ import { extractApiErrorMessage } from '../../core/utils/http-error.util';
 @Component({
   selector: 'app-wishlist-page',
   standalone: true,
-  imports: [AsyncPipe, DecimalPipe, RouterLink],
+  imports: [CommonModule, RouterLink, ProductCardComponent],
   templateUrl: './wishlist-page.component.html',
+  styleUrls: ['./wishlist-page.component.css'],
 })
-export class WishlistPageComponent {
+export class WishlistPageComponent implements OnInit {
   private readonly wishlist = inject(WishlistService);
   private readonly toast = inject(ToastService);
+  private readonly router = inject(Router);
 
   protected readonly items$: Observable<WishlistProduct[]> = this.wishlist.items$;
+
+  ngOnInit(): void {
+    this.refresh();
+  }
 
   protected getPrimaryImage(product: WishlistProduct): string {
     const primary = product.images?.find((img) => img.isPrimary);
@@ -25,13 +32,34 @@ export class WishlistPageComponent {
   }
 
   protected remove(productId: string): void {
+    if (!confirm('Remove this item from your wishlist?')) return;
     this.wishlist.remove(productId).subscribe({
-      error: (err: unknown) =>
-        this.toast.error(extractApiErrorMessage(err, 'Could not remove item.')),
+      next: () => this.toast.success('Removed from wishlist'),
+      error: (err: unknown) => this.toast.error(extractApiErrorMessage(err, 'Could not remove item.')),
     });
   }
 
   protected refresh(): void {
     this.wishlist.refresh();
+  }
+
+  protected addToCart(productId: string): void {
+    // Navigate to product details where user can add to cart
+    this.router.navigate(['/products', productId]);
+    this.toast.info('Open product page to add to cart');
+  }
+
+  protected clearAll(items: WishlistProduct[]): void {
+    if (!items || items.length === 0) return;
+    if (!confirm(`Remove ${items.length} item(s) from your wishlist?`)) return;
+    const calls = items.map((p) => this.wishlist.remove(p._id));
+    forkJoin(calls).subscribe({
+      next: () => {
+        this.toast.success('Wishlist cleared');
+      },
+      error: () => {
+        this.toast.error('Could not clear wishlist. Try again.');
+      },
+    });
   }
 }

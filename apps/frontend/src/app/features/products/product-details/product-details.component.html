@@ -38,9 +38,9 @@
         <div class="main-image-wrap">
           @if (activeImage()) {
           <img [src]="activeImage()" [alt]="prod.name" class="main-image" />
-          <button class="save-btn detail-save" (click)="$event.stopPropagation(); $event.preventDefault()" title="Save">
-            <span class="material-icons">bookmark_border</span>
-          </button>
+          <div class="detail-wishlist" (click)="$event.stopPropagation()">
+            <app-wishlist-heart [productId]="prod._id" />
+          </div>
           @if (prod.images && prod.images.length > 1) {
           <button class="gallery-arrow left" (click)="prevImage($event)">
             <span class="material-icons">chevron_left</span>
@@ -69,9 +69,7 @@
         <div class="seller-row">
           <div class="store-badge">
             <span class="material-icons">storefront</span>
-            <span
-              >Sold by <strong>{{ getStoreName(prod.sellerProfileId) }}</strong></span
-            >
+            <span>Sold by <strong>{{ getStoreName(prod.sellerProfileId) }}</strong></span>
           </div>
 
           @if (prod.averageRating && prod.averageRating > 0) {

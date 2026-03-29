@@ -9,13 +9,8 @@
     <!-- Navbar Search (Center) -->
     <div class="nav-search-wrap">
       <div class="nav-search-bar">
-        <input
-          type="text"
-          placeholder="Search products..."
-          [value]="searchQuery()"
-          (input)="updateSearchQuery($event)"
-          (keyup.enter)="onSearch()"
-        />
+        <input type="text" placeholder="Search products..." [value]="searchQuery()" (input)="updateSearchQuery($event)"
+          (keyup.enter)="onSearch()" />
         <button (click)="onSearch()" class="nav-search-btn">
           <span class="material-icons">search</span>
           Search
@@ -26,24 +21,21 @@
     <!-- Actions (Right) -->
     <div class="nav-auth">
       @if (showWishlistNav()) {
-        <a
-          class="nav-btn-link !inline-flex !items-center !gap-2 !rounded-xl !border !border-rose-100/90 !bg-white/95 !shadow-sm !ring-1 !ring-slate-100/80 transition hover:!border-rose-200 hover:!shadow-md"
-          routerLink="/wishlist"
-        >
-          <div class="cart-icon-wrap relative">
-            <span class="material-icons text-rose-500">favorite</span>
-            @if ((wishlistCount$ | async); as wc) {
-              @if (wc > 0) {
-                <span
-                  class="absolute -right-2 -top-2 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-pink-600 px-1 text-[10px] font-bold leading-none text-white shadow-md ring-2 ring-white"
-                >
-                  {{ wc > 99 ? '99+' : wc }}
-                </span>
-              }
-            }
-          </div>
-          <span class="btn-text">Wishlist</span>
-        </a>
+      <a class="nav-btn-link !inline-flex !items-center !gap-2 !rounded-xl !border !border-rose-100/90 !bg-white/95 !shadow-sm !ring-1 !ring-slate-100/80 transition hover:!border-rose-200 hover:!shadow-md"
+        routerLink="/wishlist">
+        <div class="cart-icon-wrap relative">
+          <span class="material-icons text-rose-500">favorite</span>
+          @if ((wishlistCount$ | async); as wc) {
+          @if (wc > 0) {
+          <span
+            class="absolute -right-2 -top-2 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-pink-600 px-1 text-[10px] font-bold leading-none text-white shadow-md ring-2 ring-white">
+            {{ wc > 99 ? '99+' : wc }}
+          </span>
+          }
+          }
+        </div>
+        <span class="btn-text">Wishlist</span>
+      </a>
       }
 
       @if (isLoggedIn()) {
@@ -60,13 +52,7 @@
         <span class="btn-text">Cart</span>
       </a>
 
-      <a class="nav-btn-link" routerLink="/wishlist">
-        <div class="cart-icon-wrap">
-          <span class="material-icons">bookmark</span>
-          <span class="cart-badge">0</span>
-        </div>
-        <span class="btn-text">Wishlist</span>
-      </a>
+      <!-- duplicate wishlist removed (kept primary wishlist button above) -->
 
       <a class="nav-btn-link" [routerLink]="getDashboardRoute()">
         <span class="material-icons">account_circle</span>
@@ -97,53 +83,41 @@
   <div class="mobile-menu" [class.open]="isMenuOpen">
     <!-- Mobile Search -->
     <div class="mobile-search-wrap">
-      <input
-        type="text"
-        placeholder="Search products..."
-        [value]="searchQuery()"
-        (input)="updateSearchQuery($event)"
-        (keyup.enter)="onSearch()"
-      />
+      <input type="text" placeholder="Search products..." [value]="searchQuery()" (input)="updateSearchQuery($event)"
+        (keyup.enter)="onSearch()" />
       <button (click)="onSearch()" class="mobile-search-btn">
         <span class="material-icons">search</span>
       </button>
     </div>
 
     @if (showWishlistNav()) {
-      <a class="mobile-wishlist-row" routerLink="/wishlist" (click)="closeMenu()">
-        <span class="material-icons text-rose-500" style="font-size: 18px; vertical-align: middle; margin-right: 8px"
-          >favorite</span
-        >
-        Wishlist
-        @if ((wishlistCount$ | async); as wc) {
-          @if (wc > 0) {
-            <span class="mobile-wishlist-badge">{{ wc > 99 ? '99+' : wc }}</span>
-          }
-        }
-      </a>
+    <a class="mobile-wishlist-row" routerLink="/wishlist" (click)="closeMenu()">
+      <span class="material-icons text-rose-500"
+        style="font-size: 18px; vertical-align: middle; margin-right: 8px">favorite</span>
+      Wishlist
+      @if ((wishlistCount$ | async); as wc) {
+      @if (wc > 0) {
+      <span class="mobile-wishlist-badge">{{ wc > 99 ? '99+' : wc }}</span>
+      }
+      }
+    </a>
     }
 
     @if (isLoggedIn()) {
     <a routerLink="/orders" (click)="closeMenu()">
-      <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px"
-        >receipt_long</span
-      >
+      <span class="material-icons"
+        style="font-size: 18px; vertical-align: middle; margin-right: 8px">receipt_long</span>
       My Orders
     </a>
     <a routerLink="/cart" (click)="closeMenu()">
-      <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px"
-        >shopping_cart</span
-      >
+      <span class="material-icons"
+        style="font-size: 18px; vertical-align: middle; margin-right: 8px">shopping_cart</span>
       Cart
     </a>
-    <a routerLink="/wishlist" (click)="closeMenu()">
-      <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px">bookmark</span>
-      Wishlist
-    </a>
+    <!-- duplicate mobile wishlist entry removed (primary mobile wishlist row above is used) -->
     <a [routerLink]="getDashboardRoute()" (click)="closeMenu()">
-      <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px"
-        >account_circle</span
-      >
+      <span class="material-icons"
+        style="font-size: 18px; vertical-align: middle; margin-right: 8px">account_circle</span>
       Profile
     </a>
     <button (click)="logout(); closeMenu()">
