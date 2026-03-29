@@ -38,7 +38,7 @@
                     </div>
 
                     <div class="banner-info">
-                        <h5 class="mb-2">Banner #{{ banner.order }}</h5>
+                        <h5 class="mb-2">{{ banner.title || ('Banner #' + banner.order) }}</h5>
                         @if (banner.redirectUrl) {
                         <p class="text-muted small mb-2">{{ banner.redirectUrl }}</p>
                         }
@@ -81,33 +81,39 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="bannerOrder" class="form-label">Display Order</label>
-                        <input id="bannerOrder" type="number" class="form-control" [(ngModel)]="formData().order"
-                            placeholder="0" />
+                        <label for="bannerTitle" class="form-label">Banner Title *</label>
+                        <input id="bannerTitle" type="text" class="form-control" [ngModel]="formData().title"
+                            (ngModelChange)="updateFormField('title', $event)" placeholder="Homepage summer sale" />
                     </div>
 
                     <div class="mb-3">
-                        <label for="bannerLink" class="form-label">Redirect URL</label>
-                        <input id="bannerLink" type="url" class="form-control" [(ngModel)]="formData().redirectUrl"
-                            placeholder="https://example.com" />
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="bannerImage" class="form-label">{{ isEditMode() ? 'Replace Image (Optional)' :
-                            'Banner Image *' }}</label>
-                        <input id="bannerImage" type="file" class="form-control" accept="image/*"
-                            (change)="onImageSelected($event)" />
-                        @if (imagePreview()) {
+                        <label for="bannerImageUrl" class="form-label">Image URL *</label>
+                        <input id="bannerImageUrl" type="url" class="form-control" [ngModel]="formData().imageUrl"
+                            (ngModelChange)="updateFormField('imageUrl', $event)" placeholder="https://..." />
+                        @if (formData().imageUrl) {
                         <div class="mt-2">
-                            <img [src]="imagePreview()" alt="Preview" class="img-thumbnail"
+                            <img [src]="formData().imageUrl" alt="Preview" class="img-thumbnail"
                                 style="max-width: 300px; max-height: 200px" />
                         </div>
                         }
                     </div>
 
+                    <div class="mb-3">
+                        <label for="bannerOrder" class="form-label">Display Order</label>
+                        <input id="bannerOrder" type="number" class="form-control" [ngModel]="formData().order"
+                            (ngModelChange)="updateFormField('order', Number($event))" placeholder="0" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="bannerLink" class="form-label">Redirect URL</label>
+                        <input id="bannerLink" type="url" class="form-control" [ngModel]="formData().redirectUrl"
+                            (ngModelChange)="updateFormField('redirectUrl', $event)"
+                            placeholder="https://example.com" />
+                    </div>
+
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="isActive"
-                            [(ngModel)]="formData().isActive" />
+                        <input class="form-check-input" type="checkbox" id="isActive" [ngModel]="formData().isActive"
+                            (ngModelChange)="updateFormField('isActive', !!$event)" />
                         <label class="form-check-label" for="isActive">Active (Show on website)</label>
                     </div>
                 </div>

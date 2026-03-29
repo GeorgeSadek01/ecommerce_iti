@@ -1,0 +1,92 @@
+<div class="admin-categories">
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body p-3 p-md-4 d-flex justify-content-between align-items-center gap-3 flex-wrap">
+      <div>
+        <h2 class="mb-1">Category Management</h2>
+        <p class="text-secondary mb-0">Create product categories directly from admin panel.</p>
+      </div>
+      <button class="btn btn-outline-primary" (click)="loadCategories()" [disabled]="loading()">Refresh</button>
+    </div>
+  </div>
+
+  @if (error()) {
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    {{ error() }}
+    <button type="button" class="btn-close" (click)="error.set(null)"></button>
+  </div>
+  }
+
+  @if (success()) {
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    {{ success() }}
+    <button type="button" class="btn-close" (click)="success.set(null)"></button>
+  </div>
+  }
+
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <h5 class="mb-3">Add Category</h5>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <label for="categoryName" class="form-label">Category Name *</label>
+          <input id="categoryName" class="form-control" type="text" placeholder="e.g. Electronics" [ngModel]="name()"
+            (ngModelChange)="name.set($event)" [disabled]="loading()" />
+        </div>
+        <div class="col-md-4">
+          <label for="categoryParent" class="form-label">Parent Category ID (optional)</label>
+          <input id="categoryParent" class="form-control" type="text" placeholder="Mongo ID" [ngModel]="parentId()"
+            (ngModelChange)="parentId.set($event)" [disabled]="loading()" />
+        </div>
+        <div class="col-md-4">
+          <label for="categoryDescription" class="form-label">Description (optional)</label>
+          <input id="categoryDescription" class="form-control" type="text" placeholder="Short description"
+            [ngModel]="description()" (ngModelChange)="description.set($event)" [disabled]="loading()" />
+        </div>
+      </div>
+      <div class="mt-3">
+        <button class="btn btn-primary" (click)="createCategory()" [disabled]="loading()">
+          @if (loading()) {
+          <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+          }
+          Create Category
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+      <h5 class="mb-3">Existing Categories</h5>
+      @if (loading() && !categories().length) {
+      <div class="text-center py-4">
+        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading</span></div>
+      </div>
+      } @else if (categories().length) {
+      <div class="table-responsive">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>Name</th>
+              <th>Slug</th>
+              <th>Category ID</th>
+              <th>Parent</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (category of categories(); track category._id) {
+            <tr>
+              <td class="fw-semibold">{{ category.name }}</td>
+              <td>{{ category.slug }}</td>
+              <td><code>{{ category._id }}</code></td>
+              <td>{{ category.parentName || category.parentId || '-' }}</td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      } @else {
+      <div class="alert alert-info mb-0">No categories found.</div>
+      }
+    </div>
+  </div>
+</div>

@@ -105,6 +105,10 @@ export class AdminUsersComponent implements OnInit {
   }
 
   openUserModal(user: AdminUser): void {
+    if (!this.canManageUser(user)) {
+      this.error.set('Admin accounts cannot be edited from this screen.');
+      return;
+    }
     this.selectedUser.set(user);
     this.selectedRoleForUpdate.set(user.role);
     this.showUserModal.set(true);
@@ -119,6 +123,10 @@ export class AdminUsersComponent implements OnInit {
     const user = this.selectedUser();
     const newRole = this.selectedRoleForUpdate();
     if (!user || !newRole) return;
+    if (!this.canManageUser(user)) {
+      this.error.set('Admin accounts cannot be edited from this screen.');
+      return;
+    }
 
     this.userService.updateUserRole(user._id, newRole).subscribe({
       next: () => {
@@ -132,6 +140,12 @@ export class AdminUsersComponent implements OnInit {
   }
 
   deleteUser(userId: string): void {
+    const user = this.users().find((candidate) => candidate._id === userId);
+    if (user && !this.canManageUser(user)) {
+      this.error.set('Admin accounts cannot be deleted.');
+      return;
+    }
+
     if (confirm('Are you sure you want to delete this user?')) {
       this.userService.deleteUser(userId).subscribe({
         next: () => {
@@ -153,5 +167,9 @@ export class AdminUsersComponent implements OnInit {
         this.error.set(err.error?.message || 'Failed to restore user');
       },
     });
+  }
+
+  canManageUser(user: AdminUser): boolean {
+    return user.role !== 'admin';
   }
 }

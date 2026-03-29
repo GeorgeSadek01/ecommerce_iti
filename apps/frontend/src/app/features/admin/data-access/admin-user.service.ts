@@ -23,7 +23,7 @@ export class AdminUserService {
     let params = new HttpParams().set('page', page.toString()).set('limit', limit.toString());
 
     if (query) {
-      params = params.set('query', query);
+      params = params.set('search', query);
     }
     if (role) {
       params = params.set('role', role);

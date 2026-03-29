@@ -18,23 +18,27 @@ export class AdminOrderService {
     page: number = 1,
     limit: number = 10,
     status?: string,
-    startDate?: string,
-    endDate?: string,
-    userId?: string
+    dateFrom?: string,
+    dateTo?: string,
+    userId?: string,
+    orderId?: string
   ): Observable<ApiResponse<ListResponse<AdminOrder>>> {
     let params = new HttpParams().set('page', page.toString()).set('limit', limit.toString());
 
     if (status) {
       params = params.set('status', status);
     }
-    if (startDate) {
-      params = params.set('startDate', startDate);
+    if (dateFrom) {
+      params = params.set('dateFrom', dateFrom);
     }
-    if (endDate) {
-      params = params.set('endDate', endDate);
+    if (dateTo) {
+      params = params.set('dateTo', dateTo);
     }
     if (userId) {
       params = params.set('userId', userId);
+    }
+    if (orderId) {
+      params = params.set('orderId', orderId);
     }
 
     return this.http.get<any>(this.apiUrl, { params }).pipe(
@@ -42,12 +46,44 @@ export class AdminOrderService {
         const orders = res.data?.orders ?? res.data?.items ?? [];
         const items: AdminOrder[] = (orders || []).map((o: any) => ({
           _id: o._id ?? o.id,
-          userId: o.userId,
-          sellerId: o.sellerId,
+          userId: o.userId?._id ?? o.userId ?? '',
+          user: o.user ??
+            (o.userId?._id
+              ? {
+                  _id: o.userId._id,
+                  firstName: o.userId.firstName ?? '',
+                  lastName: o.userId.lastName ?? '',
+                  email: o.userId.email ?? '',
+                  role: o.userId.role ?? 'customer',
+                }
+              : undefined),
+          addressId: o.addressId?._id ?? o.addressId,
+          address: o.address ?? o.addressId,
+          promoCodeId: o.promoCodeId?._id ?? o.promoCodeId,
+          promoCode: o.promoCode,
           status: o.status,
           trackingNumber: o.trackingNumber,
-          total: o.total,
-          items: o.items,
+          total: Number(o.total ?? 0),
+          subtotal: Number(o.subtotal ?? 0),
+          discountAmount: Number(o.discountAmount ?? 0),
+          shippingCost: Number(o.shippingCost ?? 0),
+          isPaid: Boolean(o.isPaid),
+          items: (o.items ?? []).map((item: any) => ({
+            id: item._id ?? item.id ?? '',
+            productId: item.productId?._id ?? item.productId ?? '',
+            productNameSnapshot: item.productNameSnapshot ?? '',
+            priceSnapshot: Number(item.priceSnapshot ?? 0),
+            quantity: Number(item.quantity ?? 0),
+            lineTotal: Number(item.lineTotal ?? 0),
+            sellerId: item.sellerId?._id ?? item.sellerId ?? '',
+            seller: item.seller ??
+              (item.sellerId?._id
+                ? {
+                    id: item.sellerId._id,
+                    storeName: item.sellerId.storeName ?? 'Unknown seller',
+                  }
+                : undefined),
+          })),
           placedAt: o.placedAt,
           updatedAt: o.updatedAt,
         }));
@@ -78,12 +114,44 @@ export class AdminOrderService {
 
         const order: AdminOrder = {
           _id: o._id ?? o.id,
-          userId: o.userId,
-          sellerId: o.sellerId,
+          userId: o.userId?._id ?? o.userId ?? '',
+          user: o.user ??
+            (o.userId?._id
+              ? {
+                  _id: o.userId._id,
+                  firstName: o.userId.firstName ?? '',
+                  lastName: o.userId.lastName ?? '',
+                  email: o.userId.email ?? '',
+                  role: o.userId.role ?? 'customer',
+                }
+              : undefined),
+          addressId: o.addressId?._id ?? o.addressId,
+          address: o.address ?? o.addressId,
+          promoCodeId: o.promoCodeId?._id ?? o.promoCodeId,
+          promoCode: o.promoCode,
           status: o.status,
           trackingNumber: o.trackingNumber,
-          total: o.total,
-          items: o.items,
+          total: Number(o.total ?? 0),
+          subtotal: Number(o.subtotal ?? 0),
+          discountAmount: Number(o.discountAmount ?? 0),
+          shippingCost: Number(o.shippingCost ?? 0),
+          isPaid: Boolean(o.isPaid),
+          items: (o.items ?? []).map((item: any) => ({
+            id: item._id ?? item.id ?? '',
+            productId: item.productId?._id ?? item.productId ?? '',
+            productNameSnapshot: item.productNameSnapshot ?? '',
+            priceSnapshot: Number(item.priceSnapshot ?? 0),
+            quantity: Number(item.quantity ?? 0),
+            lineTotal: Number(item.lineTotal ?? 0),
+            sellerId: item.sellerId?._id ?? item.sellerId ?? '',
+            seller: item.seller ??
+              (item.sellerId?._id
+                ? {
+                    id: item.sellerId._id,
+                    storeName: item.sellerId.storeName ?? 'Unknown seller',
+                  }
+                : undefined),
+          })),
           placedAt: o.placedAt,
           updatedAt: o.updatedAt,
         };
@@ -105,12 +173,44 @@ export class AdminOrderService {
         if (!o) return { success: res.status === 'success', message: res.message ?? '' } as ApiResponse<AdminOrder>;
         const order: AdminOrder = {
           _id: o._id ?? o.id,
-          userId: o.userId,
-          sellerId: o.sellerId,
+          userId: o.userId?._id ?? o.userId ?? '',
+          user: o.user ??
+            (o.userId?._id
+              ? {
+                  _id: o.userId._id,
+                  firstName: o.userId.firstName ?? '',
+                  lastName: o.userId.lastName ?? '',
+                  email: o.userId.email ?? '',
+                  role: o.userId.role ?? 'customer',
+                }
+              : undefined),
+          addressId: o.addressId?._id ?? o.addressId,
+          address: o.address ?? o.addressId,
+          promoCodeId: o.promoCodeId?._id ?? o.promoCodeId,
+          promoCode: o.promoCode,
           status: o.status,
           trackingNumber: o.trackingNumber,
-          total: o.total,
-          items: o.items,
+          total: Number(o.total ?? 0),
+          subtotal: Number(o.subtotal ?? 0),
+          discountAmount: Number(o.discountAmount ?? 0),
+          shippingCost: Number(o.shippingCost ?? 0),
+          isPaid: Boolean(o.isPaid),
+          items: (o.items ?? []).map((item: any) => ({
+            id: item._id ?? item.id ?? '',
+            productId: item.productId?._id ?? item.productId ?? '',
+            productNameSnapshot: item.productNameSnapshot ?? '',
+            priceSnapshot: Number(item.priceSnapshot ?? 0),
+            quantity: Number(item.quantity ?? 0),
+            lineTotal: Number(item.lineTotal ?? 0),
+            sellerId: item.sellerId?._id ?? item.sellerId ?? '',
+            seller: item.seller ??
+              (item.sellerId?._id
+                ? {
+                    id: item.sellerId._id,
+                    storeName: item.sellerId.storeName ?? 'Unknown seller',
+                  }
+                : undefined),
+          })),
           placedAt: o.placedAt,
           updatedAt: o.updatedAt,
         };
@@ -131,12 +231,44 @@ export class AdminOrderService {
         if (!o) return { success: res.status === 'success', message: res.message ?? '' } as ApiResponse<AdminOrder>;
         const order: AdminOrder = {
           _id: o._id ?? o.id,
-          userId: o.userId,
-          sellerId: o.sellerId,
+          userId: o.userId?._id ?? o.userId ?? '',
+          user: o.user ??
+            (o.userId?._id
+              ? {
+                  _id: o.userId._id,
+                  firstName: o.userId.firstName ?? '',
+                  lastName: o.userId.lastName ?? '',
+                  email: o.userId.email ?? '',
+                  role: o.userId.role ?? 'customer',
+                }
+              : undefined),
+          addressId: o.addressId?._id ?? o.addressId,
+          address: o.address ?? o.addressId,
+          promoCodeId: o.promoCodeId?._id ?? o.promoCodeId,
+          promoCode: o.promoCode,
           status: o.status,
           trackingNumber: o.trackingNumber,
-          total: o.total,
-          items: o.items,
+          total: Number(o.total ?? 0),
+          subtotal: Number(o.subtotal ?? 0),
+          discountAmount: Number(o.discountAmount ?? 0),
+          shippingCost: Number(o.shippingCost ?? 0),
+          isPaid: Boolean(o.isPaid),
+          items: (o.items ?? []).map((item: any) => ({
+            id: item._id ?? item.id ?? '',
+            productId: item.productId?._id ?? item.productId ?? '',
+            productNameSnapshot: item.productNameSnapshot ?? '',
+            priceSnapshot: Number(item.priceSnapshot ?? 0),
+            quantity: Number(item.quantity ?? 0),
+            lineTotal: Number(item.lineTotal ?? 0),
+            sellerId: item.sellerId?._id ?? item.sellerId ?? '',
+            seller: item.seller ??
+              (item.sellerId?._id
+                ? {
+                    id: item.sellerId._id,
+                    storeName: item.sellerId.storeName ?? 'Unknown seller',
+                  }
+                : undefined),
+          })),
           placedAt: o.placedAt,
           updatedAt: o.updatedAt,
         };
@@ -157,12 +289,44 @@ export class AdminOrderService {
         if (!o) return { success: res.status === 'success', message: res.message ?? '' } as ApiResponse<AdminOrder>;
         const order: AdminOrder = {
           _id: o._id ?? o.id,
-          userId: o.userId,
-          sellerId: o.sellerId,
+          userId: o.userId?._id ?? o.userId ?? '',
+          user: o.user ??
+            (o.userId?._id
+              ? {
+                  _id: o.userId._id,
+                  firstName: o.userId.firstName ?? '',
+                  lastName: o.userId.lastName ?? '',
+                  email: o.userId.email ?? '',
+                  role: o.userId.role ?? 'customer',
+                }
+              : undefined),
+          addressId: o.addressId?._id ?? o.addressId,
+          address: o.address ?? o.addressId,
+          promoCodeId: o.promoCodeId?._id ?? o.promoCodeId,
+          promoCode: o.promoCode,
           status: o.status,
           trackingNumber: o.trackingNumber,
-          total: o.total,
-          items: o.items,
+          total: Number(o.total ?? 0),
+          subtotal: Number(o.subtotal ?? 0),
+          discountAmount: Number(o.discountAmount ?? 0),
+          shippingCost: Number(o.shippingCost ?? 0),
+          isPaid: Boolean(o.isPaid),
+          items: (o.items ?? []).map((item: any) => ({
+            id: item._id ?? item.id ?? '',
+            productId: item.productId?._id ?? item.productId ?? '',
+            productNameSnapshot: item.productNameSnapshot ?? '',
+            priceSnapshot: Number(item.priceSnapshot ?? 0),
+            quantity: Number(item.quantity ?? 0),
+            lineTotal: Number(item.lineTotal ?? 0),
+            sellerId: item.sellerId?._id ?? item.sellerId ?? '',
+            seller: item.seller ??
+              (item.sellerId?._id
+                ? {
+                    id: item.sellerId._id,
+                    storeName: item.sellerId.storeName ?? 'Unknown seller',
+                  }
+                : undefined),
+          })),
           placedAt: o.placedAt,
           updatedAt: o.updatedAt,
         };

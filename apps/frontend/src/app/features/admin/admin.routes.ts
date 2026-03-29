@@ -41,13 +41,14 @@ export const adminRoutes: Routes = [
         data: { roles: ['admin'] },
       },
       {
-        path: 'banners',
-        loadComponent: () => import('./pages/banners/admin-banners.component').then((m) => m.AdminBannersComponent),
+        path: 'categories',
+        loadComponent: () =>
+          import('./pages/categories/admin-categories.component').then((m) => m.AdminCategoriesComponent),
         data: { roles: ['admin'] },
       },
       {
-        path: 'refunds',
-        loadComponent: () => import('./pages/refunds/admin-refunds.component').then((m) => m.AdminRefundsComponent),
+        path: 'banners',
+        loadComponent: () => import('./pages/banners/admin-banners.component').then((m) => m.AdminBannersComponent),
         data: { roles: ['admin'] },
       },
     ],

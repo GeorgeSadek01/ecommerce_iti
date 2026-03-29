@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AdminProductService } from '../../data-access/admin-product.service';
@@ -24,17 +24,35 @@ export class AdminProductsComponent implements OnInit {
 
   // Filters
   searchQuery = signal('');
-  selectedStatus = signal<string>('');
+  sellerProfileIdFilter = signal('');
+  productIdFilter = signal('');
+  selectedActiveState = signal<'all' | 'active' | 'inactive'>('all');
   minPrice = signal<number | null>(null);
   maxPrice = signal<number | null>(null);
+  hasActiveFilters = computed(
+    () =>
+      Boolean(
+        this.searchQuery().trim() ||
+          this.sellerProfileIdFilter().trim() ||
+          this.productIdFilter().trim() ||
+          this.selectedActiveState() !== 'all' ||
+          this.minPrice() !== null ||
+          this.maxPrice() !== null
+      )
+  );
 
   // Modal
   selectedProduct = signal<AdminProduct | null>(null);
   showDetailModal = signal(false);
-  selectedStatusForUpdate = signal<string>('');
-  rejectionReason = signal<string>('');
+  moderationPrice = signal<number | null>(null);
+  moderationStock = signal<number | null>(null);
+  moderationIsActive = signal<boolean>(true);
 
-  statuses = ['pending', 'approved', 'rejected'];
+  activeStateOptions: Array<{ label: string; value: 'all' | 'active' | 'inactive' }> = [
+    { label: 'All', value: 'all' },
+    { label: 'Active', value: 'active' },
+    { label: 'Inactive', value: 'inactive' },
+  ];
 
   constructor(private productService: AdminProductService) {}
 
@@ -43,18 +61,33 @@ export class AdminProductsComponent implements OnInit {
   }
 
   loadProducts(): void {
+    if (this.minPrice() !== null && this.maxPrice() !== null && Number(this.minPrice()) > Number(this.maxPrice())) {
+      this.error.set('Min price cannot be greater than max price.');
+      return;
+    }
+
+    const productId = this.productIdFilter().trim();
+    if (productId && !/^[a-fA-F0-9]{24}$/.test(productId)) {
+      this.error.set('Product ID must be a valid 24-character Mongo ID.');
+      return;
+    }
+
     this.loading.set(true);
     this.error.set(null);
+
+    const activeFlag =
+      this.selectedActiveState() === 'all' ? undefined : this.selectedActiveState() === 'active';
 
     this.productService
       .getProducts(
         this.currentPage(),
         this.pageSize(),
-        this.selectedStatus() || undefined,
-        undefined,
-        this.minPrice() || undefined,
-        this.maxPrice() || undefined,
-        this.searchQuery() || undefined
+        this.searchQuery().trim() || undefined,
+        this.sellerProfileIdFilter().trim() || undefined,
+        productId || undefined,
+        this.minPrice() ?? undefined,
+        this.maxPrice() ?? undefined,
+        activeFlag
       )
       .subscribe({
         next: (res) => {
@@ -99,8 +132,9 @@ export class AdminProductsComponent implements OnInit {
 
   openProductModal(product: AdminProduct): void {
     this.selectedProduct.set(product);
-    this.selectedStatusForUpdate.set(product.status);
-    this.rejectionReason.set('');
+    this.moderationPrice.set(product.price);
+    this.moderationStock.set(product.stock ?? 0);
+    this.moderationIsActive.set(product.isActive);
     this.showDetailModal.set(true);
   }
 
@@ -109,22 +143,48 @@ export class AdminProductsComponent implements OnInit {
     this.selectedProduct.set(null);
   }
 
-  updateProductStatus(): void {
+  applyModerationChanges(): void {
     const product = this.selectedProduct();
-    const status = this.selectedStatusForUpdate();
-    if (!product || !status) return;
+    if (!product) return;
 
-    const reason = status === 'rejected' ? this.rejectionReason() : undefined;
+    const nextPrice = this.moderationPrice();
+    const nextStock = this.moderationStock();
+    const nextActive = this.moderationIsActive();
 
-    this.productService.updateProductModeration(product._id, status, reason).subscribe({
+    if (nextPrice === null || Number.isNaN(Number(nextPrice)) || Number(nextPrice) <= 0) {
+      this.error.set('Price must be greater than 0.');
+      return;
+    }
+
+    if (nextStock === null || !Number.isInteger(Number(nextStock)) || Number(nextStock) < 0) {
+      this.error.set('Stock must be a non-negative integer.');
+      return;
+    }
+
+    const updates: any = {
+      price: Number(nextPrice),
+      stock: Number(nextStock),
+      isActive: Boolean(nextActive),
+    };
+
+    this.productService.updateProductModeration(product._id, updates).subscribe({
       next: () => {
-        this.products.update((p) =>
-          p.map((prod) => (prod._id === product._id ? { ...prod, status: status as any } : prod))
+        this.products.update((list) =>
+          list.map((prod) =>
+            prod._id === product._id
+              ? {
+                  ...prod,
+                  price: Number(nextPrice),
+                  stock: Number(nextStock),
+                  isActive: Boolean(nextActive),
+                }
+              : prod
+          )
         );
         this.closeProductModal();
       },
       error: (err) => {
-        this.error.set(err.error?.message || 'Failed to update product status');
+        this.error.set(err.error?.message || 'Failed to moderate product');
       },
     });
   }
@@ -140,5 +200,16 @@ export class AdminProductsComponent implements OnInit {
         },
       });
     }
+  }
+
+  clearFilters(): void {
+    this.searchQuery.set('');
+    this.sellerProfileIdFilter.set('');
+    this.productIdFilter.set('');
+    this.selectedActiveState.set('all');
+    this.minPrice.set(null);
+    this.maxPrice.set(null);
+    this.currentPage.set(1);
+    this.loadProducts();
   }
 }

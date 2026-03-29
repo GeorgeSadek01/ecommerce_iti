@@ -52,6 +52,11 @@ const parseOptionalBoolean = (value) => {
   return undefined;
 };
 
+const resolveDateRange = ({ dateFrom, dateTo, startDate, endDate } = {}) => ({
+  dateFrom: dateFrom || startDate,
+  dateTo: dateTo || endDate,
+});
+
 const findUserOrThrow = async (userId) => {
   const user = await User.findById(userId).setOptions({ includeDeleted: true });
   if (!user) throw new AppError('User not found.', 404);
@@ -340,8 +345,11 @@ const buildDateRangeFilter = ({ dateFrom, dateTo } = {}) => {
   return { placedAt: range };
 };
 
-export const getAdminDashboardSummary = async ({ dateFrom, dateTo } = {}) => {
-  const dateFilter = buildDateRangeFilter({ dateFrom, dateTo }) || {};
+export const getAdminDashboardSummary = async ({ dateFrom, dateTo, startDate, endDate } = {}) => {
+  const resolvedRange = resolveDateRange({ dateFrom, dateTo, startDate, endDate });
+  const normalizedDateFrom = resolvedRange.dateFrom;
+  const normalizedDateTo = resolvedRange.dateTo;
+  const dateFilter = buildDateRangeFilter({ dateFrom: normalizedDateFrom, dateTo: normalizedDateTo }) || {};
 
   const [
     totalUsers,
@@ -377,8 +385,17 @@ export const getAdminDashboardSummary = async ({ dateFrom, dateTo } = {}) => {
     ]),
   ]);
 
+  const pendingOrders = Math.max(totalOrders - deliveredOrders - cancelledOrders, 0);
+  const deliveredRevenue = revenueAgg[0]?.revenue ? parseFloat(revenueAgg[0].revenue.toString()) : 0;
+
   return {
-    range: { dateFrom: dateFrom || null, dateTo: dateTo || null },
+    range: { dateFrom: normalizedDateFrom || null, dateTo: normalizedDateTo || null },
+    totalUsers,
+    totalSellers,
+    totalOrders,
+    totalRevenue: deliveredRevenue,
+    pendingOrders,
+    activeProducts,
     users: {
       total: totalUsers,
     },
@@ -397,14 +414,15 @@ export const getAdminDashboardSummary = async ({ dateFrom, dateTo } = {}) => {
       total: totalOrders,
       delivered: deliveredOrders,
       cancelled: cancelledOrders,
+      pending: pendingOrders,
     },
     revenue: {
-      delivered: revenueAgg[0]?.revenue ? parseFloat(revenueAgg[0].revenue.toString()) : 0,
+      delivered: deliveredRevenue,
     },
   };
 };
 
-export const getAdminDashboardTimeseries = async ({ interval = 'day', dateFrom, dateTo } = {}) => {
+export const getAdminDashboardTimeseries = async ({ interval = 'day', dateFrom, dateTo, startDate, endDate } = {}) => {
   const formatByInterval = {
     day: '%Y-%m-%d',
     week: '%G-W%V',
@@ -412,7 +430,10 @@ export const getAdminDashboardTimeseries = async ({ interval = 'day', dateFrom, 
   };
 
   const format = formatByInterval[interval] || formatByInterval.day;
-  const dateFilter = buildDateRangeFilter({ dateFrom, dateTo }) || {};
+  const resolvedRange = resolveDateRange({ dateFrom, dateTo, startDate, endDate });
+  const normalizedDateFrom = resolvedRange.dateFrom;
+  const normalizedDateTo = resolvedRange.dateTo;
+  const dateFilter = buildDateRangeFilter({ dateFrom: normalizedDateFrom, dateTo: normalizedDateTo }) || {};
 
   const points = await Order.aggregate([
     { $match: dateFilter },
@@ -438,7 +459,7 @@ export const getAdminDashboardTimeseries = async ({ interval = 'day', dateFrom, 
 
   return {
     interval,
-    range: { dateFrom: dateFrom || null, dateTo: dateTo || null },
+    range: { dateFrom: normalizedDateFrom || null, dateTo: normalizedDateTo || null },
     points: points.map((point) => ({
       bucket: point._id,
       ordersCount: point.ordersCount,
@@ -459,8 +480,11 @@ export const getAdminRecentOrders = async ({ limit = 10 } = {}) => {
   };
 };
 
-export const getAdminTopSellers = async ({ limit = 10, dateFrom, dateTo } = {}) => {
-  const dateFilter = buildDateRangeFilter({ dateFrom, dateTo }) || {};
+export const getAdminTopSellers = async ({ limit = 10, dateFrom, dateTo, startDate, endDate } = {}) => {
+  const resolvedRange = resolveDateRange({ dateFrom, dateTo, startDate, endDate });
+  const normalizedDateFrom = resolvedRange.dateFrom;
+  const normalizedDateTo = resolvedRange.dateTo;
+  const dateFilter = buildDateRangeFilter({ dateFrom: normalizedDateFrom, dateTo: normalizedDateTo }) || {};
 
   const topSellerAgg = await Order.aggregate([
     { $match: { ...dateFilter, status: 'delivered' } },
@@ -493,7 +517,7 @@ export const getAdminTopSellers = async ({ limit = 10, dateFrom, dateTo } = {}) 
   const sellerById = new Map(sellerProfiles.map((seller) => [String(seller._id), seller]));
 
   return {
-    range: { dateFrom: dateFrom || null, dateTo: dateTo || null },
+    range: { dateFrom: normalizedDateFrom || null, dateTo: normalizedDateTo || null },
     topSellers: topSellerAgg.map((row) => {
       const sellerProfile = sellerById.get(String(row._id));
       return {
@@ -509,8 +533,28 @@ export const getAdminTopSellers = async ({ limit = 10, dateFrom, dateTo } = {}) 
 
 const serializeProduct = (product) => ({
   id: product._id,
-  sellerProfileId: product.sellerProfileId,
-  categoryId: product.categoryId,
+  sellerProfileId: product.sellerProfileId?._id || product.sellerProfileId,
+  seller:
+    product.sellerProfileId && product.sellerProfileId._id
+      ? {
+          id: product.sellerProfileId._id,
+          storeName: product.sellerProfileId.storeName,
+          status: product.sellerProfileId.status,
+          user:
+            product.sellerProfileId.userId && product.sellerProfileId.userId._id
+              ? serializeUser(product.sellerProfileId.userId)
+              : null,
+        }
+      : null,
+  categoryId: product.categoryId?._id || product.categoryId,
+  category:
+    product.categoryId && product.categoryId._id
+      ? {
+          id: product.categoryId._id,
+          name: product.categoryId.name,
+          slug: product.categoryId.slug,
+        }
+      : null,
   name: product.name,
   slug: product.slug,
   description: product.description,
@@ -524,9 +568,57 @@ const serializeProduct = (product) => ({
   updatedAt: product.updatedAt,
 });
 
+const serializeOrderAddress = (address) => {
+  if (!address || !address._id) return null;
+  return {
+    id: address._id,
+    street: address.street,
+    city: address.city,
+    state: address.state,
+    country: address.country,
+    zipCode: address.zipCode,
+  };
+};
+
+const serializeOrderPromoCode = (promoCode) => {
+  if (!promoCode || !promoCode._id) return null;
+  return {
+    id: promoCode._id,
+    code: promoCode.code,
+    discountType: promoCode.discountType,
+    discountValue: promoCode.discountValue,
+    isActive: promoCode.isActive,
+    expiresAt: promoCode.expiresAt,
+  };
+};
+
+const serializeOrderItem = (item) => ({
+  id: item._id,
+  productId: item.productId?._id || item.productId,
+  productNameSnapshot: item.productNameSnapshot,
+  priceSnapshot: item.priceSnapshot,
+  quantity: item.quantity,
+  lineTotal: item.lineTotal,
+  sellerId: item.sellerId?._id || item.sellerId,
+  seller:
+    item.sellerId && item.sellerId._id
+      ? {
+          id: item.sellerId._id,
+          storeName: item.sellerId.storeName,
+          status: item.sellerId.status,
+          user: item.sellerId.userId && item.sellerId.userId._id ? serializeUser(item.sellerId.userId) : null,
+        }
+      : null,
+});
+
 const serializeOrder = (order) => ({
   id: order._id,
-  userId: order.userId,
+  userId: order.userId?._id || order.userId,
+  user: order.userId && order.userId._id ? serializeUser(order.userId) : null,
+  addressId: order.addressId?._id || order.addressId,
+  address: serializeOrderAddress(order.addressId),
+  promoCodeId: order.promoCodeId?._id || order.promoCodeId,
+  promoCode: serializeOrderPromoCode(order.promoCodeId),
   status: order.status,
   subtotal: order.subtotal,
   discountAmount: order.discountAmount,
@@ -536,7 +628,7 @@ const serializeOrder = (order) => ({
   placedAt: order.placedAt,
   payingMethod: order.payingMethod,
   isPaid: order.isPaid,
-  items: order.items,
+  items: (order.items || []).map(serializeOrderItem),
   updatedAt: order.updatedAt,
 });
 
@@ -587,7 +679,9 @@ export const getAdminProducts = async (query) => {
   const { page, limit, skip } = getPaginationParams(query);
   const filters = {};
 
-  if (query.sellerProfileId) filters.sellerProfileId = query.sellerProfileId;
+  if (query.productId) filters._id = query.productId;
+
+  if (query.sellerProfileId || query.sellerId) filters.sellerProfileId = query.sellerProfileId || query.sellerId;
   if (query.categoryId) filters.categoryId = query.categoryId;
 
   const isActive = parseOptionalBoolean(query.isActive);
@@ -598,9 +692,31 @@ export const getAdminProducts = async (query) => {
     filters.$or = [{ name: searchRegex }, { slug: searchRegex }, { description: searchRegex }];
   }
 
+  if (query.minPrice !== undefined || query.maxPrice !== undefined) {
+    const priceRange = {};
+    if (query.minPrice !== undefined) {
+      const minPrice = Number(query.minPrice);
+      if (!Number.isNaN(minPrice)) {
+        priceRange.$gte = minPrice;
+      }
+    }
+    if (query.maxPrice !== undefined) {
+      const maxPrice = Number(query.maxPrice);
+      if (!Number.isNaN(maxPrice)) {
+        priceRange.$lte = maxPrice;
+      }
+    }
+    if (Object.keys(priceRange).length > 0) {
+      filters.price = priceRange;
+    }
+  }
+
   const [products, total] = await Promise.all([
     Product.find(filters)
-      .populate({ path: 'sellerProfileId' })
+      .populate({
+        path: 'sellerProfileId',
+        populate: { path: 'userId', options: { includeDeleted: true }, select: 'firstName lastName email role isDeleted' },
+      })
       .populate({ path: 'categoryId' })
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -668,11 +784,13 @@ export const getAdminOrders = async (query) => {
   const { page, limit, skip } = getPaginationParams(query);
   const filters = {};
 
+  if (query.orderId) filters._id = query.orderId;
   if (query.status) filters.status = query.status;
   if (query.userId) filters.userId = query.userId;
   if (query.sellerId) filters['items.sellerId'] = query.sellerId;
 
-  const dateFilter = buildDateRangeFilter({ dateFrom: query.dateFrom, dateTo: query.dateTo });
+  const resolvedRange = resolveDateRange(query);
+  const dateFilter = buildDateRangeFilter({ dateFrom: resolvedRange.dateFrom, dateTo: resolvedRange.dateTo });
   if (dateFilter) {
     filters.placedAt = dateFilter.placedAt;
   }
@@ -683,6 +801,18 @@ export const getAdminOrders = async (query) => {
         path: 'userId',
         options: { includeDeleted: true },
         select: 'firstName lastName email role isDeleted',
+      })
+      .populate({ path: 'addressId', select: 'street city state country zipCode' })
+      .populate({ path: 'promoCodeId', select: 'code discountType discountValue isActive expiresAt' })
+      .populate({
+        path: 'items.sellerId',
+        select: 'storeName status userId',
+        options: { includeDeleted: true },
+        populate: {
+          path: 'userId',
+          options: { includeDeleted: true },
+          select: 'firstName lastName email role isDeleted',
+        },
       })
       .sort({ placedAt: -1 })
       .skip(skip)
@@ -697,11 +827,24 @@ export const getAdminOrders = async (query) => {
 };
 
 export const getAdminOrderById = async (orderId) => {
-  const order = await Order.findById(orderId).populate({
-    path: 'userId',
-    options: { includeDeleted: true },
-    select: 'firstName lastName email role isDeleted',
-  });
+  const order = await Order.findById(orderId)
+    .populate({
+      path: 'userId',
+      options: { includeDeleted: true },
+      select: 'firstName lastName email role isDeleted',
+    })
+    .populate({ path: 'addressId', select: 'street city state country zipCode' })
+    .populate({ path: 'promoCodeId', select: 'code discountType discountValue isActive expiresAt' })
+    .populate({
+      path: 'items.sellerId',
+      select: 'storeName status userId',
+      options: { includeDeleted: true },
+      populate: {
+        path: 'userId',
+        options: { includeDeleted: true },
+        select: 'firstName lastName email role isDeleted',
+      },
+    });
 
   if (!order) throw new AppError('Order not found.', 404);
   return serializeOrder(order);

@@ -29,14 +29,12 @@ export class AdminBannersComponent implements OnInit {
 
   // Form fields
   formData = signal({
+    title: '',
     imageUrl: '',
     redirectUrl: '',
     order: 0,
     isActive: true,
   });
-
-  imageFile = signal<File | null>(null);
-  imagePreview = signal<string | null>(null);
 
   // Drag-drop state
   draggedBannerId = signal<string | null>(null);
@@ -92,13 +90,12 @@ export class AdminBannersComponent implements OnInit {
     this.isEditMode.set(true);
     this.selectedBanner.set(banner);
     this.formData.set({
+      title: banner.title || '',
       imageUrl: banner.imageUrl,
       redirectUrl: banner.redirectUrl || '',
       order: banner.order,
       isActive: banner.isActive,
     });
-    this.imagePreview.set(banner.imageUrl);
-    this.imageFile.set(null);
     this.showModal.set(true);
   }
 
@@ -109,35 +106,35 @@ export class AdminBannersComponent implements OnInit {
 
   resetFormData(): void {
     this.formData.set({
+      title: '',
       imageUrl: '',
       redirectUrl: '',
       order: 0,
       isActive: true,
     });
-    this.imageFile.set(null);
-    this.imagePreview.set(null);
     this.selectedBanner.set(null);
   }
 
-  onImageSelected(event: any): void {
-    const file = event.target.files?.[0];
-    if (file) {
-      this.imageFile.set(file);
-
-      // Create preview
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        this.imagePreview.set(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
+  updateFormField(
+    field: 'title' | 'imageUrl' | 'redirectUrl' | 'order' | 'isActive',
+    value: string | number | boolean
+  ): void {
+    this.formData.update((current) => ({
+      ...current,
+      [field]: value,
+    }));
   }
 
   saveBanner(): void {
     const form = this.formData();
 
     // Validation
-    if (!form.imageUrl && !this.imageFile()) {
+    if (!form.title.trim()) {
+      this.error.set('Title is required');
+      return;
+    }
+
+    if (!form.imageUrl.trim()) {
       this.error.set('Image is required');
       return;
     }
@@ -151,57 +148,34 @@ export class AdminBannersComponent implements OnInit {
       if (!bannerId) return;
 
       const updateData: any = {
+        title: form.title.trim(),
         imageUrl: form.imageUrl,
-        redirectUrl: form.redirectUrl,
-        order: form.order,
+        linkUrl: form.redirectUrl || null,
+        sortOrder: form.order,
         isActive: form.isActive,
       };
 
-      // Only update imageUrl if new image is selected
-      if (this.imageFile()) {
-        const formDataWithImage = new FormData();
-        formDataWithImage.append('redirectUrl', form.redirectUrl);
-        formDataWithImage.append('order', form.order.toString());
-        formDataWithImage.append('isActive', form.isActive.toString());
-        formDataWithImage.append('image', this.imageFile()!);
-
-        this.bannerService.updateBanner(bannerId, formDataWithImage).subscribe({
-          next: () => {
-            this.loadBanners();
-            this.closeModal();
-          },
-          error: () => {
-            this.error.set('Failed to update banner');
-            this.loading.set(false);
-          },
-        });
-      } else {
-        this.bannerService.updateBanner(bannerId, updateData).subscribe({
-          next: () => {
-            this.loadBanners();
-            this.closeModal();
-          },
-          error: () => {
-            this.error.set('Failed to update banner');
-            this.loading.set(false);
-          },
-        });
-      }
+      this.bannerService.updateBanner(bannerId, updateData).subscribe({
+        next: () => {
+          this.loadBanners();
+          this.closeModal();
+        },
+        error: () => {
+          this.error.set('Failed to update banner');
+          this.loading.set(false);
+        },
+      });
     } else {
       // Create new banner
-      if (!this.imageFile()) {
-        this.error.set('Image is required for new banners');
-        this.loading.set(false);
-        return;
-      }
-
-      const formDataWithImage = new FormData();
-      formDataWithImage.append('redirectUrl', form.redirectUrl);
-      formDataWithImage.append('order', form.order.toString());
-      formDataWithImage.append('isActive', form.isActive.toString());
-      formDataWithImage.append('image', this.imageFile()!);
-
-      this.bannerService.createBanner(formDataWithImage).subscribe({
+      this.bannerService
+        .createBanner({
+          title: form.title.trim(),
+          imageUrl: form.imageUrl,
+          linkUrl: form.redirectUrl || undefined,
+          sortOrder: form.order,
+          isActive: form.isActive,
+        })
+        .subscribe({
         next: () => {
           this.loadBanners();
           this.closeModal();
@@ -274,8 +248,8 @@ export class AdminBannersComponent implements OnInit {
 
     // Update display order on backend
     const reorderData = updatedBanners.map((banner, index) => ({
-      _id: banner._id,
-      order: index,
+      id: banner._id,
+      sortOrder: index,
     }));
 
     this.bannerService.reorderBanners(reorderData).subscribe({
