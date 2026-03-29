@@ -38,9 +38,9 @@
         <div class="main-image-wrap">
           @if (activeImage()) {
           <img [src]="activeImage()" [alt]="prod.name" class="main-image" />
-          <button class="save-btn detail-save" (click)="$event.stopPropagation(); $event.preventDefault()" title="Save">
-            <span class="material-icons">bookmark_border</span>
-          </button>
+          <div class="detail-wishlist" (click)="$event.stopPropagation()">
+            <app-wishlist-heart [productId]="prod._id" />
+          </div>
           @if (prod.images && prod.images.length > 1) {
           <button class="gallery-arrow left" (click)="prevImage($event)">
             <span class="material-icons">chevron_left</span>

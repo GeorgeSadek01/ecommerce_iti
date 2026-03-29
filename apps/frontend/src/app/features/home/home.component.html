@@ -1,38 +1,49 @@
 <!-- ─── Hero Carousel ──────────────────────────────────────── -->
-<section class="hero-carousel">
+<section class="hero-carousel" tabindex="0" role="region" aria-label="Homepage featured carousel"
+  (mouseenter)="pauseBanner()" (mouseleave)="resumeBanner()" (focus)="pauseBanner()" (blur)="resumeBanner()"
+  (touchstart)="onTouchStart($event)" (touchmove)="onTouchMove($event)" (touchend)="onTouchEnd()"
+  (keydown.ArrowRight)="nextBanner()" (keydown.ArrowLeft)="prevBanner()">
   <div class="carousel-track" [style.transform]="'translateX(-' + currentBannerSlide() * 100 + '%)'">
     @for (slide of bannerSlides; track slide.title) {
     <div class="carousel-slide">
       <img [src]="slide.image" [alt]="slide.title" class="slide-bg" />
       <div class="slide-overlay"></div>
-      <div class="slide-content">
-        <span class="hero-badge"
-          ><span class="material-icons" style="font-size: 14px; margin-right: 4px">auto_awesome</span
-          >{{ slide.badge }}</span
-        >
-        <h1 class="hero-title-new">{{ slide.title }}</h1>
-        <p class="hero-subtitle-new">{{ slide.subtitle }}</p>
-        <a class="btn-hero-primary" [routerLink]="slide.link">
-          {{ slide.buttonText }}
-          <span class="material-icons" style="font-size: 1.1rem; margin-left: 0.4rem; vertical-align: middle"
-            >arrow_forward</span
-          >
-        </a>
+      <div class="slide-content container-lg">
+        <div class="hero-panel">
+          <span class="hero-badge"><span class="material-icons"
+              style="font-size: 14px; margin-right: 4px">auto_awesome</span>{{ slide.badge }}</span>
+          <h1 class="hero-title-new">{{ slide.title }}</h1>
+          <p class="hero-subtitle-new">{{ slide.subtitle }}</p>
+          <div class="d-flex flex-wrap align-items-center gap-3">
+            <a class="btn-hero-primary" [routerLink]="slide.link">
+              {{ slide.buttonText }}
+              <span class="material-icons"
+                style="font-size: 1.1rem; margin-left: 0.4rem; vertical-align: middle">arrow_forward</span>
+            </a>
+            <div class="hero-slide-meta" aria-label="Current slide">
+              {{ currentBannerSlide() + 1 }} / {{ bannerSlides.length }}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     }
   </div>
 
-  <button class="carousel-arrow left" (click)="prevBanner()">
-    <span class="material-icons">chevron_left</span>
+  <button type="button" class="carousel-arrow left" (click)="prevBanner()" aria-label="Previous slide">
+    <span class="material-icons" aria-hidden="true">chevron_left</span>
+    <span class="sr-only">Previous slide</span>
   </button>
-  <button class="carousel-arrow right" (click)="nextBanner()">
-    <span class="material-icons">chevron_right</span>
+  <button type="button" class="carousel-arrow right" (click)="nextBanner()" aria-label="Next slide">
+    <span class="material-icons" aria-hidden="true">chevron_right</span>
+    <span class="sr-only">Next slide</span>
   </button>
 
   <div class="carousel-indicators">
     @for (slide of bannerSlides; track slide.title; let i = $index) {
-    <button class="indicator-dot" [class.active]="currentBannerSlide() === i" (click)="goToBanner(i)"></button>
+    <button class="indicator-dot" [class.active]="currentBannerSlide() === i" (click)="goToBanner(i)"
+      [attr.aria-label]="'Go to slide ' + (i + 1)"
+      [attr.aria-current]="currentBannerSlide() === i ? 'true' : null"></button>
     }
   </div>
 </section>
@@ -73,12 +84,21 @@
 <!-- ─── Top Deals ─────────────────────────────────── -->
 <section class="section products-section">
   <div class="section-container">
-    <div class="section-header">
-      <h2 class="section-title">
-        @if (activeCategory() === null) { Top Deals } @else {
-        {{ getCategoryLabel() }}
-        }
-      </h2>
+    <div class="section-header d-flex flex-wrap justify-content-between align-items-end gap-2">
+      <div>
+        <h2 class="section-title mb-1">
+          @if (activeCategory() === null) { Top Deals } @else {
+          {{ getCategoryLabel() }}
+          }
+        </h2>
+        <p class="section-subtitle mb-0">Fresh discounts curated daily from trending categories.</p>
+      </div>
+
+      @if (!isLoading() && !error()) {
+      <span class="badge rounded-pill text-bg-light border deals-count">
+        {{ products().length }} {{ products().length === 1 ? 'offer' : 'offers' }}
+      </span>
+      }
     </div>
 
     <!-- Loading -->
@@ -98,9 +118,8 @@
     <!-- Error -->
     @if (!isLoading() && error()) {
     <div class="error-state">
-      <span class="material-icons" style="font-size: 48px; display: block; margin-bottom: 12px; color: #f87171"
-        >warning</span
-      >
+      <span class="material-icons"
+        style="font-size: 48px; display: block; margin-bottom: 12px; color: #f87171">warning</span>
       <p>{{ error() }}</p>
       <button class="btn-retry" (click)="selectCategory(activeCategory())">Retry</button>
     </div>
@@ -108,51 +127,91 @@
 
     <!-- Products Grid -->
     @if (!isLoading() && !error() && products().length > 0) {
-    <div class="products-grid">
-      @for (product of products(); track product._id) {
-      <article class="product-card" [routerLink]="['/products', product._id]">
-        <div class="card-image-wrap">
-          <div class="card-wishlist-corner">
-            <app-wishlist-heart [productId]="product._id" />
-          </div>
-          @if (getPrimaryImage(product)) {
-          <img [src]="getPrimaryImage(product)" [alt]="product.name" class="card-image" loading="lazy" />
-          } @else {
-          <div class="card-image-placeholder">
-            <span class="material-icons" style="font-size: 48px; color: rgba(124, 58, 237, 0.2)">shopping_bag</span>
-          </div>
-          }
-          <div class="card-overlay">
-            <button class="overlay-btn">Quick View</button>
-          </div>
-        </div>
-        <div class="card-body">
-          <span class="card-category">{{ getCategoryName(product) }}</span>
-          <h3 class="card-name">{{ product.name }}</h3>
-          <p class="card-desc">{{ product.description }}</p>
-          <div class="card-footer">
-            <span class="card-price">${{ product.price | number : '1.2-2' }}</span>
-            @if (product.stock > 0) {
-            <span class="card-stock in-stock">In Stock</span>
-            } @else {
-            <span class="card-stock out-of-stock">Out of Stock</span>
+    <div class="top-deals-carousel" tabindex="0" role="region" aria-label="Top deals carousel"
+      (keydown.ArrowLeft)="prevTopDealsPage()" (keydown.ArrowRight)="nextTopDealsPage()">
+      <button type="button" class="carousel-btn carousel-btn-prev top-deals-nav" (click)="prevTopDealsPage()"
+        [disabled]="!canGoTopDealsPrev()" aria-label="Previous deals" title="Previous">
+        <span class="material-icons">chevron_left</span>
+      </button>
+
+      <div class="top-deals-viewport">
+        <div class="top-deals-track" [style.transform]="'translateX(-' + topDealsPage() * 100 + '%)'">
+          @for (page of topDealsPages(); track page) {
+          <div class="top-deals-page" [style.--deals-cols]="topDealsVisibleCount()">
+            @for (product of page; track product._id) {
+            <article class="product-card top-deal-card" [routerLink]="['/products', product._id]">
+              <div class="card-image-wrap">
+                <div class="card-wishlist-corner top-deal-wishlist-corner">
+                  <app-wishlist-heart [productId]="product._id" />
+                </div>
+
+                @if ((product.discount ?? 0) > 0) {
+                <span class="discount-pill">-{{ product.discount ?? 0 }}%</span>
+                }
+
+                @if (getPrimaryImage(product)) {
+                <img [src]="getPrimaryImage(product)" [alt]="product.name" class="card-image" loading="lazy" />
+                } @else {
+                <div class="card-image-placeholder">
+                  <span class="material-icons" style="font-size: 48px; color: rgba(124, 58, 237, 0.2)">shopping_bag</span>
+                </div>
+                }
+
+                <div class="card-overlay">
+                  <button type="button" class="overlay-btn">Quick View</button>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <span class="card-category">{{ getCategoryName(product) }}</span>
+                <h3 class="card-name">{{ product.name }}</h3>
+                <p class="card-desc">{{ product.description }}</p>
+
+                <div class="card-footer">
+                  <div class="card-pricing">
+                    @if ((product.discount ?? 0) > 0) {
+                    <span class="card-price-discounted">${{ (product.calculatedPrice ?? product.price) | number : '1.2-2' }}</span>
+                    <span class="card-price-original">${{ product.price | number : '1.2-2' }}</span>
+                    } @else {
+                    <span class="card-price">${{ product.price | number : '1.2-2' }}</span>
+                    }
+                  </div>
+
+                  @if (product.stock > 0) {
+                  <span class="card-stock in-stock">In Stock</span>
+                  } @else {
+                  <span class="card-stock out-of-stock">Out of Stock</span>
+                  }
+                </div>
+              </div>
+            </article>
             }
           </div>
+          }
         </div>
-      </article>
+      </div>
+
+      <button type="button" class="carousel-btn carousel-btn-next top-deals-nav" (click)="nextTopDealsPage()"
+        [disabled]="!canGoTopDealsNext()" aria-label="Next deals" title="Next">
+        <span class="material-icons">chevron_right</span>
+      </button>
+    </div>
+
+    @if (topDealsPages().length > 1) {
+    <div class="top-deals-indicators" aria-label="Top deals pages">
+      @for (page of topDealsPages(); track page; let i = $index) {
+      <button type="button" class="top-deals-dot" [class.active]="topDealsPage() === i" (click)="goToTopDealsPage(i)"
+        [attr.aria-label]="'Go to deals page ' + (i + 1)" [attr.aria-current]="topDealsPage() === i ? 'true' : null"></button>
       }
     </div>
-    <button class="carousel-btn carousel-btn-next" (click)="scrollTopDeals('right')" title="Next">
-      <span class="material-icons">chevron_right</span>
-    </button>
+    }
     }
 
     <!-- Empty -->
     @if (!isLoading() && !error() && products().length === 0) {
     <div class="empty-state">
-      <span class="material-icons" style="font-size: 48px; display: block; margin-bottom: 12px; color: #94a3b8"
-        >inventory_2</span
-      >
+      <span class="material-icons"
+        style="font-size: 48px; display: block; margin-bottom: 12px; color: #94a3b8">inventory_2</span>
       <p>No products found in this category.</p>
       <button class="btn-retry" (click)="selectCategory(null)">View All Products</button>
     </div>
@@ -174,12 +233,52 @@
       <div class="carousel-container" id="topRankedCarousel">
         <div class="carousel-track">
           @for (product of topRankedProducts(); track product._id) {
-          <app-product-card
-            [product]="product"
-            [categoryName]="getCategoryName(product)"
-            [primaryImage]="getPrimaryImage(product)"
-            cssClass="product-card"
-          ></app-product-card>
+          <article class="product-card top-deal-card" [routerLink]="['/products', product._id]">
+            <div class="card-image-wrap">
+              <div class="card-wishlist-corner top-deal-wishlist-corner">
+                <app-wishlist-heart [productId]="product._id" />
+              </div>
+
+              @if ((product.discount ?? 0) > 0) {
+              <span class="discount-pill">-{{ product.discount ?? 0 }}%</span>
+              }
+
+              @if (getPrimaryImage(product)) {
+              <img [src]="getPrimaryImage(product)" [alt]="product.name" class="card-image" loading="lazy" />
+              } @else {
+              <div class="card-image-placeholder">
+                <span class="material-icons" style="font-size: 48px; color: rgba(124, 58, 237, 0.2)">shopping_bag</span>
+              </div>
+              }
+
+              <div class="card-overlay">
+                <button type="button" class="overlay-btn">Quick View</button>
+              </div>
+            </div>
+
+            <div class="card-body">
+              <span class="card-category">{{ getCategoryName(product) }}</span>
+              <h3 class="card-name">{{ product.name }}</h3>
+              <p class="card-desc">{{ product.description }}</p>
+
+              <div class="card-footer">
+                <div class="card-pricing">
+                  @if ((product.discount ?? 0) > 0) {
+                  <span class="card-price-discounted">${{ (product.calculatedPrice ?? product.price) | number : '1.2-2' }}</span>
+                  <span class="card-price-original">${{ product.price | number : '1.2-2' }}</span>
+                  } @else {
+                  <span class="card-price">${{ product.price | number : '1.2-2' }}</span>
+                  }
+                </div>
+
+                @if (product.stock > 0) {
+                <span class="card-stock in-stock">In Stock</span>
+                } @else {
+                <span class="card-stock out-of-stock">Out of Stock</span>
+                }
+              </div>
+            </div>
+          </article>
           }
         </div>
       </div>

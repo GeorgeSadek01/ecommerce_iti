@@ -1,41 +1,53 @@
 <article class="product-card" [ngClass]="cssClass" [routerLink]="['/products', product._id]">
   <div class="card-image-wrap">
     @if (primaryImage) {
-    <img [src]="primaryImage" [alt]="product.name" class="card-image" loading="lazy" />
+    <img [src]="primaryImage" [alt]="product.name || ''" class="card-image" loading="lazy" />
     } @else {
     <div class="card-image-placeholder" style="background: transparent"></div>
     }
-    <button class="save-btn" (click)="onSaveClick($event)" title="Save">
-      <span class="material-icons">bookmark_border</span>
-    </button>
+    <ng-container *ngIf="product._id as productId">
+      <div class="card-wishlist-corner">
+        <button
+          class="save-btn"
+          [class.save-btn--active]="inWishlist()"
+          (click)="onWishlistClick($event, productId)"
+          [title]="inWishlist() ? 'Remove from wishlist' : 'Add to wishlist'"
+          [attr.aria-label]="inWishlist() ? 'Remove from wishlist' : 'Add to wishlist'"
+          [attr.aria-pressed]="inWishlist()"
+        >
+          <span class="material-icons">{{ inWishlist() ? 'favorite' : 'favorite_border' }}</span>
+        </button>
+      </div>
+    </ng-container>
     <div class="card-overlay">
       <button class="overlay-btn">Quick View</button>
     </div>
-    @if (product.discount && product.discount > 0) {
-    <div class="discount-badge-card">-{{ product.discount }}%</div>
+    @if ((product.discount ?? 0) > 0) {
+    <div class="discount-badge-card">-{{ product.discount ?? 0 }}%</div>
     }
   </div>
   <div class="card-body">
     <span class="card-category">{{ categoryName }}</span>
     <div class="card-header">
       <h3 class="card-name">{{ product.name }}</h3>
-      @if (product.averageRating && product.averageRating > 0) {
+      @if ((product.averageRating ?? 0) > 0) {
       <div class="card-rating">
-        <span class="material-icons">star</span> {{ product.averageRating | number : '1.1-1' }}
+        <span class="material-icons">star</span> {{ product.averageRating ?? 0 | number : '1.1-1' }}
       </div>
       }
     </div>
-    <p class="card-desc">{{ product.description }}</p>
+    <p class="card-desc">{{ product.description ?? '' }}</p>
     <div class="card-footer">
       <div class="card-pricing">
-        @if (product.discount && product.discount > 0) {
-        <span class="card-price-discounted">${{ product.calculatedPrice | number : '1.2-2' }}</span>
-        <span class="card-price-original">${{ product.price | number : '1.2-2' }}</span>
+        @if ((product.discount ?? 0) > 0) {
+        <span class="card-price-discounted">${{ (product.calculatedPrice ?? product.price ?? 0) | number : '1.2-2'
+          }}</span>
+        <span class="card-price-original">${{ (product.price ?? 0) | number : '1.2-2' }}</span>
         } @else {
-        <span class="card-price">${{ product.price | number : '1.2-2' }}</span>
+        <span class="card-price">${{ (product.price ?? 0) | number : '1.2-2' }}</span>
         }
       </div>
-      @if (product.stock > 0) {
+      @if ((product.stock ?? 0) > 0) {
       <span class="card-stock in-stock">In Stock</span>
       } @else {
       <span class="card-stock out-of-stock">Out of Stock</span>

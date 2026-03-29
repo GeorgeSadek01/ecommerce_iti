@@ -39,31 +39,42 @@
   background: #eef2ff;
 }
 
-/* ─── Save Button ──────────────────────────────────────────── */
-.save-btn {
+/* ─── Wishlist Corner ───────────────────────────────────────── */
+.card-wishlist-corner {
   position: absolute;
   top: 12px;
   left: 12px;
   z-index: 6;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(124, 58, 237, 0.08);
-  display: flex;
+}
+
+.save-btn {
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
-  transition: transform 0.15s, background 0.15s;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+  transition: transform 0.2s, background 0.2s, color 0.2s;
+  color: #64748b;
 }
+
 .save-btn .material-icons {
-  color: #7c3aed;
-  font-size: 20px;
+  font-size: 22px;
 }
+
 .save-btn:hover {
-  transform: translateY(-2px);
-  background: white;
+  transform: scale(1.05);
+  color: #e11d48;
+  background: #ffffff;
+}
+
+.save-btn--active {
+  color: #e11d48;
+  background: #fff1f2;
 }
 
 /* ─── Card Overlay ───────────────────────────────────────────── */
@@ -94,6 +105,15 @@
 }
 .product-card:hover .overlay-btn {
   transform: translateY(0);
+}
+
+/* Make overlay button subtle but visible */
+.overlay-btn {
+  box-shadow: 0 8px 30px rgba(124, 58, 237, 0.06);
+  border: 1px solid rgba(124, 58, 237, 0.06);
+}
+.overlay-btn:hover {
+  background: #faf5ff;
 }
 
 /* ─── Discount Badge ───────────────────────────────────────── */
@@ -201,4 +221,45 @@
 .out-of-stock {
   background: #fee2e2;
   color: #dc2626;
+}
+
+/* ─── List (compact) variant when card is used in list view ───────────────── */
+.product-card.product-card--list {
+  display: flex;
+  gap: 0;
+  align-items: stretch;
+  border-radius: 12px;
+}
+.product-card.product-card--list .card-image-wrap {
+  aspect-ratio: auto;
+  width: 160px;
+  min-width: 160px;
+  height: 100%;
+  border-radius: 0;
+}
+.product-card.product-card--list .card-image {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+.product-card.product-card--list .card-body {
+  padding: 0.9rem 1rem;
+  display: flex;
+  flex-direction: column;
+}
+.product-card.product-card--list .card-desc {
+  -webkit-line-clamp: 3;
+}
+.product-card.product-card--list .card-footer {
+  margin-top: 0.6rem;
+}
+@media (max-width: 640px) {
+  .product-card.product-card--list {
+    display: block;
+  }
+  .product-card.product-card--list .card-image-wrap {
+    width: 100%;
+    aspect-ratio: 4/3;
+    min-width: unset;
+  }
 }

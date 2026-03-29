@@ -1,590 +1,465 @@
-/**
- * Seed Script
- * ============
- * Populates the database with test data in the correct order:
- *   1. Categories  (parent first, then children)
- *   2. Users       (admin, sellers, customers)
- *   3. SellerProfiles (linked to seller users)
- *   4. Products    (linked to sellers + categories)
- *   5. Carts       (one per customer user + one guest cart)
- *   6. CartItems   (linked to carts + products)
- *
- * Usage:
- *   node seed.js
- *   node seed.js --fresh   ← drops all collections before seeding
- */
+import 'dotenv/config';
+import crypto from 'node:crypto';
 
+import bcrypt from 'bcryptjs';
 import mongoose from 'mongoose';
 
-// ─── Hardcode your connection string here ────────────────────────────────────
-const MONGODB_URI = 'mongodb://localhost:27017/SoldierStore?replicaSet=rs0';
-// ─────────────────────────────────────────────────────────────────────────────
+import dbConnect from './apps/backend/src/core/db/dbConnect.js';
 
-// ─── Inline Model Definitions ────────────────────────────────────────────────
-// (copy-pasted from your model files so the script is self-contained)
+import User from './apps/backend/src/core/db/models/User/user.model.js';
+import Address from './apps/backend/src/core/db/models/User/address.model.js';
+import RefreshToken from './apps/backend/src/core/db/models/User/refreshToken.model.js';
+import PasswordResetToken from './apps/backend/src/core/db/models/User/passwordResetToken.model.js';
 
-const { Schema } = mongoose;
-const decimal128Getter = (v) => (v ? parseFloat(v.toString()) : null);
+import SellerProfile from './apps/backend/src/core/db/models/Seller/sellerProfile.model.js';
 
-// -- User
-const userSchema = new Schema(
-  {
-    firstName: { type: String, required: true, trim: true },
-    lastName: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    passwordHash: { type: String, select: false },
-    role: { type: String, enum: ['customer', 'seller', 'admin'], default: 'customer' },
-    isEmailConfirmed: { type: Boolean, default: false },
-    isDeleted: { type: Boolean, default: false },
-    googleId: { type: String, sparse: true, default: null },
-    avatarUrl: { type: String, default: null },
-  },
-  { timestamps: true }
-);
-userSchema.pre(/^find/, function (next) {
-  if (!this.getOptions().includeDeleted) this.where({ isDeleted: false });
-  next();
-});
-const User = mongoose.model('User', userSchema);
+import Category from './apps/backend/src/core/db/models/Product/category.model.js';
+import Product from './apps/backend/src/core/db/models/Product/product.model.js';
+import ProductImage from './apps/backend/src/core/db/models/Product/productImage.model.js';
+import Review from './apps/backend/src/core/db/models/Product/review.model.js';
 
-// -- SellerProfile
-const sellerProfileSchema = new Schema(
-  {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, unique: true },
-    storeName: { type: String, required: true, unique: true, trim: true },
-    description: { type: String, trim: true, default: null },
-    logoUrl: { type: String, default: null },
-    status: { type: String, enum: ['pending', 'approved', 'suspended'], default: 'pending' },
-    totalEarnings: {
-      type: mongoose.Types.Decimal128,
-      default: mongoose.Types.Decimal128.fromString('0.00'),
-      get: (v) => (v ? parseFloat(v.toString()) : 0),
-    },
-  },
-  { timestamps: { createdAt: true, updatedAt: false }, toJSON: { getters: true }, toObject: { getters: true } }
-);
-const SellerProfile = mongoose.model('SellerProfile', sellerProfileSchema);
+import PromoCode from './apps/backend/src/core/db/models/Promo/promoCode.model.js';
+import Cart from './apps/backend/src/core/db/models/Cart/cart.model.js';
+import CartItem from './apps/backend/src/core/db/models/Cart/cartItem.model.js';
+import Wishlist from './apps/backend/src/core/db/models/Wishlist/wishlist.model.js';
+import WishlistItem from './apps/backend/src/core/db/models/Wishlist/wishlistItem.model.js';
 
-// -- Category
-const categorySchema = new Schema(
-  {
-    name: { type: String, required: true, unique: true, trim: true },
-    slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    parentId: { type: Schema.Types.ObjectId, ref: 'Category', default: null, index: true },
-    ancestors: [{ type: Schema.Types.ObjectId, ref: 'Category' }],
-    imageUrl: { type: String, default: null },
-    isActive: { type: Boolean, default: true },
-  },
-  { timestamps: true }
-);
-const Category = mongoose.model('Category', categorySchema);
+import Order from './apps/backend/src/core/db/models/Order/order.model.js';
+import Payment from './apps/backend/src/core/db/models/Payment/payment.model.js';
 
-// -- Product
-const productSchema = new Schema(
-  {
-    sellerProfileId: { type: Schema.Types.ObjectId, ref: 'SellerProfile', required: true, index: true },
-    categoryId: { type: Schema.Types.ObjectId, ref: 'Category', required: true, index: true },
-    name: { type: String, required: true, trim: true },
-    slug: { type: String, required: true, unique: true, lowercase: true, trim: true },
-    description: { type: String, trim: true, default: null },
-    price: { type: mongoose.Types.Decimal128, required: true, get: decimal128Getter },
-    discountedPrice: { type: mongoose.Types.Decimal128, default: null, get: decimal128Getter },
-    stock: { type: Number, required: true, min: 0, default: 0 },
-    isActive: { type: Boolean, default: true, index: true },
-    averageRating: { type: Number, default: 0, min: 0, max: 5 },
-    reviewCount: { type: Number, default: 0, min: 0 },
-  },
-  { timestamps: true, toJSON: { getters: true }, toObject: { getters: true } }
-);
-const Product = mongoose.model('Product', productSchema);
+import Banner from './apps/backend/src/core/db/models/Marketing/banner.model.js';
+import EmailLog from './apps/backend/src/core/db/models/EmailLog/emailLog.model.js';
 
-// -- Cart
-const cartSchema = new Schema(
-  {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', default: null, sparse: true },
-    guestToken: { type: String, default: null, sparse: true },
-  },
-  { timestamps: { createdAt: false, updatedAt: true } }
-);
-cartSchema.index({ userId: 1 }, { unique: true, sparse: true });
-cartSchema.index({ guestToken: 1 }, { unique: true, sparse: true });
-// NOTE: skipping the pre-save validation hook so insertMany works cleanly
-const Cart = mongoose.model('Cart', cartSchema);
+const toDecimal = (value) => mongoose.Types.Decimal128.fromString(Number(value).toFixed(2));
 
-// -- CartItem
-const cartItemSchema = new Schema(
-  {
-    cartId: { type: Schema.Types.ObjectId, ref: 'Cart', required: true, index: true },
-    productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
-    quantity: { type: Number, required: true, min: 1, default: 1 },
-    priceSnapshot: {
-      type: mongoose.Types.Decimal128,
-      required: true,
-      get: (v) => (v ? parseFloat(v.toString()) : null),
-    },
-  },
-  { timestamps: { createdAt: true, updatedAt: false }, toJSON: { getters: true }, toObject: { getters: true } }
-);
-cartItemSchema.index({ cartId: 1, productId: 1 }, { unique: true });
-const CartItem = mongoose.model('CartItem', cartItemSchema);
+const allModels = [
+  Payment,
+  Order,
+  CartItem,
+  Cart,
+  WishlistItem,
+  Wishlist,
+  Review,
+  ProductImage,
+  Product,
+  PromoCode,
+  Category,
+  SellerProfile,
+  Address,
+  RefreshToken,
+  PasswordResetToken,
+  EmailLog,
+  Banner,
+  User,
+];
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+const clearDatabase = async () => {
+  await Promise.all(allModels.map((Model) => Model.deleteMany({})));
+};
 
-const d128 = (str) => mongoose.Types.Decimal128.fromString(str);
-const PLACEHOLDER_PASSWORD = 'hashed_password_placeholder';
-
-// ─── Seed Data ────────────────────────────────────────────────────────────────
-
-async function seed() {
-  const fresh = process.argv.includes('--fresh');
-
-  await mongoose.connect(MONGODB_URI);
-  console.log('✅ Connected to MongoDB:', MONGODB_URI);
-
-  if (fresh) {
-    await Promise.all([
-      User.deleteMany({}),
-      SellerProfile.deleteMany({}),
-      Category.deleteMany({}),
-      Product.deleteMany({}),
-      Cart.deleteMany({}),
-      CartItem.deleteMany({}),
-    ]);
-    console.log('🗑️  Cleared all collections');
-  }
-
-  // ── 1. Categories ───────────────────────────────────────────────────────────
-  // Parent categories first, then children (ancestors array is maintained manually)
-
-  const [catElectronics, catClothing, catHomeGarden, catSports] = await Category.insertMany([
-    { name: 'Electronics', slug: 'electronics', parentId: null, ancestors: [], isActive: true },
-    { name: 'Clothing', slug: 'clothing', parentId: null, ancestors: [], isActive: true },
-    { name: 'Home & Garden', slug: 'home-garden', parentId: null, ancestors: [], isActive: true },
-    { name: 'Sports', slug: 'sports', parentId: null, ancestors: [], isActive: true },
+const seedUsers = async () => {
+  const [adminHash, sellerHash, customerHash] = await Promise.all([
+    bcrypt.hash('Admin123!@#', 10),
+    bcrypt.hash('Seller123!@#', 10),
+    bcrypt.hash('Customer123!@#', 10),
   ]);
 
-  const [catAudio, catLaptops, catMensClothing, catWomensClothing, catKitchen, catFitness] = await Category.insertMany([
-    {
-      name: 'Audio',
-      slug: 'audio',
-      parentId: catElectronics._id,
-      ancestors: [catElectronics._id],
-      isActive: true,
-    },
-    {
-      name: 'Laptops',
-      slug: 'laptops',
-      parentId: catElectronics._id,
-      ancestors: [catElectronics._id],
-      isActive: true,
-    },
-    {
-      name: "Men's Clothing",
-      slug: 'mens-clothing',
-      parentId: catClothing._id,
-      ancestors: [catClothing._id],
-      isActive: true,
-    },
-    {
-      name: "Women's Clothing",
-      slug: 'womens-clothing',
-      parentId: catClothing._id,
-      ancestors: [catClothing._id],
-      isActive: true,
-    },
-    {
-      name: 'Kitchen',
-      slug: 'kitchen',
-      parentId: catHomeGarden._id,
-      ancestors: [catHomeGarden._id],
-      isActive: true,
-    },
-    {
-      name: 'Fitness',
-      slug: 'fitness',
-      parentId: catSports._id,
-      ancestors: [catSports._id],
-      isActive: true,
-    },
-  ]);
+  const admin = await User.create({
+    firstName: 'System',
+    lastName: 'Admin',
+    email: 'admin@ecommerce.local',
+    passwordHash: adminHash,
+    role: 'admin',
+    isEmailConfirmed: true,
+  });
 
-  console.log('📦 Categories seeded');
+  const sellerUser = await User.create({
+    firstName: 'Sara',
+    lastName: 'Seller',
+    email: 'seller@ecommerce.local',
+    passwordHash: sellerHash,
+    role: 'seller',
+    isEmailConfirmed: true,
+  });
 
-  // ── 2. Users ─────────────────────────────────────────────────────────────────
+  const customer = await User.create({
+    firstName: 'Cody',
+    lastName: 'Customer',
+    email: 'customer@ecommerce.local',
+    passwordHash: customerHash,
+    role: 'customer',
+    isEmailConfirmed: true,
+  });
 
-  const [adminUser, seller1User, seller2User, seller3User, customer1User, customer2User, customer3User, deletedUser] =
-    await User.insertMany([
-      // Admin
-      {
-        firstName: 'Admin',
-        lastName: 'Super',
-        email: 'admin@store.com',
-        passwordHash: PLACEHOLDER_PASSWORD,
-        role: 'admin',
-        isEmailConfirmed: true,
-        isDeleted: false,
-      },
-      // Sellers
-      {
-        firstName: 'Alice',
-        lastName: 'Johnson',
-        email: 'alice@techstore.com',
-        passwordHash: PLACEHOLDER_PASSWORD,
-        role: 'seller',
-        isEmailConfirmed: true,
-        isDeleted: false,
-        avatarUrl: 'https://i.pravatar.cc/150?u=alice',
-      },
-      {
-        firstName: 'Bob',
-        lastName: 'Martinez',
-        email: 'bob@fashionhub.com',
-        passwordHash: PLACEHOLDER_PASSWORD,
-        role: 'seller',
-        isEmailConfirmed: true,
-        isDeleted: false,
-        avatarUrl: 'https://i.pravatar.cc/150?u=bob',
-      },
-      {
-        firstName: 'Carol',
-        lastName: 'Lee',
-        email: 'carol@homegoodsco.com',
-        passwordHash: PLACEHOLDER_PASSWORD,
-        role: 'seller',
-        isEmailConfirmed: false,
-        isDeleted: false, // ← unconfirmed email
-      },
-      // Customers
-      {
-        firstName: 'David',
-        lastName: 'Kim',
-        email: 'david@gmail.com',
-        passwordHash: PLACEHOLDER_PASSWORD,
-        role: 'customer',
-        isEmailConfirmed: true,
-        isDeleted: false,
-        avatarUrl: 'https://i.pravatar.cc/150?u=david',
-      },
-      {
-        firstName: 'Eva',
-        lastName: 'Smith',
-        email: 'eva@gmail.com',
-        passwordHash: PLACEHOLDER_PASSWORD,
-        role: 'customer',
-        isEmailConfirmed: true,
-        isDeleted: false,
-        googleId: 'google-oauth-id-eva-12345', // ← OAuth user
-        avatarUrl: 'https://i.pravatar.cc/150?u=eva',
-      },
-      {
-        firstName: 'Frank',
-        lastName: 'Brown',
-        email: 'frank@gmail.com',
-        passwordHash: PLACEHOLDER_PASSWORD,
-        role: 'customer',
-        isEmailConfirmed: false,
-        isDeleted: false, // ← unconfirmed email
-      },
-      // Soft-deleted user
-      {
-        firstName: 'Ghost',
-        lastName: 'User',
-        email: 'ghost@deleted.com',
-        passwordHash: PLACEHOLDER_PASSWORD,
-        role: 'customer',
-        isEmailConfirmed: true,
-        isDeleted: true, // ← soft deleted
-      },
-    ]);
+  return { admin, sellerUser, customer };
+};
 
-  console.log('👤 Users seeded');
+const seedCatalog = async (sellerProfileId) => {
+  const electronics = await Category.create({
+    name: 'Electronics',
+    slug: 'electronics',
+    parentId: null,
+    ancestors: [],
+    image: {
+      url: 'https://images.pexels.com/photos/356056/pexels-photo-356056.jpeg',
+      cloudinaryPublicId: 'seed/categories/electronics',
+    },
+    isActive: true,
+  });
 
-  // ── 3. Seller Profiles ───────────────────────────────────────────────────────
+  const smartphones = await Category.create({
+    name: 'Smartphones',
+    slug: 'smartphones',
+    parentId: electronics._id,
+    ancestors: [electronics._id],
+    image: {
+      url: 'https://images.pexels.com/photos/699122/pexels-photo-699122.jpeg',
+      cloudinaryPublicId: 'seed/categories/smartphones',
+    },
+    isActive: true,
+  });
 
-  const [sellerProfile1, sellerProfile2, sellerProfile3] = await SellerProfile.insertMany([
+  const accessories = await Category.create({
+    name: 'Accessories',
+    slug: 'accessories',
+    parentId: electronics._id,
+    ancestors: [electronics._id],
+    image: {
+      url: 'https://images.pexels.com/photos/159643/laptop-ipad-organic-natural-159643.jpeg',
+      cloudinaryPublicId: 'seed/categories/accessories',
+    },
+    isActive: true,
+  });
+
+  const phone = await Product.create({
+    sellerProfileId,
+    categoryId: smartphones._id,
+    name: 'Nova X Smartphone 128GB',
+    slug: 'nova-x-smartphone-128gb',
+    description: '6.5-inch display, 128GB storage, dual camera setup, and fast charging.',
+    price: toDecimal(899.99),
+    discount: toDecimal(10),
+    stock: 25,
+    isActive: true,
+  });
+
+  const earbuds = await Product.create({
+    sellerProfileId,
+    categoryId: accessories._id,
+    name: 'Pulse Pro Wireless Earbuds',
+    slug: 'pulse-pro-wireless-earbuds',
+    description: 'Noise-cancelling true wireless earbuds with charging case.',
+    price: toDecimal(149.99),
+    discount: toDecimal(0),
+    stock: 100,
+    isActive: true,
+  });
+
+  const charger = await Product.create({
+    sellerProfileId,
+    categoryId: accessories._id,
+    name: 'HyperCharge USB-C Adapter 65W',
+    slug: 'hypercharge-usb-c-adapter-65w',
+    description: 'Compact 65W USB-C wall adapter for phones and laptops.',
+    price: toDecimal(59.99),
+    discount: toDecimal(5),
+    stock: 60,
+    isActive: true,
+  });
+
+  await ProductImage.insertMany([
     {
-      userId: seller1User._id,
-      storeName: 'TechStore Pro',
-      description: 'Your one-stop shop for the latest gadgets and electronics.',
-      logoUrl: 'https://placehold.co/200x200?text=TechStore',
-      status: 'approved',
-      totalEarnings: d128('15420.75'),
+      productId: phone._id,
+      url: 'https://images.pexels.com/photos/788946/pexels-photo-788946.jpeg',
+      cloudinaryPublicId: 'seed/products/nova-x-1',
+      isPrimary: true,
+      sortOrder: 0,
     },
     {
-      userId: seller2User._id,
-      storeName: 'Fashion Hub',
-      description: 'Trendy clothing for men and women at unbeatable prices.',
-      logoUrl: 'https://placehold.co/200x200?text=FashionHub',
-      status: 'approved',
-      totalEarnings: d128('8930.50'),
+      productId: phone._id,
+      url: 'https://images.pexels.com/photos/404280/pexels-photo-404280.jpeg',
+      cloudinaryPublicId: 'seed/products/nova-x-2',
+      isPrimary: false,
+      sortOrder: 1,
     },
     {
-      userId: seller3User._id,
-      storeName: 'Home Goods Co.',
-      description: 'Premium kitchen and home products.',
-      logoUrl: null,
-      status: 'pending', // ← awaiting approval
-      totalEarnings: d128('0.00'),
+      productId: earbuds._id,
+      url: 'https://images.pexels.com/photos/3780681/pexels-photo-3780681.jpeg',
+      cloudinaryPublicId: 'seed/products/pulse-pro-1',
+      isPrimary: true,
+      sortOrder: 0,
+    },
+    {
+      productId: charger._id,
+      url: 'https://images.pexels.com/photos/4526407/pexels-photo-4526407.jpeg',
+      cloudinaryPublicId: 'seed/products/hypercharge-1',
+      isPrimary: true,
+      sortOrder: 0,
     },
   ]);
 
-  console.log('🏪 Seller profiles seeded');
+  return {
+    categories: { electronics, smartphones, accessories },
+    products: { phone, earbuds, charger },
+  };
+};
 
-  // ── 4. Products ──────────────────────────────────────────────────────────────
+const seedCommerceData = async ({ admin, customer, sellerProfile, products }) => {
+  const defaultAddress = await Address.create({
+    userId: customer._id,
+    street: '123 Nile Street',
+    city: 'Cairo',
+    state: 'Cairo Governorate',
+    country: 'Egypt',
+    zipCode: '11511',
+    isDefault: true,
+  });
 
-  const products = await Product.insertMany([
-    // TechStore Pro — Audio
-    {
-      sellerProfileId: sellerProfile1._id,
-      categoryId: catAudio._id,
-      name: 'Sony WH-1000XM5 Wireless Headphones',
-      slug: 'sony-wh-1000xm5-wireless',
-      description: 'Industry-leading noise canceling, 30-hour battery life, multipoint connection.',
-      price: d128('399.99'),
-      discountedPrice: d128('279.99'),
-      stock: 45,
-      isActive: true,
-      averageRating: 4.7,
-      reviewCount: 1850,
-    },
-    {
-      sellerProfileId: sellerProfile1._id,
-      categoryId: catAudio._id,
-      name: 'Apple AirPods Pro (2nd Generation)',
-      slug: 'apple-airpods-pro-2nd-gen',
-      description: 'Active noise cancellation, Adaptive Transparency, Personalized Spatial Audio.',
-      price: d128('249.99'),
-      discountedPrice: d128('199.99'),
-      stock: 120,
-      isActive: true,
-      averageRating: 4.8,
-      reviewCount: 3420,
-    },
-    {
-      sellerProfileId: sellerProfile1._id,
-      categoryId: catAudio._id,
-      name: 'Anker Soundcore Q45 Headphones',
-      slug: 'anker-soundcore-q45',
-      description: 'Budget-friendly noise canceling headphones with 50-hour playtime.',
-      price: d128('79.99'),
-      discountedPrice: null,
-      stock: 0, // ← out of stock
-      isActive: true,
-      averageRating: 4.2,
-      reviewCount: 640,
-    },
-    // TechStore Pro — Laptops
-    {
-      sellerProfileId: sellerProfile1._id,
-      categoryId: catLaptops._id,
-      name: 'Apple MacBook Air M3 13"',
-      slug: 'apple-macbook-air-m3-13',
-      description: '18-hour battery, 8GB RAM, 256GB SSD. Incredibly thin and light.',
-      price: d128('1099.99'),
-      discountedPrice: d128('999.99'),
-      stock: 20,
-      isActive: true,
-      averageRating: 4.9,
-      reviewCount: 720,
-    },
-    {
-      sellerProfileId: sellerProfile1._id,
-      categoryId: catLaptops._id,
-      name: 'Dell XPS 15 (2024)',
-      slug: 'dell-xps-15-2024',
-      description: 'Intel Core i7, 16GB RAM, 512GB SSD, OLED touch display.',
-      price: d128('1599.99'),
-      discountedPrice: null,
-      stock: 12,
-      isActive: false, // ← inactive listing
-      averageRating: 4.5,
-      reviewCount: 310,
-    },
-    // Fashion Hub — Men's Clothing
-    {
-      sellerProfileId: sellerProfile2._id,
-      categoryId: catMensClothing._id,
-      name: 'Classic Slim-Fit Chinos',
-      slug: 'classic-slim-fit-chinos',
-      description: 'Versatile slim-fit chinos in stretch cotton. Available in multiple colors.',
-      price: d128('59.99'),
-      discountedPrice: d128('39.99'),
-      stock: 300,
-      isActive: true,
-      averageRating: 4.4,
-      reviewCount: 890,
-    },
-    {
-      sellerProfileId: sellerProfile2._id,
-      categoryId: catMensClothing._id,
-      name: 'Premium Oxford Shirt',
-      slug: 'premium-oxford-shirt',
-      description: '100% cotton Oxford weave. Button-down collar. Machine washable.',
-      price: d128('49.99'),
-      discountedPrice: null,
-      stock: 180,
-      isActive: true,
-      averageRating: 4.3,
-      reviewCount: 420,
-    },
-    // Fashion Hub — Women's Clothing
-    {
-      sellerProfileId: sellerProfile2._id,
-      categoryId: catWomensClothing._id,
-      name: 'Floral Wrap Midi Dress',
-      slug: 'floral-wrap-midi-dress',
-      description: 'Elegant wrap-style midi dress in lightweight chiffon with floral print.',
-      price: d128('74.99'),
-      discountedPrice: d128('54.99'),
-      stock: 95,
-      isActive: true,
-      averageRating: 4.6,
-      reviewCount: 1100,
-    },
-    // Home Goods Co. — Kitchen (pending seller)
-    {
-      sellerProfileId: sellerProfile3._id,
-      categoryId: catKitchen._id,
-      name: 'Ninja Foodi 9-in-1 Pressure Cooker',
-      slug: 'ninja-foodi-9-in-1-pressure-cooker',
-      description: 'Pressure cook, air fry, steam, slow cook, and more — all in one pot.',
-      price: d128('199.99'),
-      discountedPrice: d128('159.99'),
-      stock: 40,
-      isActive: true,
-      averageRating: 4.8,
-      reviewCount: 2200,
-    },
-    {
-      sellerProfileId: sellerProfile3._id,
-      categoryId: catFitness._id,
-      name: 'Resistance Bands Set (5-Pack)',
-      slug: 'resistance-bands-set-5-pack',
-      description: 'Five resistance levels from 10–50 lbs. Includes carrying bag and door anchor.',
-      price: d128('24.99'),
-      discountedPrice: null,
-      stock: 500,
-      isActive: true,
-      averageRating: 4.5,
-      reviewCount: 3800,
-    },
-  ]);
+  await Address.create({
+    userId: customer._id,
+    street: '42 Corniche Road',
+    city: 'Alexandria',
+    state: 'Alexandria',
+    country: 'Egypt',
+    zipCode: '21500',
+    isDefault: false,
+  });
 
-  // Named references for use in CartItems
-  const [
-    sonyHeadphones,
-    airpodsPro,
-    soundcoreQ45,
-    macbookAir,
-    dellXps,
-    chinos,
-    oxfordShirt,
-    wrapDress,
-    ninjaCooker,
-    resistanceBands,
-  ] = products;
+  const generalPromo = await PromoCode.create({
+    code: 'WELCOME10',
+    discountType: 'percentage',
+    discountValue: toDecimal(10),
+    minOrderAmount: toDecimal(100),
+    usageLimit: 1000,
+    usageCount: 0,
+    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 90),
+    isActive: true,
+    createdBy: admin._id,
+    scope: 'general',
+  });
 
-  console.log('🛍️  Products seeded');
+  await PromoCode.create({
+    code: 'STORE50',
+    discountType: 'fixed',
+    discountValue: toDecimal(50),
+    minOrderAmount: toDecimal(500),
+    usageLimit: 100,
+    usageCount: 0,
+    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 60),
+    isActive: true,
+    createdBy: admin._id,
+    scope: 'seller-all',
+    sellerId: sellerProfile._id,
+  });
 
-  // ── 5. Carts ─────────────────────────────────────────────────────────────────
-  // One authenticated cart per customer, one guest cart
+  await PromoCode.create({
+    code: 'PHONE5',
+    discountType: 'percentage',
+    discountValue: toDecimal(5),
+    minOrderAmount: toDecimal(200),
+    usageLimit: 250,
+    usageCount: 0,
+    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 45),
+    isActive: true,
+    createdBy: admin._id,
+    scope: 'product-specific',
+    productId: products.phone._id,
+  });
 
-  const [cart1, cart2, cart3, guestCart] = await Cart.insertMany([
-    { userId: customer1User._id, guestToken: null }, // David's cart
-    { userId: customer2User._id, guestToken: null }, // Eva's cart
-    { userId: customer3User._id, guestToken: null }, // Frank's cart
-    { userId: null, guestToken: 'guest-token-abc-xyz-001' }, // Guest cart
-  ]);
-
-  console.log('🛒 Carts seeded');
-
-  // ── 6. Cart Items ─────────────────────────────────────────────────────────────
-
+  const [cart] = await Cart.insertMany([{ userId: customer._id }]);
   await CartItem.insertMany([
-    // David's cart — 2 items
     {
-      cartId: cart1._id,
-      productId: sonyHeadphones._id,
-      quantity: 1,
-      priceSnapshot: d128('279.99'), // discounted price
-    },
-    {
-      cartId: cart1._id,
-      productId: macbookAir._id,
-      quantity: 1,
-      priceSnapshot: d128('999.99'), // discounted price
-    },
-    // Eva's cart — 3 items
-    {
-      cartId: cart2._id,
-      productId: airpodsPro._id,
+      cartId: cart._id,
+      productId: products.earbuds._id,
       quantity: 2,
-      priceSnapshot: d128('199.99'),
+      priceSnapshot: toDecimal(149.99),
     },
     {
-      cartId: cart2._id,
-      productId: wrapDress._id,
+      cartId: cart._id,
+      productId: products.charger._id,
       quantity: 1,
-      priceSnapshot: d128('54.99'),
-    },
-    {
-      cartId: cart2._id,
-      productId: resistanceBands._id,
-      quantity: 1,
-      priceSnapshot: d128('24.99'),
-    },
-    // Frank's cart — 1 item
-    {
-      cartId: cart3._id,
-      productId: chinos._id,
-      quantity: 2,
-      priceSnapshot: d128('39.99'),
-    },
-    // Guest cart — 2 items
-    {
-      cartId: guestCart._id,
-      productId: ninjaCooker._id,
-      quantity: 1,
-      priceSnapshot: d128('159.99'),
-    },
-    {
-      cartId: guestCart._id,
-      productId: oxfordShirt._id,
-      quantity: 1,
-      priceSnapshot: d128('49.99'),
+      priceSnapshot: toDecimal(59.99),
     },
   ]);
 
-  console.log('🧺 Cart items seeded');
+  const wishlist = await Wishlist.create({
+    userId: customer._id,
+    items: [{ productId: products.phone._id }, { productId: products.charger._id }],
+  });
 
-  // ── Summary ──────────────────────────────────────────────────────────────────
+  await WishlistItem.insertMany([
+    { wishlistId: wishlist._id, productId: products.phone._id },
+    { wishlistId: wishlist._id, productId: products.charger._id },
+  ]);
 
-  console.log('\n✅ Seeding complete!\n');
-  console.log('  Categories    :', await Category.countDocuments());
-  console.log('  Users         :', await User.countDocuments({ includeDeleted: true }));
-  console.log('  SellerProfiles:', await SellerProfile.countDocuments());
-  console.log('  Products      :', await Product.countDocuments());
-  console.log('  Carts         :', await Cart.countDocuments());
-  console.log('  CartItems     :', await CartItem.countDocuments());
+  await Review.create({
+    productId: products.phone._id,
+    userId: customer._id,
+    rating: 5,
+    comment: 'Excellent battery life and smooth performance.',
+    isVerifiedPurchase: true,
+  });
 
-  console.log('\n📋 Test Accounts:');
-  console.log('  admin@store.com          role=admin     confirmed=true');
-  console.log('  alice@techstore.com      role=seller    confirmed=true   status=approved');
-  console.log('  bob@fashionhub.com       role=seller    confirmed=true   status=approved');
-  console.log('  carol@homegoodsco.com    role=seller    confirmed=false  status=pending');
-  console.log('  david@gmail.com          role=customer  confirmed=true');
-  console.log('  eva@gmail.com            role=customer  confirmed=true   googleId=set');
-  console.log('  frank@gmail.com          role=customer  confirmed=false');
-  console.log('  ghost@deleted.com        role=customer  isDeleted=true   (soft-deleted)');
-  console.log('\n  All passwords → "hashed_password_placeholder"');
-  console.log('  Guest cart token → "guest-token-abc-xyz-001"\n');
-}
+  await Review.create({
+    productId: products.earbuds._id,
+    userId: admin._id,
+    rating: 4,
+    comment: 'Great sound quality for the price.',
+    isVerifiedPurchase: false,
+  });
 
-// ─── Run ──────────────────────────────────────────────────────────────────────
+  const subtotal = 899.99;
+  const discountAmount = 89.99;
+  const shippingCost = 30;
+  const total = subtotal - discountAmount + shippingCost;
 
-seed()
-  .catch((err) => {
-    console.error('❌ Seeding failed:', err);
-    process.exit(1);
-  })
-  .finally(() => mongoose.disconnect());
+  const order = await Order.create({
+    userId: customer._id,
+    addressId: defaultAddress._id,
+    promoCodeId: generalPromo._id,
+    status: 'processing',
+    items: [
+      {
+        productId: products.phone._id,
+        sellerId: sellerProfile._id,
+        productNameSnapshot: products.phone.name,
+        priceSnapshot: toDecimal(subtotal),
+        quantity: 1,
+        lineTotal: toDecimal(subtotal),
+      },
+    ],
+    subtotal: toDecimal(subtotal),
+    discountAmount: toDecimal(discountAmount),
+    shippingCost: toDecimal(shippingCost),
+    total: toDecimal(total),
+    trackingNumber: 'TRK-SEED-0001',
+    sessionURL: 'https://checkout.stripe.com/c/pay/cs_test_seed',
+    payingMethod: 'credit',
+    isPaid: true,
+  });
+
+  await Payment.create({
+    orderId: order._id,
+    provider: 'stripe',
+    providerTransactionId: `seed_txn_${Date.now()}`,
+    status: 'completed',
+    amount: toDecimal(total),
+    currency: 'USD',
+  });
+
+  await Banner.insertMany([
+    {
+      title: 'Spring Deals Up To 30% Off',
+      imageUrl: 'https://images.pexels.com/photos/5632402/pexels-photo-5632402.jpeg',
+      linkUrl: '/products?promo=spring',
+      sortOrder: 1,
+      isActive: true,
+      startsAt: new Date(Date.now() - 1000 * 60 * 60 * 24),
+      endsAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+    },
+    {
+      title: 'New Electronics Arrivals',
+      imageUrl: 'https://images.pexels.com/photos/356056/pexels-photo-356056.jpeg',
+      linkUrl: '/categories/electronics',
+      sortOrder: 2,
+      isActive: true,
+      startsAt: null,
+      endsAt: null,
+    },
+  ]);
+
+  await EmailLog.create({
+    userId: customer._id,
+    type: 'order-placed',
+    recipient: customer.email,
+    status: 'sent',
+    errorMessage: null,
+  });
+
+  await RefreshToken.create({
+    userId: customer._id,
+    token: crypto.randomBytes(32).toString('hex'),
+    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30),
+  });
+
+  await PasswordResetToken.create({
+    userId: customer._id,
+    token: crypto.randomBytes(32).toString('hex'),
+    expiresAt: new Date(Date.now() + 1000 * 60 * 60),
+  });
+};
+
+const printSummary = async () => {
+  const summary = {
+    users: await User.countDocuments(),
+    sellerProfiles: await SellerProfile.countDocuments(),
+    categories: await Category.countDocuments(),
+    products: await Product.countDocuments(),
+    productImages: await ProductImage.countDocuments(),
+    promoCodes: await PromoCode.countDocuments(),
+    reviews: await Review.countDocuments(),
+    addresses: await Address.countDocuments(),
+    carts: await Cart.countDocuments(),
+    cartItems: await CartItem.countDocuments(),
+    wishlists: await Wishlist.countDocuments(),
+    wishlistItems: await WishlistItem.countDocuments(),
+    orders: await Order.countDocuments(),
+    payments: await Payment.countDocuments(),
+    banners: await Banner.countDocuments(),
+    emailLogs: await EmailLog.countDocuments(),
+    refreshTokens: await RefreshToken.countDocuments(),
+    passwordResetTokens: await PasswordResetToken.countDocuments(),
+  };
+
+  console.log('Seed summary:');
+  console.table(summary);
+  console.log('Login credentials:');
+  console.log('  admin@ecommerce.local / Admin123!@#');
+  console.log('  seller@ecommerce.local / Seller123!@#');
+  console.log('  customer@ecommerce.local / Customer123!@#');
+};
+
+const run = async () => {
+  try {
+    if (!process.env.MONGO_URI) {
+      throw new Error('MONGO_URI is not defined. Add it to your .env file before running the seeder.');
+    }
+
+    await dbConnect();
+
+    console.log('Clearing existing collections...');
+    await clearDatabase();
+
+    console.log('Seeding users...');
+    const { admin, sellerUser, customer } = await seedUsers();
+
+    console.log('Seeding seller profile...');
+    const sellerProfile = await SellerProfile.create({
+      userId: sellerUser._id,
+      storeName: 'Tech Haven',
+      description: 'Trusted gadgets and accessories for everyday life.',
+      logoUrl: 'https://images.pexels.com/photos/1649771/pexels-photo-1649771.jpeg',
+      status: 'approved',
+      totalEarnings: toDecimal(840),
+    });
+
+    console.log('Seeding categories, products, and images...');
+    const { products } = await seedCatalog(sellerProfile._id);
+
+    console.log('Seeding commerce entities...');
+    await seedCommerceData({ admin, customer, sellerProfile, products });
+
+    await printSummary();
+    console.log('Seeding completed successfully.');
+  } catch (error) {
+    console.error('Seeding failed:', error.message);
+    if (error.stack) {
+      console.error(error.stack);
+    }
+    process.exitCode = 1;
+  } finally {
+    await mongoose.connection.close();
+  }
+};
+
+run();

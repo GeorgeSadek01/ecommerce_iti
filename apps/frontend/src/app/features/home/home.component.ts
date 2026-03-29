@@ -1,16 +1,15 @@
-import { Component, OnInit, OnDestroy, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, HostListener, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { WishlistHeartComponent } from '../../core/components/wishlist-heart/wishlist-heart.component';
 import { ProductService } from '../../core/services/product.service';
 import { AuthService } from '../../core/services/auth-api.service';
 import { Product, Category } from '../../core/types/product.types';
-import { ProductCardComponent } from '../../core/components/product-card/product-card.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, RouterLink, WishlistHeartComponent, ProductCardComponent],
+  imports: [CommonModule, RouterLink, WishlistHeartComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css',
 })
@@ -25,8 +24,12 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   protected readonly currentBannerSlide = signal(0);
   protected readonly topRankedScroll = signal(0);
-  protected readonly topDealsScroll = signal(0);
+  protected readonly topDealsPage = signal(0);
+  protected readonly topDealsVisibleCount = signal(4);
   private slideInterval: any;
+  private touchStartX = 0;
+  private touchCurrentX = 0;
+  private isPaused = false;
 
   protected readonly bannerSlides = [
     {
@@ -56,17 +59,43 @@ export class HomeComponent implements OnInit, OnDestroy {
   ];
 
   protected readonly isLoggedIn = computed(() => this.authService.isAuthenticated());
+  protected readonly topDealsPages = computed(() => {
+    const items = this.products();
+    const pageSize = Math.max(1, this.topDealsVisibleCount());
+    const pages: Product[][] = [];
+
+    for (let i = 0; i < items.length; i += pageSize) {
+      pages.push(items.slice(i, i + pageSize));
+    }
+
+    return pages;
+  });
+  protected readonly canGoTopDealsPrev = computed(() => this.topDealsPage() > 0);
+  protected readonly canGoTopDealsNext = computed(() => this.topDealsPage() < this.topDealsPages().length - 1);
 
   constructor(
     private readonly productService: ProductService,
     private readonly authService: AuthService,
     private readonly router: Router
-  ) {}
+  ) {
+    effect(() => {
+      const lastPage = Math.max(0, this.topDealsPages().length - 1);
+      if (this.topDealsPage() > lastPage) {
+        this.topDealsPage.set(lastPage);
+      }
+    });
+  }
 
   ngOnInit(): void {
+    this.updateTopDealsVisibleCount();
     this.loadCategories();
     this.loadProducts();
     this.startBannerSlider();
+  }
+
+  @HostListener('window:resize')
+  protected onWindowResize(): void {
+    this.updateTopDealsVisibleCount();
   }
 
   ngOnDestroy(): void {
@@ -76,9 +105,12 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private startBannerSlider(): void {
+    if (this.slideInterval) {
+      clearInterval(this.slideInterval);
+    }
     this.slideInterval = setInterval(() => {
-      this.nextBanner();
-    }, 6000);
+      if (!this.isPaused) this.nextBanner();
+    }, 5000);
   }
 
   protected nextBanner(): void {
@@ -93,6 +125,43 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.currentBannerSlide.set(index);
     if (this.slideInterval) clearInterval(this.slideInterval);
     this.startBannerSlider();
+  }
+
+  protected pauseBanner(): void {
+    this.isPaused = true;
+    if (this.slideInterval) {
+      clearInterval(this.slideInterval);
+      this.slideInterval = undefined;
+    }
+  }
+
+  protected resumeBanner(): void {
+    this.isPaused = false;
+    this.startBannerSlider();
+  }
+
+  // Touch handlers for swipe support
+  onTouchStart(ev: TouchEvent): void {
+    this.touchStartX = ev.touches[0]?.clientX || 0;
+    this.touchCurrentX = this.touchStartX;
+    this.pauseBanner();
+  }
+
+  onTouchMove(ev: TouchEvent): void {
+    this.touchCurrentX = ev.touches[0]?.clientX || this.touchCurrentX;
+  }
+
+  onTouchEnd(): void {
+    const dx = this.touchCurrentX - this.touchStartX;
+    const threshold = 50; // px
+    if (dx > threshold) {
+      this.prevBanner();
+    } else if (dx < -threshold) {
+      this.nextBanner();
+    }
+    this.touchStartX = 0;
+    this.touchCurrentX = 0;
+    this.resumeBanner();
   }
 
   private loadCategories(): void {
@@ -138,6 +207,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       } else {
         this.products.set(prods);
       }
+      this.topDealsPage.set(0);
       this.isLoading.set(false);
 
       // Fetch images for each product and update both products and topRankedProducts signals
@@ -240,12 +310,29 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   }
 
-  protected scrollTopDeals(direction: 'left' | 'right'): void {
-    const container = document.getElementById('topDealsCarousel');
-    if (container) {
-      const cardWidth = 320;
-      const amount = direction === 'right' ? cardWidth : -cardWidth;
-      container.scrollBy({ left: amount, behavior: 'smooth' });
+  protected prevTopDealsPage(): void {
+    this.topDealsPage.update((current) => Math.max(0, current - 1));
+  }
+
+  protected nextTopDealsPage(): void {
+    const lastPage = Math.max(0, this.topDealsPages().length - 1);
+    this.topDealsPage.update((current) => Math.min(lastPage, current + 1));
+  }
+
+  protected goToTopDealsPage(index: number): void {
+    const lastPage = Math.max(0, this.topDealsPages().length - 1);
+    this.topDealsPage.set(Math.max(0, Math.min(index, lastPage)));
+  }
+
+  private updateTopDealsVisibleCount(): void {
+    if (typeof window === 'undefined') return;
+
+    const width = window.innerWidth;
+    const nextCount = width >= 1200 ? 4 : width >= 900 ? 3 : width >= 640 ? 2 : 1;
+
+    if (this.topDealsVisibleCount() !== nextCount) {
+      this.topDealsVisibleCount.set(nextCount);
+      this.topDealsPage.set(0);
     }
   }
 
