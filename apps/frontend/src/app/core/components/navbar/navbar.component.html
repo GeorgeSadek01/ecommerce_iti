@@ -39,18 +39,20 @@
       }
 
       @if (isLoggedIn()) {
-      <a class="nav-btn-link" routerLink="/orders">
-        <span class="material-icons">receipt_long</span>
-        <span class="btn-text">Orders</span>
-      </a>
-
-      <a class="nav-btn-link" routerLink="/cart">
-        <div class="cart-icon-wrap">
-          <span class="material-icons">shopping_cart</span>
-          <span class="cart-badge">0</span>
-        </div>
-        <span class="btn-text">Cart</span>
-      </a>
+        <a class="nav-btn-link" routerLink="/orders">
+          <span class="material-icons">receipt_long</span>
+          <span class="btn-text">Orders</span>
+        </a>
+        
+        <a class="nav-btn-link" routerLink="/cart">
+          <div class="cart-icon-wrap">
+            <span class="material-icons">shopping_cart</span>
+            @if (cartCount() > 0) {
+              <span class="cart-badge">{{ cartCount() }}</span>
+            }
+          </div>
+          <span class="btn-text">Cart</span>
+        </a>
 
       <!-- duplicate wishlist removed (kept primary wishlist button above) -->
 

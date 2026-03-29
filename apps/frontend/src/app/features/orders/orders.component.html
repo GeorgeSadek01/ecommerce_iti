@@ -1,0 +1,210 @@
+<!-- ─── Page Header ───────────────────────────────────────── -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <div>
+      <h1 class="page-title">
+        <span class="material-icons" style="color:#7c3aed;vertical-align:middle;margin-right:8px;">receipt_long</span>
+        My Orders
+      </h1>
+      @if (!isLoading() && total() > 0) {
+        <p class="page-subtitle">{{ total() }} order{{ total() !== 1 ? 's' : '' }} found</p>
+      }
+    </div>
+    <div class="header-actions">
+      <select class="filter-select" (change)="onStatusChange($event)" [value]="selectedStatus()">
+        @for (opt of statusOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+      <a class="btn-shop" routerLink="/home">
+        <span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:4px;">storefront</span>
+        Shop More
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Loading ──────────────────────────────────────────── -->
+@if (isLoading()) {
+  <div class="orders-container">
+    @for (n of [1,2,3]; track n) {
+      <div class="skeleton-order">
+        <div class="sk-order-top">
+          <div class="sk sk-badge"></div>
+          <div class="sk sk-line mid"></div>
+          <div class="sk sk-line short"></div>
+        </div>
+      </div>
+    }
+  </div>
+}
+
+<!-- ─── Error ─────────────────────────────────────────────── -->
+@if (!isLoading() && error()) {
+  <div class="orders-container">
+    <div class="empty-state">
+      <span class="material-icons empty-icon" style="color:#f87171;">error_outline</span>
+      <p>{{ error() }}</p>
+      <button class="btn-retry" (click)="ngOnInit()">Retry</button>
+    </div>
+  </div>
+}
+
+<!-- ─── Empty ─────────────────────────────────────────────── -->
+@if (!isLoading() && !error() && orders().length === 0) {
+  <div class="orders-container">
+    <div class="empty-state">
+      <span class="material-icons empty-icon">inbox</span>
+      <h2>No orders yet</h2>
+      <p>
+        @if (selectedStatus()) { No {{ selectedStatus() }} orders found. }
+        @else { You haven't placed any orders yet. }
+      </p>
+      <a class="btn-hero-primary" routerLink="/home">Start Shopping</a>
+    </div>
+  </div>
+}
+
+<!-- ─── Orders List ────────────────────────────────────────── -->
+@if (!isLoading() && !error() && orders().length > 0) {
+  <div class="orders-container">
+
+    @if (cancelError()) {
+      <div class="cancel-error-banner">
+        <span class="material-icons" style="font-size:15px;vertical-align:middle;">error</span>
+        {{ cancelError() }}
+      </div>
+    }
+
+    @for (order of orders(); track order._id) {
+      <article class="order-card">
+        <!-- ── Order Card Header ── -->
+        <div class="order-header" (click)="toggleExpand(order._id)" role="button" tabindex="0" (keyup.enter)="toggleExpand(order._id)">
+          <div class="order-meta">
+            <span class="order-id-label">Order</span>
+            <span class="order-id">#{{ order._id.slice(-8).toUpperCase() }}</span>
+            <span class="order-date">{{ formatDate(order.createdAt) }}</span>
+          </div>
+          <div class="order-status-group">
+            <span class="status-badge" [class]="'status-' + order.status">
+              @switch(order.status) {
+                @case ('pending') { <span class="material-icons status-icon">schedule</span> }
+                @case ('processing') { <span class="material-icons status-icon">autorenew</span> }
+                @case ('shipped') { <span class="material-icons status-icon">local_shipping</span> }
+                @case ('delivered') { <span class="material-icons status-icon">check_circle</span> }
+                @case ('cancelled') { <span class="material-icons status-icon">cancel</span> }
+              }
+              {{ getStatusLabel(order.status) }}
+            </span>
+            <span class="order-total">${{ order.total | number:'1.2-2' }}</span>
+            <span class="expand-icon material-icons" [class.rotated]="isExpanded(order._id)">expand_more</span>
+          </div>
+        </div>
+
+        <!-- ── Order Card Body (Expanded) ── -->
+        @if (isExpanded(order._id)) {
+          <div class="order-body">
+            <!-- Items Table -->
+            <div class="order-items">
+              @for (item of order.items; track item.productId) {
+                <div class="order-item">
+                  <div class="order-item-img-wrap">
+                    @if (item.imageUrl) {
+                      <img [src]="item.imageUrl" [alt]="item.productNameSnapshot" class="order-item-img" loading="lazy" />
+                    } @else {
+                      <div class="order-item-img-placeholder">
+                        <span class="material-icons" style="font-size:22px;color:rgba(124,58,237,0.4);">inventory_2</span>
+                      </div>
+                    }
+                  </div>
+                  <div class="order-item-info">
+                    <p class="order-item-name">{{ item.productNameSnapshot }}</p>
+                    <p class="order-item-meta">Qty: {{ item.quantity }} &times; ${{ item.priceSnapshot | number:'1.2-2' }}</p>
+                  </div>
+                  <span class="order-item-total">${{ item.lineTotal | number:'1.2-2' }}</span>
+                </div>
+              }
+            </div>
+
+            <!-- Pricing Breakdown -->
+            <div class="order-pricing">
+              <div class="pricing-row">
+                <span>Subtotal</span>
+                <span>${{ order.subtotal | number:'1.2-2' }}</span>
+              </div>
+              @if (order.discountAmount > 0) {
+                <div class="pricing-row discount-row">
+                  <span>
+                    Discount
+                    @if (order.promoCodeId) {
+                      <span class="promo-badge">{{ order.promoCodeId.code }}</span>
+                    }
+                  </span>
+                  <span>-${{ order.discountAmount | number:'1.2-2' }}</span>
+                </div>
+              }
+              <div class="pricing-row">
+                <span>Shipping</span>
+                <span class="free-tag">Free</span>
+              </div>
+              <div class="pricing-divider"></div>
+              <div class="pricing-row total-pricing-row">
+                <span>Total</span>
+                <span>${{ order.total | number:'1.2-2' }}</span>
+              </div>
+              <div class="pricing-row">
+                <span>Payment</span>
+                <span class="payment-method">{{ order.payingMethod }}</span>
+              </div>
+              <div class="pricing-row">
+                <span>Paid</span>
+                <span [class]="order.isPaid ? 'paid-yes' : 'paid-no'">{{ order.isPaid ? 'Yes' : 'No' }}</span>
+              </div>
+            </div>
+
+            <!-- Cancel Action -->
+            @if (canCancel(order)) {
+              <div class="order-actions">
+                <button
+                  class="btn-cancel"
+                  (click)="cancelOrder(order)"
+                  [disabled]="cancellingId() === order._id"
+                >
+                  @if (cancellingId() === order._id) {
+                    <span class="spinner"></span> Cancelling…
+                  } @else {
+                    <span class="material-icons" style="font-size:16px;vertical-align:middle;margin-right:4px;">cancel</span>
+                    Cancel Order
+                  }
+                </button>
+              </div>
+            }
+          </div>
+        }
+      </article>
+    }
+
+    <!-- ── Pagination ── -->
+    @if (totalPages() > 1) {
+      <div class="pagination">
+        <button class="pg-btn" (click)="goToPage(currentPage() - 1)" [disabled]="currentPage() === 1">
+          <span class="material-icons">chevron_left</span>
+        </button>
+        @for (pg of getPageNumbers(); track pg) {
+          <button class="pg-btn" [class.active]="pg === currentPage()" (click)="goToPage(pg)">{{ pg }}</button>
+        }
+        <button class="pg-btn" (click)="goToPage(currentPage() + 1)" [disabled]="currentPage() === totalPages()">
+          <span class="material-icons">chevron_right</span>
+        </button>
+      </div>
+    }
+  </div>
+}
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-inner">
+    <span class="footer-brand">ShopITI</span>
+    <p>© 2026 ShopITI. Built as an ITI project.</p>
+  </div>
+</footer>

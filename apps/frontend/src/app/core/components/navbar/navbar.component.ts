@@ -11,13 +11,14 @@ import { WishlistService } from '../../services/wishlist.service';
   templateUrl: './navbar.component.html',
   styleUrl: './navbar.component.css',
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
   protected isMenuOpen = false;
   protected searchQuery = signal('');
 
   protected readonly isLoggedIn = computed(() => this.authService.isAuthenticated());
   protected readonly currentUser = computed(() => this.authService.currentUser());
   protected readonly currentRole = computed(() => this.authService.currentRole());
+  protected readonly cartCount = computed(() => this.cartService.itemCount());
 
   protected readonly wishlistCount$ = this.wishlistService.count$;
 
@@ -30,9 +31,16 @@ export class NavbarComponent {
 
   constructor(
     private readonly authService: AuthService,
+    private readonly cartService: CartService,
     private readonly wishlistService: WishlistService,
     private readonly router: Router
   ) {}
+
+  ngOnInit(): void {
+    if (this.authService.isAuthenticated()) {
+      this.cartService.loadCart().subscribe({ error: () => {} });
+    }
+  }
 
   protected toggleMenu(): void {
     this.isMenuOpen = !this.isMenuOpen;

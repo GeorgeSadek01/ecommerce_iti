@@ -1,0 +1,216 @@
+<!-- ─── Order-success banner ─────────────────────────────── -->
+@if (orderSuccess()) {
+  <div class="success-banner">
+    <span class="material-icons success-icon">check_circle</span>
+    <div>
+      <strong>Order Placed Successfully! 🎉</strong>
+      <p>You'll receive a confirmation email shortly.</p>
+    </div>
+    <a class="btn-view-orders" routerLink="/orders">View My Orders</a>
+  </div>
+}
+
+<!-- ─── Page Header ───────────────────────────────────────── -->
+<div class="page-header">
+  <div class="page-header-inner">
+    <h1 class="page-title">
+      <span class="material-icons" style="color:#7c3aed;vertical-align:middle;margin-right:8px;">shopping_cart</span>
+      My Cart
+      @if (itemCount() > 0) {
+        <span class="item-count-badge">{{ itemCount() }}</span>
+      }
+    </h1>
+    <a class="btn-continue-shopping" routerLink="/home">
+      <span class="material-icons" style="font-size:18px;vertical-align:middle;margin-right:4px;">arrow_back</span>
+      Continue Shopping
+    </a>
+  </div>
+</div>
+
+<!-- ─── Loading ──────────────────────────────────────────── -->
+@if (isLoading()) {
+  <div class="cart-container">
+    <div class="skeleton-list">
+      @for (n of [1,2,3]; track n) {
+        <div class="skeleton-row">
+          <div class="sk sk-img"></div>
+          <div class="sk-body">
+            <div class="sk sk-line wide"></div>
+            <div class="sk sk-line short"></div>
+          </div>
+          <div class="sk sk-price"></div>
+        </div>
+      }
+    </div>
+  </div>
+}
+
+<!-- ─── Error ─────────────────────────────────────────────── -->
+@if (!isLoading() && error()) {
+  <div class="cart-container">
+    <div class="empty-state">
+      <span class="material-icons empty-icon" style="color:#f87171;">error_outline</span>
+      <p>{{ error() }}</p>
+      <button class="btn-retry" (click)="ngOnInit()">Retry</button>
+    </div>
+  </div>
+}
+
+<!-- ─── Empty Cart ────────────────────────────────────────── -->
+@if (!isLoading() && !error() && items().length === 0 && !orderSuccess()) {
+  <div class="cart-container">
+    <div class="empty-state">
+      <span class="material-icons empty-icon">shopping_cart</span>
+      <h2>Your cart is empty</h2>
+      <p>Looks like you haven't added anything yet.</p>
+      <a class="btn-hero-primary" routerLink="/home">Start Shopping</a>
+    </div>
+  </div>
+}
+
+<!-- ─── Cart Items + Summary ─────────────────────────────── -->
+@if (!isLoading() && !error() && items().length > 0) {
+  <div class="cart-container cart-layout">
+    <!-- LEFT: Items List -->
+    <div class="items-panel">
+      <div class="items-header">
+        <span>{{ items().length }} item{{ items().length !== 1 ? 's' : '' }}</span>
+        <button class="btn-clear" (click)="clearCart()">
+          <span class="material-icons" style="font-size:16px;vertical-align:middle;">delete_sweep</span>
+          Clear Cart
+        </button>
+      </div>
+
+      @for (item of items(); track item._id) {
+        <div class="cart-item" [class.busy]="isBusy(item._id)">
+          <!-- Image -->
+          <div class="item-image-wrap">
+            @if (getProductImage(item)) {
+              <img [src]="getProductImage(item)" [alt]="getProductName(item)" class="item-image" loading="lazy" />
+            } @else {
+              <div class="item-image-placeholder">
+                <span class="material-icons" style="color:rgba(124,58,237,0.4);font-size:32px;">inventory_2</span>
+              </div>
+            }
+          </div>
+
+          <!-- Details -->
+          <div class="item-details">
+            <h3 class="item-name">{{ getProductName(item) }}</h3>
+            <p class="item-unit-price">${{ item.priceSnapshot | number:'1.2-2' }} each</p>
+
+            <!-- Quantity Stepper -->
+            <div class="qty-stepper">
+              <button class="qty-btn" (click)="decrease(item)" [disabled]="isBusy(item._id)" aria-label="Decrease quantity">
+                <span class="material-icons">remove</span>
+              </button>
+              <span class="qty-value">{{ item.quantity }}</span>
+              <button class="qty-btn" (click)="increase(item)" [disabled]="isBusy(item._id)" aria-label="Increase quantity">
+                <span class="material-icons">add</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Line Total + Remove -->
+          <div class="item-right">
+            <span class="line-total">${{ getLineTotal(item) | number:'1.2-2' }}</span>
+            <button class="btn-remove" (click)="remove(item)" [disabled]="isBusy(item._id)" aria-label="Remove item">
+              <span class="material-icons">close</span>
+            </button>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- RIGHT: Order Summary -->
+    <aside class="summary-panel">
+      <h2 class="summary-title">Order Summary</h2>
+
+      <div class="summary-row">
+        <span>Subtotal ({{ itemCount() }} items)</span>
+        <span>${{ subtotal() | number:'1.2-2' }}</span>
+      </div>
+      <div class="summary-row">
+        <span>Shipping</span>
+        <span class="free-tag">Free</span>
+      </div>
+      <div class="summary-divider"></div>
+      <div class="summary-row total-row">
+        <span>Total</span>
+        <span>${{ subtotal() | number:'1.2-2' }}</span>
+      </div>
+
+      <!-- Checkout Panel Toggle -->
+      @if (!showCheckout()) {
+        <button class="btn-checkout" (click)="toggleCheckout()">
+          <span class="material-icons" style="font-size:18px;vertical-align:middle;margin-right:6px;">lock</span>
+          Proceed to Checkout
+        </button>
+      }
+
+      @if (showCheckout()) {
+        <div class="checkout-form">
+          <h3 class="checkout-title">Checkout Details</h3>
+
+          <!-- Address Selector -->
+          <label class="form-label" for="address-select">Delivery Address</label>
+          @if (addresses().length > 0) {
+            <select id="address-select" class="form-select" (change)="onAddressChange($event)">
+              @for (addr of addresses(); track addr.id) {
+                <option [value]="addr.id" [selected]="addr.id === selectedAddressId()">
+                  {{ addr.street }}, {{ addr.city }}, {{ addr.country }}
+                </option>
+              }
+            </select>
+          } @else {
+            <div class="no-address-warn">
+              <span class="material-icons" style="font-size:15px;vertical-align:middle;">warning</span>
+              No address saved. <a routerLink="/profile">Add one in your profile.</a>
+            </div>
+          }
+
+          <!-- Promo Code -->
+          <label class="form-label" for="promo-input" style="margin-top:1rem;">Promo Code (optional)</label>
+          <input
+            id="promo-input"
+            class="form-input"
+            type="text"
+            placeholder="e.g. SUMMER20"
+            [value]="promoCode()"
+            (input)="onPromoInput($event)"
+          />
+
+          @if (orderError()) {
+            <div class="order-error">
+              <span class="material-icons" style="font-size:15px;vertical-align:middle;">error</span>
+              {{ orderError() }}
+            </div>
+          }
+
+          <button
+            class="btn-place-order"
+            (click)="placeOrder()"
+            [disabled]="isPlacingOrder() || addresses().length === 0"
+          >
+            @if (isPlacingOrder()) {
+              <span class="spinner"></span> Placing Order…
+            } @else {
+              <span class="material-icons" style="font-size:18px;vertical-align:middle;margin-right:6px;">check_circle</span>
+              Place Order (Cash on Delivery)
+            }
+          </button>
+
+          <button class="btn-cancel-checkout" (click)="toggleCheckout()">Cancel</button>
+        </div>
+      }
+    </aside>
+  </div>
+}
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-inner">
+    <span class="footer-brand">ShopITI</span>
+    <p>© 2026 ShopITI. Built as an ITI project.</p>
+  </div>
+</footer>

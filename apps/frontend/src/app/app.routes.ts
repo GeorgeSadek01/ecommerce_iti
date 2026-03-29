@@ -24,11 +24,11 @@ export const routes: Routes = [
   },
   {
     path: 'cart',
-    loadComponent: () => import('./features/home/home.component').then((m) => m.HomeComponent), // Placeholder
+    loadComponent: () => import('./features/cart/cart.component').then((m) => m.CartComponent),
   },
   {
     path: 'orders',
-    loadComponent: () => import('./features/home/home.component').then((m) => m.HomeComponent), // Placeholder
+    loadComponent: () => import('./features/orders/orders.component').then((m) => m.OrdersComponent),
   },
   {
     path: 'auth',
