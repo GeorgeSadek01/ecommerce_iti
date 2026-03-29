@@ -113,6 +113,10 @@ export const getAdminUserById = async (userId) => {
 export const updateAdminUser = async (userId, updates) => {
   const user = await findUserOrThrow(userId);
 
+  if (user.role === 'admin') {
+    throw new AppError('Admin accounts cannot be modified.', 403);
+  }
+
   if (updates.firstName !== undefined) user.firstName = updates.firstName;
   if (updates.lastName !== undefined) user.lastName = updates.lastName;
   if (updates.avatarUrl !== undefined) user.avatarUrl = updates.avatarUrl;
@@ -128,6 +132,11 @@ export const changeAdminUserRole = async (userId, nextRole, actorUserId) => {
   }
 
   const user = await findUserOrThrow(userId);
+
+  if (user.role === 'admin') {
+    throw new AppError('Admin accounts cannot have their role changed.', 403);
+  }
+
   user.role = nextRole;
   await user.save();
 
@@ -140,6 +149,10 @@ export const softDeleteAdminUser = async (userId, actorUserId) => {
   }
 
   const user = await findUserOrThrow(userId);
+
+  if (user.role === 'admin') {
+    throw new AppError('Admin accounts cannot be deleted.', 403);
+  }
 
   if (user.isDeleted) {
     throw new AppError('User is already deleted.', 409);
