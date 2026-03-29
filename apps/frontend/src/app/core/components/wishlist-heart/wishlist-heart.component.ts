@@ -1,6 +1,5 @@
 import { Component, computed, inject, input } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { Router } from '@angular/router';
 import { switchMap } from 'rxjs';
 import { AuthService } from '../../services/auth-api.service';
 import { ToastService } from '../../services/toast.service';
@@ -18,10 +17,9 @@ export class WishlistHeartComponent {
 
   private readonly wishlist = inject(WishlistService);
   private readonly auth = inject(AuthService);
-  private readonly router = inject(Router);
   private readonly toast = inject(ToastService);
 
-  /** Guests see the control (prompts login); admins do not use wishlist. */
+  /** Guests can use local wishlist; admins cannot. */
   protected readonly visible = computed(() => {
     if (!this.auth.isAuthenticated()) return true;
     const role = this.auth.currentRole();
@@ -38,11 +36,6 @@ export class WishlistHeartComponent {
   protected onClick(event: Event): void {
     event.preventDefault();
     event.stopPropagation();
-
-    if (!this.auth.isAuthenticated()) {
-      void this.router.navigate(['/auth/login']);
-      return;
-    }
 
     const id = this.productId();
     this.wishlist.toggle(id).subscribe({

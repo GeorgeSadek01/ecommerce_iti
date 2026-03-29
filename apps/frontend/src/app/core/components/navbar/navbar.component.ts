@@ -21,9 +21,9 @@ export class NavbarComponent {
 
   protected readonly wishlistCount$ = this.wishlistService.count$;
 
-  /** Wishlist API is limited to shoppers (customer / seller), not admins. */
+  /** Shoppers: server wishlist. Guests: local wishlist. Admins: hidden. */
   protected readonly showWishlistNav = computed(() => {
-    if (!this.authService.isAuthenticated()) return false;
+    if (!this.authService.isAuthenticated()) return true;
     const role = this.authService.currentRole();
     return role === 'customer' || role === 'seller';
   });

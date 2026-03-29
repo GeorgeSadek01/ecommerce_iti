@@ -25,21 +25,28 @@
 
     <!-- Actions (Right) -->
     <div class="nav-auth">
-      @if (isLoggedIn()) {
-        @if (showWishlistNav()) {
-          <a class="nav-btn-link" routerLink="/wishlist">
-            <div class="cart-icon-wrap">
-              <span class="material-icons" style="color: #e11d48;">favorite</span>
-              @if ((wishlistCount$ | async); as wc) {
-                @if (wc > 0) {
-                  <span class="cart-badge">{{ wc }}</span>
-                }
+      @if (showWishlistNav()) {
+        <a
+          class="nav-btn-link !inline-flex !items-center !gap-2 !rounded-xl !border !border-rose-100/90 !bg-white/95 !shadow-sm !ring-1 !ring-slate-100/80 transition hover:!border-rose-200 hover:!shadow-md"
+          routerLink="/wishlist"
+        >
+          <div class="cart-icon-wrap relative">
+            <span class="material-icons text-rose-500">favorite</span>
+            @if ((wishlistCount$ | async); as wc) {
+              @if (wc > 0) {
+                <span
+                  class="absolute -right-2 -top-2 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-gradient-to-br from-rose-500 to-pink-600 px-1 text-[10px] font-bold leading-none text-white shadow-md ring-2 ring-white"
+                >
+                  {{ wc > 99 ? '99+' : wc }}
+                </span>
               }
-            </div>
-            <span class="btn-text">Wishlist</span>
-          </a>
-        }
+            }
+          </div>
+          <span class="btn-text">Wishlist</span>
+        </a>
+      }
 
+      @if (isLoggedIn()) {
         <a class="nav-btn-link" routerLink="/orders">
           <span class="material-icons">receipt_long</span>
           <span class="btn-text">Orders</span>
@@ -99,18 +106,21 @@
       </button>
     </div>
 
-    @if (isLoggedIn()) {
-      @if (showWishlistNav()) {
-        <a class="mobile-wishlist-row" routerLink="/wishlist" (click)="closeMenu()">
-          <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px; color: #e11d48;">favorite</span>
-          Wishlist
-          @if ((wishlistCount$ | async); as wc) {
-            @if (wc > 0) {
-              <span class="mobile-wishlist-badge">{{ wc }}</span>
-            }
+    @if (showWishlistNav()) {
+      <a class="mobile-wishlist-row" routerLink="/wishlist" (click)="closeMenu()">
+        <span class="material-icons text-rose-500" style="font-size: 18px; vertical-align: middle; margin-right: 8px"
+          >favorite</span
+        >
+        Wishlist
+        @if ((wishlistCount$ | async); as wc) {
+          @if (wc > 0) {
+            <span class="mobile-wishlist-badge">{{ wc > 99 ? '99+' : wc }}</span>
           }
-        </a>
-      }
+        }
+      </a>
+    }
+
+    @if (isLoggedIn()) {
       <a routerLink="/orders" (click)="closeMenu()">
         <span class="material-icons" style="font-size: 18px; vertical-align: middle; margin-right: 8px;">receipt_long</span>
         My Orders
