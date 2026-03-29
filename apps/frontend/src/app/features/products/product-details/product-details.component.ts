@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { WishlistHeartComponent } from '../../../core/components/wishlist-heart/wishlist-heart.component';
 import { ProductService } from '../../../core/services/product.service';
 import { Product, Category } from '../../../core/types/product.types';
 import { ApiResponse } from '../../../core/types/auth.types';
@@ -8,7 +9,7 @@ import { ApiResponse } from '../../../core/types/auth.types';
 @Component({
   selector: 'app-product-details',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, WishlistHeartComponent],
   templateUrl: './product-details.component.html',
   styleUrl: './product-details.component.css',
 })

@@ -224,7 +224,14 @@
   justify-content: center;
   position: relative;
 }
-.category-image {
+
+.card-wishlist-corner {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+}
+.card-image {
   width: 100%;
   height: 100%;
   object-fit: cover;

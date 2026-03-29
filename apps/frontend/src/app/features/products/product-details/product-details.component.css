@@ -167,13 +167,27 @@
   letter-spacing: 0.05em;
   margin-bottom: 0.5rem;
 }
+.product-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.product-title-row .wishlist-heart-btn {
+  flex-shrink: 0;
+}
+
 .product-title {
   font-size: 2.5rem;
   font-weight: 900;
   color: #1e2640;
-  margin: 0 0 1.5rem;
+  margin: 0;
   line-height: 1.1;
   letter-spacing: -0.02em;
+  flex: 1;
+  min-width: 0;
 }
 
 .prod-rating {

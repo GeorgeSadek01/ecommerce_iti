@@ -61,12 +61,28 @@
 
         <div class="results-grid">
           @for (product of products(); track product._id) {
-          <app-product-card
-            [product]="product"
-            [categoryName]="getCategoryName(product)"
-            [primaryImage]="getPrimaryImage(product)"
-            cssClass="product-card"
-          ></app-product-card>
+            <article class="product-card" [routerLink]="['/products', product._id]">
+              <div class="card-image-wrap">
+                <div class="card-wishlist-corner">
+                  <app-wishlist-heart [productId]="product._id" />
+                </div>
+                @if (getPrimaryImage(product)) {
+                  <img [src]="getPrimaryImage(product)" [alt]="product.name" />
+                } @else {
+                  <div class="placeholder"><span class="material-icons">shopping_bag</span></div>
+                }
+              </div>
+              <div class="card-body">
+                <span class="card-cat">{{ getCategoryName(product.categoryId) }}</span>
+                <h3 class="card-name">{{ product.name }}</h3>
+                <div class="card-footer">
+                  <span class="card-price">${{ product.price | number:'1.2-2' }}</span>
+                  <span class="card-stock" [class.out]="product.stock <= 0">
+                    {{ product.stock > 0 ? 'In Stock' : 'Out of Stock' }}
+                  </span>
+                </div>
+              </div>
+            </article>
           }
         </div>
       </main>

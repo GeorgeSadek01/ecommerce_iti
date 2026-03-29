@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { WishlistHeartComponent } from '../../core/components/wishlist-heart/wishlist-heart.component';
 import { ProductService } from '../../core/services/product.service';
 import { Product, Category, ProductSearchFilters, PaginatedProducts } from '../../core/types/product.types';
 import { ApiResponse } from '../../core/types/auth.types';
@@ -9,7 +10,7 @@ import { ProductCardComponent } from '../../core/components/product-card/product
 @Component({
   selector: 'app-search',
   standalone: true,
-  imports: [CommonModule, RouterLink, ProductCardComponent],
+  imports: [CommonModule, RouterLink, WishlistHeartComponent],
   templateUrl: './search.component.html',
   styleUrl: './search.component.css',
 })

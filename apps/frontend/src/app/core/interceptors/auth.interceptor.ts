@@ -3,6 +3,7 @@ import { inject } from '@angular/core';
 import { catchError, Observable, switchMap, throwError } from 'rxjs';
 import { AuthService } from '../services/auth-api.service';
 import { TokenService } from '../services/token.service';
+import { WishlistService } from '../services/wishlist.service';
 import { SKIP_AUTH } from './interceptor-tokens';
 
 export const authInterceptor: HttpInterceptorFn = (
@@ -15,6 +16,7 @@ export const authInterceptor: HttpInterceptorFn = (
 
   const tokenService = inject(TokenService);
   const authService = inject(AuthService);
+  const wishlistService = inject(WishlistService);
 
   const authToken = tokenService.token;
   const authReq = authToken
@@ -38,6 +40,7 @@ export const authInterceptor: HttpInterceptorFn = (
         }),
         catchError((refreshError: unknown) => {
           authService.clearSession();
+          wishlistService.clearLocal();
           return throwError(() => refreshError);
         })
       );
