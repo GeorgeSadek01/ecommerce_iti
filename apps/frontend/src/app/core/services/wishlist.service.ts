@@ -201,9 +201,7 @@ export class WishlistService {
         )
       )
     ).subscribe((products) => {
-      const mapped = products
-        .filter((p): p is Product => p !== null)
-        .map((p) => this.productToWishlistProduct(p));
+      const mapped = products.filter((p): p is Product => p !== null).map((p) => this.productToWishlistProduct(p));
 
       this.enrichWishlistWithImages(mapped).subscribe({
         next: (enriched) => this.itemsSubject.next(enriched),

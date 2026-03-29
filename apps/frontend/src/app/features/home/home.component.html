@@ -153,7 +153,8 @@
                 <img [src]="getPrimaryImage(product)" [alt]="product.name" class="card-image" loading="lazy" />
                 } @else {
                 <div class="card-image-placeholder">
-                  <span class="material-icons" style="font-size: 48px; color: rgba(124, 58, 237, 0.2)">shopping_bag</span>
+                  <span class="material-icons"
+                    style="font-size: 48px; color: rgba(124, 58, 237, 0.2)">shopping_bag</span>
                 </div>
                 }
 
@@ -170,7 +171,8 @@
                 <div class="card-footer">
                   <div class="card-pricing">
                     @if ((product.discount ?? 0) > 0) {
-                    <span class="card-price-discounted">${{ (product.calculatedPrice ?? product.price) | number : '1.2-2' }}</span>
+                    <span class="card-price-discounted">${{ (product.calculatedPrice ?? product.price) | number :
+                      '1.2-2' }}</span>
                     <span class="card-price-original">${{ product.price | number : '1.2-2' }}</span>
                     } @else {
                     <span class="card-price">${{ product.price | number : '1.2-2' }}</span>
@@ -201,7 +203,8 @@
     <div class="top-deals-indicators" aria-label="Top deals pages">
       @for (page of topDealsPages(); track page; let i = $index) {
       <button type="button" class="top-deals-dot" [class.active]="topDealsPage() === i" (click)="goToTopDealsPage(i)"
-        [attr.aria-label]="'Go to deals page ' + (i + 1)" [attr.aria-current]="topDealsPage() === i ? 'true' : null"></button>
+        [attr.aria-label]="'Go to deals page ' + (i + 1)"
+        [attr.aria-current]="topDealsPage() === i ? 'true' : null"></button>
       }
     </div>
     }
@@ -264,7 +267,8 @@
               <div class="card-footer">
                 <div class="card-pricing">
                   @if ((product.discount ?? 0) > 0) {
-                  <span class="card-price-discounted">${{ (product.calculatedPrice ?? product.price) | number : '1.2-2' }}</span>
+                  <span class="card-price-discounted">${{ (product.calculatedPrice ?? product.price) | number : '1.2-2'
+                    }}</span>
                   <span class="card-price-original">${{ product.price | number : '1.2-2' }}</span>
                   } @else {
                   <span class="card-price">${{ product.price | number : '1.2-2' }}</span>

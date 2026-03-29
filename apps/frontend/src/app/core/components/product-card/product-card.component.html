@@ -7,14 +7,10 @@
     }
     <ng-container *ngIf="product._id as productId">
       <div class="card-wishlist-corner">
-        <button
-          class="save-btn"
-          [class.save-btn--active]="inWishlist()"
-          (click)="onWishlistClick($event, productId)"
+        <button class="save-btn" [class.save-btn--active]="inWishlist()" (click)="onWishlistClick($event, productId)"
           [title]="inWishlist() ? 'Remove from wishlist' : 'Add to wishlist'"
           [attr.aria-label]="inWishlist() ? 'Remove from wishlist' : 'Add to wishlist'"
-          [attr.aria-pressed]="inWishlist()"
-        >
+          [attr.aria-pressed]="inWishlist()">
           <span class="material-icons">{{ inWishlist() ? 'favorite' : 'favorite_border' }}</span>
         </button>
       </div>
