@@ -2,6 +2,7 @@ import bcrypt from 'bcryptjs';
 import { OAuth2Client } from 'google-auth-library';
 import User from '../../../core/db/Models/User/user.model.js';
 import SellerProfile from '../../../core/db/Models/Seller/sellerProfile.model.js';
+import Cart from '../../../core/db/Models/Cart/cart.model.js';
 import AppError from '../../../core/utils/AppError.js';
 import env from '../../../core/config/env.js';
 import {
@@ -23,6 +24,21 @@ const SALT_ROUNDS = 12;
 // Must be a structurally valid hash or bcrypt.compare will reject early.
 const DUMMY_HASH = bcrypt.hashSync('__dummy_password_for_timing_protection__', SALT_ROUNDS);
 const googleClient = new OAuth2Client(env.GOOGLE_CLIENT_ID || undefined);
+
+const VALID_ROLES = new Set(['customer', 'seller', 'admin']);
+
+const normalizeUserRole = async (user) => {
+  if (!user) return;
+  if (!VALID_ROLES.has(user.role)) {
+    user.role = 'customer';
+    await user.save();
+  }
+};
+
+const ensureUserCart = async (userId) => {
+  if (!userId) return;
+  await Cart.findOneAndUpdate({ userId }, { $setOnInsert: { userId } }, { upsert: true, setDefaultsOnInsert: true });
+};
 
 // ─── Register ────────────────────────────────────────────────────────────────
 
@@ -159,6 +175,9 @@ export const login = async ({ email, password }) => {
     throw new AppError('Please confirm your email address before logging in.', 403);
   }
 
+  await normalizeUserRole(user);
+  await ensureUserCart(user._id);
+
   const accessToken = signAccessToken({ id: user._id.toString(), role: user.role });
   const refreshToken = await createRefreshToken(user._id.toString());
 
@@ -256,12 +275,16 @@ export const loginWithGoogle = async ({ idToken }) => {
         firstName: givenName || firstFromName || 'Google',
         lastName: familyName || secondFromName || 'User',
         email,
+        role: 'customer',
         googleId,
         avatarUrl: picture || null,
         isEmailConfirmed: true,
       });
     }
   }
+
+  await normalizeUserRole(user);
+  await ensureUserCart(user._id);
 
   const accessToken = signAccessToken({ id: user._id.toString(), role: user.role });
   const refreshToken = await createRefreshToken(user._id.toString());

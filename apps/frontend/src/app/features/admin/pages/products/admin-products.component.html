@@ -50,14 +50,14 @@
                 <div class="col-md-4">
                     <label for="minPrice" class="form-label">Min Price</label>
                     <input id="minPrice" type="number" class="form-control" [ngModel]="minPrice()"
-                        (ngModelChange)="minPrice.set($event === '' ? null : Number($event))"
-                        (change)="onFilterChange()" [disabled]="loading()" min="0" step="0.01" />
+                        (ngModelChange)="minPrice.set($event === '' ? null : +$event)" (change)="onFilterChange()"
+                        [disabled]="loading()" min="0" step="0.01" />
                 </div>
                 <div class="col-md-4">
                     <label for="maxPrice" class="form-label">Max Price</label>
                     <input id="maxPrice" type="number" class="form-control" [ngModel]="maxPrice()"
-                        (ngModelChange)="maxPrice.set($event === '' ? null : Number($event))"
-                        (change)="onFilterChange()" [disabled]="loading()" min="0" step="0.01" />
+                        (ngModelChange)="maxPrice.set($event === '' ? null : +$event)" (change)="onFilterChange()"
+                        [disabled]="loading()" min="0" step="0.01" />
                 </div>
                 <div class="col-md-4 d-flex align-items-end mt-2 mt-md-0">
                     <button class="btn btn-primary" (click)="onSearch()" [disabled]="loading()">
@@ -159,7 +159,7 @@
                         <label class="form-label">Product ID</label>
                         <p class="form-control-plaintext"><code>{{ product._id }}</code></p>
                     </div>
-                    <div class="mb-3">
+                    <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label">Product Name</label>
                             <p class="form-control-plaintext">{{ product.name }}</p>
@@ -167,80 +167,79 @@
                         <div class="mb-3">
                             <label class="form-label">Slug</label>
                             <p class="form-control-plaintext">{{ product.slug }}</p>
-                            <div class="mb-3">
-                                <label class="form-label">Seller</label>
-                                <p class="form-control-plaintext">{{ product.seller?.storeName || 'Unknown seller' }}
-                                </p>
-                                <small class="text-secondary">{{ product.seller?.user?.email || product.sellerId
-                                    }}</small>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Category</label>
-                                <p class="form-control-plaintext">{{ product.category?.name || product.categoryId }}</p>
-                            </div>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Seller</label>
+                            <p class="form-control-plaintext">{{ product.seller?.storeName || 'Unknown seller' }}</p>
+                            <small class="text-secondary">{{ product.seller?.user?.email || product.sellerId }}</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Category</label>
+                            <p class="form-control-plaintext">{{ product.category?.name || product.categoryId }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-1">
+                    <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label">Price</label>
                             <p class="form-control-plaintext">${{ product.price | number: '1.2-2' }}</p>
                         </div>
                         <div class="mb-3">
-                            <div class="mb-3">
-                                <label class="form-label">Stock</label>
-                                <p class="form-control-plaintext">{{ product.stock ?? 0 }}</p>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label">Active</label>
-                                    <p class="form-control-plaintext">
-                                        @if (product.isActive) {
-                                        <span class="badge bg-success">Active</span>
-                                        } @else {
-                                        <span class="badge bg-secondary">Inactive</span>
-                                        }
-                                    </p>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Created Date</label>
-                                    <p class="form-control-plaintext">{{ product.createdAt | date: 'short' }}</p>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Updated Date</label>
-                                    <p class="form-control-plaintext">{{ product.updatedAt | date: 'short' }}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Moderation Section -->
-                        <div class="border-top pt-3 mt-3">
-                            <h6>Moderation</h6>
-                            <div class="mb-3">
-                                <label for="moderationPrice" class="form-label">Update Price</label>
-                                <input id="moderationPrice" type="number" class="form-control"
-                                    [ngModel]="moderationPrice()"
-                                    (ngModelChange)="moderationPrice.set($event === '' ? null : Number($event))"
-                                    min="0.01" step="0.01" />
-                            </div>
-                            <div class="mb-3">
-                                <label for="moderationStock" class="form-label">Update Stock</label>
-                                <input id="moderationStock" type="number" class="form-control"
-                                    [ngModel]="moderationStock()"
-                                    (ngModelChange)="moderationStock.set($event === '' ? null : Number($event))" min="0"
-                                    step="1" />
-                            </div>
-                            <div class="form-check form-switch">
-                                <input class="form-check-input" type="checkbox" id="moderationActive"
-                                    [ngModel]="moderationIsActive()"
-                                    (ngModelChange)="moderationIsActive.set(!!$event)" />
-                                <label class="form-check-label" for="moderationActive">Product is active</label>
-                            </div>
+                            <label class="form-label">Stock</label>
+                            <p class="form-control-plaintext">{{ product.stock ?? 0 }}</p>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" (click)="closeProductModal()">Cancel</button>
-                        <button type="button" class="btn btn-primary" (click)="applyModerationChanges()">Apply
-                            Changes</button>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label">Active</label>
+                            <p class="form-control-plaintext">
+                                @if (product.isActive) {
+                                <span class="badge bg-success">Active</span>
+                                } @else {
+                                <span class="badge bg-secondary">Inactive</span>
+                                }
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Created Date</label>
+                            <p class="form-control-plaintext">{{ product.createdAt | date: 'short' }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Updated Date</label>
+                            <p class="form-control-plaintext">{{ product.updatedAt | date: 'short' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Moderation Section -->
+                <div class="border-top pt-3 mt-3">
+                    <h6>Moderation</h6>
+                    <div class="mb-3">
+                        <label for="moderationPrice" class="form-label">Update Price</label>
+                        <input id="moderationPrice" type="number" class="form-control" [ngModel]="moderationPrice()"
+                            (ngModelChange)="moderationPrice.set($event === '' ? null : +$event)" min="0.01"
+                            step="0.01" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="moderationStock" class="form-label">Update Stock</label>
+                        <input id="moderationStock" type="number" class="form-control" [ngModel]="moderationStock()"
+                            (ngModelChange)="moderationStock.set($event === '' ? null : +$event)" min="0" step="1" />
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="moderationActive"
+                            [ngModel]="moderationIsActive()" (ngModelChange)="moderationIsActive.set(!!$event)" />
+                        <label class="form-check-label" for="moderationActive">Product is active</label>
                     </div>
                 </div>
             </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" (click)="closeProductModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" (click)="applyModerationChanges()">Apply
+                    Changes</button>
+            </div>
         </div>
-        }
+    </div>
+</div>
+}

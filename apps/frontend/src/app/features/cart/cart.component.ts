@@ -3,10 +3,13 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { CartService } from '../../core/services/cart.service';
 import { OrderService } from '../../core/services/order.service';
+import { PaymentService } from '../../core/services/payment.service';
 import { AuthService } from '../../core/services/auth-api.service';
+import { ToastService } from '../../core/services/toast.service';
 import { CartItem } from '../../core/types/cart.types';
 import { Product } from '../../core/types/product.types';
 import { Address } from '../../core/types/auth.types';
+import { extractApiErrorMessage } from '../../core/utils/http-error.util';
 
 @Component({
   selector: 'app-cart',
@@ -23,6 +26,7 @@ export class CartComponent implements OnInit {
   protected readonly selectedAddressId = signal<string>('');
   protected readonly promoCode = signal('');
   protected readonly isPlacingOrder = signal(false);
+  protected readonly isRedirectingToPayment = signal(false);
   protected readonly orderSuccess = signal(false);
   protected readonly orderError = signal<string | null>(null);
   protected readonly showCheckout = signal(false);
@@ -34,17 +38,18 @@ export class CartComponent implements OnInit {
   constructor(
     protected readonly cartService: CartService,
     private readonly orderService: OrderService,
+    private readonly paymentService: PaymentService,
     private readonly authService: AuthService,
+    private readonly toast: ToastService,
     private readonly router: Router
   ) {}
 
   ngOnInit(): void {
-    if (!this.authService.isAuthenticated()) {
-      this.router.navigate(['/auth/login']);
-      return;
-    }
     this.loadCart();
-    this.loadAddresses();
+
+    if (this.authService.isAuthenticated()) {
+      this.loadAddresses();
+    }
   }
 
   private loadCart(): void {
@@ -52,8 +57,8 @@ export class CartComponent implements OnInit {
     this.error.set(null);
     this.cartService.loadCart().subscribe({
       next: () => this.isLoading.set(false),
-      error: () => {
-        this.error.set('Failed to load your cart. Please try again.');
+      error: (err: unknown) => {
+        this.error.set(extractApiErrorMessage(err, 'Failed to load your cart. Please try again.'));
         this.isLoading.set(false);
       },
     });
@@ -144,6 +149,12 @@ export class CartComponent implements OnInit {
   }
 
   protected placeOrder(): void {
+    if (!this.authService.isAuthenticated()) {
+      this.toast.info('Please log in to place your order.');
+      this.router.navigate(['/auth/login']);
+      return;
+    }
+
     const addressId = this.selectedAddressId();
     if (!addressId) {
       this.orderError.set('Please select a delivery address.');
@@ -162,11 +173,52 @@ export class CartComponent implements OnInit {
         this.isPlacingOrder.set(false);
         this.orderSuccess.set(true);
         this.showCheckout.set(false);
+        this.cartService.clearCart().subscribe({
+          next: () => {},
+          error: () => {
+            this.cartService.setItems([]);
+          },
+        });
+        this.promoCode.set('');
       },
       error: (err) => {
         this.isPlacingOrder.set(false);
         const msg = err?.error?.message ?? 'Failed to place the order. Please try again.';
         this.orderError.set(msg);
+      },
+    });
+  }
+
+  protected checkoutWithCard(): void {
+    if (!this.authService.isAuthenticated()) {
+      this.toast.info('Please log in to continue with card payment.');
+      this.router.navigate(['/auth/login']);
+      return;
+    }
+
+    const addressId = this.selectedAddressId();
+    if (!addressId) {
+      this.orderError.set('Please select a delivery address.');
+      return;
+    }
+
+    this.orderError.set(null);
+    this.isRedirectingToPayment.set(true);
+
+    this.paymentService.createCheckoutSession(addressId).subscribe({
+      next: (res) => {
+        const checkoutUrl = res.data?.checkoutUrl;
+        if (!checkoutUrl) {
+          this.isRedirectingToPayment.set(false);
+          this.orderError.set('Failed to start payment session. Please try again.');
+          return;
+        }
+
+        window.location.assign(checkoutUrl);
+      },
+      error: (err: unknown) => {
+        this.isRedirectingToPayment.set(false);
+        this.orderError.set(extractApiErrorMessage(err, 'Failed to start Stripe checkout.'));
       },
     });
   }

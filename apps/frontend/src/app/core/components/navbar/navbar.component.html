@@ -38,21 +38,22 @@
       </a>
       }
 
+      <!-- Cart: visible to all users (guests and authenticated) -->
+      <a class="nav-btn-link" routerLink="/cart">
+        <div class="cart-icon-wrap">
+          <span class="material-icons">shopping_cart</span>
+          @if (cartCount() > 0) {
+          <span class="cart-badge">{{ cartCount() }}</span>
+          }
+        </div>
+        <span class="btn-text">Cart</span>
+      </a>
+
       @if (isLoggedIn()) {
-        <a class="nav-btn-link" routerLink="/orders">
-          <span class="material-icons">receipt_long</span>
-          <span class="btn-text">Orders</span>
-        </a>
-        
-        <a class="nav-btn-link" routerLink="/cart">
-          <div class="cart-icon-wrap">
-            <span class="material-icons">shopping_cart</span>
-            @if (cartCount() > 0) {
-              <span class="cart-badge">{{ cartCount() }}</span>
-            }
-          </div>
-          <span class="btn-text">Cart</span>
-        </a>
+      <a class="nav-btn-link" routerLink="/orders">
+        <span class="material-icons">receipt_long</span>
+        <span class="btn-text">Orders</span>
+      </a>
 
       <!-- duplicate wishlist removed (kept primary wishlist button above) -->
 
@@ -105,16 +106,18 @@
     </a>
     }
 
+    <!-- Mobile cart: visible to everyone -->
+    <a routerLink="/cart" (click)="closeMenu()">
+      <span class="material-icons"
+        style="font-size: 18px; vertical-align: middle; margin-right: 8px">shopping_cart</span>
+      Cart
+    </a>
+
     @if (isLoggedIn()) {
     <a routerLink="/orders" (click)="closeMenu()">
       <span class="material-icons"
         style="font-size: 18px; vertical-align: middle; margin-right: 8px">receipt_long</span>
       My Orders
-    </a>
-    <a routerLink="/cart" (click)="closeMenu()">
-      <span class="material-icons"
-        style="font-size: 18px; vertical-align: middle; margin-right: 8px">shopping_cart</span>
-      Cart
     </a>
     <!-- duplicate mobile wishlist entry removed (primary mobile wishlist row above is used) -->
     <a [routerLink]="getDashboardRoute()" (click)="closeMenu()">

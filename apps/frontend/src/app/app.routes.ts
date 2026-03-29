@@ -12,7 +12,8 @@ export const routes: Routes = [
   },
   {
     path: 'products/:id',
-    loadComponent: () => import('./features/products/product-details/product-details.component').then((m) => m.ProductDetailsComponent),
+    loadComponent: () =>
+      import('./features/products/product-details/product-details.component').then((m) => m.ProductDetailsComponent),
   },
   {
     path: 'search',
@@ -28,6 +29,10 @@ export const routes: Routes = [
   },
   {
     path: 'orders',
+    loadComponent: () => import('./features/orders/orders.component').then((m) => m.OrdersComponent),
+  },
+  {
+    path: 'orders/:id',
     loadComponent: () => import('./features/orders/orders.component').then((m) => m.OrdersComponent),
   },
   {

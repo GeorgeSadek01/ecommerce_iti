@@ -3,8 +3,53 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { WishlistHeartComponent } from '../../core/components/wishlist-heart/wishlist-heart.component';
 import { ProductService } from '../../core/services/product.service';
+import { BannerService, PublicBanner } from '../../core/services/banner.service';
 import { AuthService } from '../../core/services/auth-api.service';
 import { Product, Category } from '../../core/types/product.types';
+
+interface HomeBannerSlide {
+  id: string;
+  image: string;
+  badge: string;
+  title: string;
+  subtitle: string;
+  buttonText: string;
+  link: string;
+  external: boolean;
+}
+
+const DEFAULT_BANNER_SLIDES: HomeBannerSlide[] = [
+  {
+    id: 'default-1',
+    image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=1600&auto=format&fit=crop',
+    badge: 'Welcome to Our Store',
+    title: 'Shop Smarter. Live Better.',
+    subtitle: 'Discover thousands of products from verified sellers across all categories.',
+    buttonText: 'Start Shopping',
+    link: '/search',
+    external: false,
+  },
+  {
+    id: 'default-2',
+    image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1600&auto=format&fit=crop',
+    badge: 'Fast & Secure',
+    title: 'Lightning Fast Delivery',
+    subtitle: 'Get your favourite items delivered straight to your door with real-time tracking.',
+    buttonText: 'View Deals',
+    link: '/search',
+    external: false,
+  },
+  {
+    id: 'default-3',
+    image: 'https://images.unsplash.com/photo-1607083206968-13611e3d76ba?q=80&w=1600&auto=format&fit=crop',
+    badge: 'Daily Deals',
+    title: 'Unbeatable Offers Every Day',
+    subtitle: 'Save up to 40% on top brands with our exclusive daily promotions.',
+    buttonText: 'See Products',
+    link: '/search',
+    external: false,
+  },
+];
 
 @Component({
   selector: 'app-home',
@@ -30,33 +75,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   private touchStartX = 0;
   private touchCurrentX = 0;
   private isPaused = false;
-
-  protected readonly bannerSlides = [
-    {
-      image: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?q=80&w=1600&auto=format&fit=crop',
-      badge: 'Welcome to Our Store',
-      title: 'Shop Smarter. Live Better.',
-      subtitle: 'Discover thousands of products from verified sellers across all categories.',
-      buttonText: 'Start Shopping',
-      link: '/search',
-    },
-    {
-      image: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?q=80&w=1600&auto=format&fit=crop',
-      badge: 'Fast & Secure',
-      title: 'Lightning Fast Delivery',
-      subtitle: 'Get your favourite items delivered straight to your door with real-time tracking.',
-      buttonText: 'View Deals',
-      link: '/search',
-    },
-    {
-      image: 'https://images.unsplash.com/photo-1607083206968-13611e3d76ba?q=80&w=1600&auto=format&fit=crop',
-      badge: 'Daily Deals',
-      title: 'Unbeatable Offers Every Day',
-      subtitle: 'Save up to 40% on top brands with our exclusive daily promotions.',
-      buttonText: 'See Products',
-      link: '/search',
-    },
-  ];
+  protected readonly bannerSlides = signal<HomeBannerSlide[]>(DEFAULT_BANNER_SLIDES);
 
   protected readonly isLoggedIn = computed(() => this.authService.isAuthenticated());
   protected readonly topDealsPages = computed(() => {
@@ -75,6 +94,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly productService: ProductService,
+    private readonly bannerService: BannerService,
     private readonly authService: AuthService,
     private readonly router: Router
   ) {
@@ -91,6 +111,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.loadCategories();
     this.loadProducts();
     this.startBannerSlider();
+    this.loadBanners();
   }
 
   @HostListener('window:resize')
@@ -108,22 +129,33 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.slideInterval) {
       clearInterval(this.slideInterval);
     }
+
+    if (this.bannerSlides().length <= 1) {
+      return;
+    }
+
     this.slideInterval = setInterval(() => {
       if (!this.isPaused) this.nextBanner();
     }, 5000);
   }
 
   protected nextBanner(): void {
-    this.currentBannerSlide.update((curr) => (curr + 1) % this.bannerSlides.length);
+    const total = this.bannerSlides().length;
+    if (total <= 1) return;
+    this.currentBannerSlide.update((curr) => (curr + 1) % total);
   }
 
   protected prevBanner(): void {
-    this.currentBannerSlide.update((curr) => (curr - 1 + this.bannerSlides.length) % this.bannerSlides.length);
+    const total = this.bannerSlides().length;
+    if (total <= 1) return;
+    this.currentBannerSlide.update((curr) => (curr - 1 + total) % total);
   }
 
   protected goToBanner(index: number): void {
+    const total = this.bannerSlides().length;
+    if (index < 0 || index >= total) return;
+
     this.currentBannerSlide.set(index);
-    if (this.slideInterval) clearInterval(this.slideInterval);
     this.startBannerSlider();
   }
 
@@ -174,6 +206,66 @@ export class HomeComponent implements OnInit, OnDestroy {
         // non-fatal — page still works without categories
       },
     });
+  }
+
+  private loadBanners(): void {
+    this.bannerService.getBanners(8).subscribe({
+      next: (banners) => {
+        const mappedSlides = banners
+          .filter((banner) => typeof banner.imageUrl === 'string' && banner.imageUrl.trim().length > 0)
+          .map((banner) => this.mapBannerToSlide(banner));
+
+        this.setBannerSlides(mappedSlides);
+      },
+      error: () => {
+        this.setBannerSlides(DEFAULT_BANNER_SLIDES);
+      },
+    });
+  }
+
+  private setBannerSlides(slides: HomeBannerSlide[]): void {
+    const safeSlides = slides.length ? slides : DEFAULT_BANNER_SLIDES;
+    this.bannerSlides.set(safeSlides);
+
+    if (this.currentBannerSlide() >= safeSlides.length) {
+      this.currentBannerSlide.set(0);
+    }
+
+    this.startBannerSlider();
+  }
+
+  private mapBannerToSlide(banner: PublicBanner): HomeBannerSlide {
+    const link = this.normalizeBannerLink(banner.linkUrl);
+    const title = (banner.title || 'Featured Collection').trim();
+
+    return {
+      id: banner.id,
+      image: banner.imageUrl,
+      badge: 'Featured',
+      title,
+      subtitle: 'Discover handpicked offers and trending products from verified sellers.',
+      buttonText: 'Shop Now',
+      link,
+      external: this.isExternalLink(link),
+    };
+  }
+
+  private normalizeBannerLink(linkUrl?: string | null): string {
+    if (!linkUrl || !linkUrl.trim()) {
+      return '/search';
+    }
+
+    const rawLink = linkUrl.trim();
+
+    if (this.isExternalLink(rawLink)) {
+      return rawLink;
+    }
+
+    return rawLink.startsWith('/') ? rawLink : `/${rawLink}`;
+  }
+
+  protected isExternalLink(link: string): boolean {
+    return /^https?:\/\//i.test(link) || /^\/\//.test(link);
   }
 
   private loadProducts(categoryId?: string): void {

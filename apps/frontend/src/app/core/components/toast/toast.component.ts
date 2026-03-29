@@ -1,13 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy } from '@angular/core';
-import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { ToastService, ToastMessage } from '../../services/toast.service';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-toast-container',
   standalone: true,
-  imports: [CommonModule, NgForOf, NgIf, AsyncPipe],
+  imports: [CommonModule],
   template: `
     <div class="toast-wrap" aria-live="polite" aria-atomic="true">
       <div *ngFor="let t of toasts; trackBy: trackById" class="toast" [ngClass]="t.type">

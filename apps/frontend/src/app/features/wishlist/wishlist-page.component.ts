@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
-import { RouterLink, Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { ProductCardComponent } from '../../core/components/product-card/product-card.component';
 import { forkJoin, Observable } from 'rxjs';
 import { WishlistService } from '../../core/services/wishlist.service';
+import { CartService } from '../../core/services/cart.service';
 import { WishlistProduct } from '../../core/types/wishlist.types';
 import { ToastService } from '../../core/services/toast.service';
 import { extractApiErrorMessage } from '../../core/utils/http-error.util';
@@ -17,8 +18,8 @@ import { extractApiErrorMessage } from '../../core/utils/http-error.util';
 })
 export class WishlistPageComponent implements OnInit {
   private readonly wishlist = inject(WishlistService);
+  private readonly cart = inject(CartService);
   private readonly toast = inject(ToastService);
-  private readonly router = inject(Router);
 
   protected readonly items$: Observable<WishlistProduct[]> = this.wishlist.items$;
 
@@ -44,9 +45,10 @@ export class WishlistPageComponent implements OnInit {
   }
 
   protected addToCart(productId: string): void {
-    // Navigate to product details where user can add to cart
-    this.router.navigate(['/products', productId]);
-    this.toast.info('Open product page to add to cart');
+    this.cart.addItem(productId, 1).subscribe({
+      next: () => this.toast.success('Added to cart'),
+      error: (err: unknown) => this.toast.error(extractApiErrorMessage(err, 'Could not add item to cart.')),
+    });
   }
 
   protected clearAll(items: WishlistProduct[]): void {

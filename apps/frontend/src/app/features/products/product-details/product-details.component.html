@@ -64,7 +64,11 @@
       <!-- Info -->
       <div class="info-section">
         <span class="category-tag">{{ getCategoryName(prod.categoryId) }}</span>
-        <h1 class="product-title">{{ prod.name }}</h1>
+
+        <div class="product-title-row">
+          <h1 class="product-title">{{ prod.name }}</h1>
+          <app-wishlist-heart [productId]="prod._id" />
+        </div>
 
         <div class="seller-row">
           <div class="store-badge">
@@ -81,30 +85,20 @@
           }
         </div>
 
-        <!-- Info -->
-        <div class="info-section">
-          <span class="category-tag">{{ getCategoryName(prod.categoryId) }}</span>
+        <div class="price-wrap">
+          <span class="price">${{ prod.price | number : '1.2-2' }}</span>
 
-          <div class="product-title-row">
-            <h1 class="product-title">{{ prod.name }}</h1>
-            <app-wishlist-heart [productId]="prod._id" />
-          </div>
-
-          <div class="price-wrap">
-            <span class="price">${{ prod.price | number : '1.2-2' }}</span>
-
-            @if (prod.stock > 0) {
-            <span class="stock-badge in-stock">
-              <span class="material-icons">check_circle</span>
-              In Stock ({{ prod.stock }} available)
-            </span>
-            } @else {
-            <span class="stock-badge out-of-stock">
-              <span class="material-icons">cancel</span>
-              Out of Stock
-            </span>
-            }
-          </div>
+          @if (prod.stock > 0) {
+          <span class="stock-badge in-stock">
+            <span class="material-icons">check_circle</span>
+            In Stock ({{ prod.stock }} available)
+          </span>
+          } @else {
+          <span class="stock-badge out-of-stock">
+            <span class="material-icons">cancel</span>
+            Out of Stock
+          </span>
+          }
         </div>
 
         <div class="description-box">
@@ -146,9 +140,9 @@
         </div>
 
         <div class="actions">
-          <button class="btn-add-cart" [disabled]="prod.stock <= 0">
+          <button class="btn-add-cart" [disabled]="prod.stock <= 0 || isAddingToCart()" (click)="addToCart(prod._id)">
             <span class="material-icons">add_shopping_cart</span>
-            Add to Cart
+            {{ isAddingToCart() ? 'Adding...' : 'Add to Cart' }}
           </button>
         </div>
 

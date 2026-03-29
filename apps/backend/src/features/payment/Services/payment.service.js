@@ -7,6 +7,7 @@ import Order from '../../../core/db/Models/Order/order.model.js';
 import Payment from '../../../core/db/Models/Payment/payment.model.js';
 import Product from '../../../core/db/Models/Product/product.model.js';
 import User from '../../../core/db/Models/User/user.model.js';
+import Address from '../../../core/db/Models/User/address.model.js';
 import AppError from '../../../core/utils/AppError.js';
 import {
   sendOrderPlacedEmail,
@@ -22,10 +23,28 @@ async function getUserEmailInfo(userId) {
   return user;
 }
 
+async function assertAddressBelongsToUser(userId, addressId) {
+  const address = await Address.findOne({ _id: addressId, userId });
+  if (!address) {
+    throw new AppError("Invalid address, or this address doesn't belong to this user", 400);
+  }
+}
+
+async function clearUserCartItems(userId, dbSession) {
+  const carts = await Cart.find({ userId }).select('_id').session(dbSession);
+  const cartIds = carts.map((cart) => cart._id);
+
+  if (!cartIds.length) {
+    return;
+  }
+
+  await CartItem.deleteMany({ cartId: { $in: cartIds } }, { session: dbSession });
+}
+
 // ─── Bring Order Items ────────────────────────────────────────────────────────
 
 async function bringOrderItems(userId) {
-  const cart = await Cart.findOne({ userId });
+  const cart = await Cart.findOne({ userId }).sort({ updatedAt: -1, _id: -1 });
   if (!cart) throw new AppError('Cart not found', 404);
 
   const cartItems = await CartItem.find({ cartId: cart._id }).populate({
@@ -70,6 +89,8 @@ async function bringOrderItems(userId) {
 // ─── Place Order (Cash on Delivery) ──────────────────────────────────────────
 
 export const placeOrder = async (userId, addressId) => {
+  await assertAddressBelongsToUser(userId, addressId);
+
   const { orderItems, subtotal } = await bringOrderItems(userId);
   const user = await getUserEmailInfo(userId);
 
@@ -92,6 +113,8 @@ export const placeOrder = async (userId, addressId) => {
       ],
       { session: dbSession }
     );
+
+    await clearUserCartItems(userId, dbSession);
 
     await dbSession.commitTransaction();
   } catch (err) {
@@ -121,6 +144,8 @@ export const placeOrder = async (userId, addressId) => {
 // ─── Create Checkout Session (Credit Card) ────────────────────────────────────
 
 export const createCheckoutSession = async (userId, addressId) => {
+  await assertAddressBelongsToUser(userId, addressId);
+
   const { orderItems, subtotal } = await bringOrderItems(userId);
   const user = await getUserEmailInfo(userId);
 
@@ -145,10 +170,22 @@ export const createCheckoutSession = async (userId, addressId) => {
       { session: dbSession }
     );
 
+    const orderId = order._id.toString();
+    const successBase = env.CLIENT_URL_SUCCESS_PAYMENT || `${env.FRONTEND_URL}/orders`;
+    const cancelBase = env.CLIENT_URL_FAILURE_PAYMENT || `${env.FRONTEND_URL}/cart`;
+    const resolvedSuccessBase = successBase.includes(':orderId')
+      ? successBase.replace(':orderId', orderId)
+      : successBase.endsWith('/orders')
+        ? `${successBase}/${orderId}`
+        : successBase;
+    const successJoiner = successBase.includes('?') ? '&' : '?';
+    const cancelJoiner = cancelBase.includes('?') ? '&' : '?';
+
     try {
       stripeSession = await stripe.checkout.sessions.create({
         mode: 'payment',
         payment_method_types: ['card'],
+        customer_email: user.email,
         line_items: orderItems.map((item) => ({
           price_data: {
             currency: 'usd',
@@ -157,10 +194,10 @@ export const createCheckoutSession = async (userId, addressId) => {
           },
           quantity: item.quantity,
         })),
-        success_url: env.CLIENT_URL_SUCCESS_PAYMENT,
-        cancel_url: env.CLIENT_URL_FAILURE_PAYMENT,
+        success_url: `${resolvedSuccessBase}${successJoiner}orderId=${orderId}&session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${cancelBase}${cancelJoiner}orderId=${orderId}&payment=cancelled`,
         metadata: {
-          orderId: order._id.toString(),
+          orderId,
           userId: userId.toString(),
         },
       });
@@ -199,8 +236,14 @@ export const createCheckoutSession = async (userId, addressId) => {
 // ─── Handle Successful Payment (Stripe Webhook) ───────────────────────────────
 
 export const handleSuccessfulPayment = async (session) => {
-  const orderId = session.metadata.orderId;
-  const userId = session.metadata.userId;
+  const orderId = session?.metadata?.orderId;
+  const userId = session?.metadata?.userId;
+
+  if (!orderId || !userId) {
+    throw new AppError('Stripe session metadata is incomplete', 400);
+  }
+
+  const transactionId = String(session.payment_intent ?? session.id);
 
   const dbSession = await mongoose.startSession();
   dbSession.startTransaction();
@@ -210,9 +253,14 @@ export const handleSuccessfulPayment = async (session) => {
     order = await Order.findById(orderId).session(dbSession);
     if (!order) throw new AppError('Order not found', 404);
 
+    if (order.isPaid) {
+      await dbSession.abortTransaction();
+      return;
+    }
+
     const existingPayment = await Payment.findOne({
       provider: 'stripe',
-      providerTransactionId: session.payment_intent,
+      providerTransactionId: transactionId,
     }).session(dbSession);
 
     if (existingPayment) {
@@ -231,7 +279,7 @@ export const handleSuccessfulPayment = async (session) => {
         {
           orderId: order._id,
           provider: 'stripe',
-          providerTransactionId: session.payment_intent,
+          providerTransactionId: transactionId,
           status: 'completed',
           amount: session.amount_total / 100,
           currency: session.currency,
@@ -239,6 +287,8 @@ export const handleSuccessfulPayment = async (session) => {
       ],
       { session: dbSession }
     );
+
+    await clearUserCartItems(userId, dbSession);
 
     await dbSession.commitTransaction();
   } catch (err) {
@@ -256,6 +306,30 @@ export const handleSuccessfulPayment = async (session) => {
     firstName: user.firstName,
     orderId: order._id.toString(),
   });
+};
+
+export const handleExpiredCheckoutSession = async (session) => {
+  const orderId = session?.metadata?.orderId;
+  if (!orderId) return;
+
+  const order = await Order.findById(orderId);
+  if (!order || order.isPaid) return;
+
+  order.status = 'cancelled';
+  order.sessionURL = null;
+  await order.save();
+};
+
+export const handleFailedCheckoutSession = async (session) => {
+  const orderId = session?.metadata?.orderId;
+  if (!orderId) return;
+
+  const order = await Order.findById(orderId);
+  if (!order || order.isPaid) return;
+
+  order.status = 'cancelled';
+  order.sessionURL = null;
+  await order.save();
 };
 
 // ─── Confirm Order (Shipped) ──────────────────────────────────────────────────

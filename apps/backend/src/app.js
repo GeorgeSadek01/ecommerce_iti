@@ -18,6 +18,7 @@ import orderRoutes from './features/orders/orders.routes.js';
 import adminPanelRoutes from './features/adminPanel/adminPanel.routes.js';
 import sellerPanelRoutes from './features/sellerPanel/sellerPanel.routes.js';
 import promoCodeRoutes from './features/promoCode/promoCode.routes.js';
+import bannersRoutes from './features/banners/banners.routes.js';
 import authenticate from './core/middlewares/authenticate.js';
 
 import { webhook } from './features/payment/Controllers/payment.controller.js';
@@ -73,6 +74,7 @@ app.use('/api/v1/orders', authenticate, orderRoutes);
 app.use('/api/v1/admin', adminPanelRoutes);
 app.use('/api/v1/seller', sellerPanelRoutes);
 app.use('/api/v1/promo-codes', promoCodeRoutes);
+app.use('/api/v1/banners', bannersRoutes);
 
 // ─── 404 handler ───────────────────────────────────────────────────────────
 // Use generic middleware for 404 to avoid path-to-regexp parsing issues

@@ -66,11 +66,11 @@ const env = {
   STRIPE_WEBHOOK_KEY: requiredInProd('STRIPE_WEBHOOK_KEY'),
   CLIENT_URL_SUCCESS_PAYMENT: optional(
     'CLIENT_URL_SUCCESS_PAYMENT',
-    `${optional('FRONTEND_URL', 'http://localhost:4200')}/success.html`
+    `${optional('FRONTEND_URL', 'http://localhost:4200')}/orders`
   ),
   CLIENT_URL_FAILURE_PAYMENT: optional(
     'CLIENT_URL_FAILURE_PAYMENT',
-    `${optional('FRONTEND_URL', 'http://localhost:4200')}/failure.html`
+    `${optional('FRONTEND_URL', 'http://localhost:4200')}/cart`
   ),
 
   // ─── Google OAuth ──────────────────────────────────────────────────────

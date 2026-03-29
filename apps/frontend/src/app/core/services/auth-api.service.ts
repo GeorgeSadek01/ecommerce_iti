@@ -1,6 +1,6 @@
 import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, computed, signal } from '@angular/core';
-import { finalize, map, Observable, tap } from 'rxjs';
+import { catchError, finalize, map, Observable, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   Address,
@@ -30,13 +30,21 @@ export class AuthService {
   readonly currentRole = computed<UserRole | null>(() => this.userSignal()?.role ?? this.getRoleFromToken());
   readonly isLoading = computed(() => this.loadingSignal());
 
-  constructor(
-    private readonly http: HttpClient,
-    private readonly tokenService: TokenService
-  ) {}
+  constructor(private readonly http: HttpClient, private readonly tokenService: TokenService) {}
 
   isAuthenticated(): boolean {
     return Boolean(this.tokenService.token);
+  }
+
+  ensureAuthenticated(): Observable<boolean> {
+    if (this.isAuthenticated()) {
+      return of(true);
+    }
+
+    return this.refreshToken().pipe(
+      map(() => true),
+      catchError(() => of(false))
+    );
   }
 
   register(payload: RegisterPayload): Observable<ApiResponse<{ user: AuthUser }>> {
