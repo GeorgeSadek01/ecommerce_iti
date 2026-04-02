@@ -20,9 +20,9 @@
         <div class="filter-group">
           <h3>Price Range</h3>
           <div class="price-inputs">
-            <input type="number" placeholder="Min" (change)="loadResults()" />
+            <input type="number" placeholder="Min" [value]="minPrice() ?? ''" (change)="updateMinPrice($event)" />
             <span>-</span>
-            <input type="number" placeholder="Max" (change)="loadResults()" />
+            <input type="number" placeholder="Max" [value]="maxPrice() ?? ''" (change)="updateMaxPrice($event)" />
           </div>
         </div>
       </aside>
@@ -32,7 +32,12 @@
         <div class="results-header">
           <div class="results-info">
             <h1>Search Results</h1>
-            <p>Showing {{ products().length }} products for "{{ searchQuery() }}"</p>
+            <p>
+              Showing {{ products().length }} of {{ totalResults() }} products for "{{ searchQuery() }}"
+              @if (totalPages() > 1) {
+              <span> • Page {{ currentPage() }} of {{ totalPages() }}</span>
+              }
+            </p>
           </div>
           <div class="results-sort">
             <label>Sort by:</label>
@@ -61,30 +66,51 @@
 
         <div class="results-grid">
           @for (product of products(); track product._id) {
-            <article class="product-card" [routerLink]="['/products', product._id]">
-              <div class="card-image-wrap">
-                <div class="card-wishlist-corner">
-                  <app-wishlist-heart [productId]="product._id" />
-                </div>
-                @if (getPrimaryImage(product)) {
-                  <img [src]="getPrimaryImage(product)" [alt]="product.name" />
-                } @else {
-                  <div class="placeholder"><span class="material-icons">shopping_bag</span></div>
-                }
+          <article class="product-card" [routerLink]="['/products', product._id]">
+            <div class="card-image-wrap">
+              <div class="card-wishlist-corner">
+                <app-wishlist-heart [productId]="product._id" />
               </div>
-              <div class="card-body">
-                <span class="card-cat">{{ getCategoryName(product.categoryId) }}</span>
-                <h3 class="card-name">{{ product.name }}</h3>
-                <div class="card-footer">
-                  <span class="card-price">${{ product.price | number:'1.2-2' }}</span>
-                  <span class="card-stock" [class.out]="product.stock <= 0">
-                    {{ product.stock > 0 ? 'In Stock' : 'Out of Stock' }}
-                  </span>
-                </div>
+              @if (getPrimaryImage(product)) {
+              <img [src]="getPrimaryImage(product)" [alt]="product.name" />
+              } @else {
+              <div class="placeholder"><span class="material-icons">shopping_bag</span></div>
+              }
+            </div>
+            <div class="card-body">
+              <span class="card-cat">{{ getCategoryName(product.categoryId) }}</span>
+              <h3 class="card-name">{{ product.name }}</h3>
+              <div class="card-footer">
+                <span class="card-price">${{ product.price | number:'1.2-2' }}</span>
+                <span class="card-stock" [class.out]="product.stock <= 0">
+                  {{ product.stock > 0 ? 'In Stock' : 'Out of Stock' }}
+                </span>
               </div>
-            </article>
+            </div>
+          </article>
           }
         </div>
+
+        @if (!isLoading() && products().length > 0 && totalPages() > 1) {
+        <div class="d-flex gap-2 justify-content-center mt-4 flex-wrap">
+          <button class="btn btn-sm btn-outline-secondary" type="button" [disabled]="currentPage() <= 1"
+            (click)="goToPage(currentPage() - 1)">
+            Previous
+          </button>
+
+          @for (page of getPageNumbers(); track page) {
+          <button class="btn btn-sm" [class.btn-primary]="page === currentPage()"
+            [class.btn-outline-secondary]="page !== currentPage()" type="button" (click)="goToPage(page)">
+            {{ page }}
+          </button>
+          }
+
+          <button class="btn btn-sm btn-outline-secondary" type="button" [disabled]="currentPage() >= totalPages()"
+            (click)="goToPage(currentPage() + 1)">
+            Next
+          </button>
+        </div>
+        }
       </main>
     </div>
   </div>

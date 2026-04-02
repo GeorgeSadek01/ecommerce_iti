@@ -42,8 +42,8 @@ export class SellerProductsComponent implements OnInit {
   }
 
   protected goToPage(page: number): void {
-    const pages = this.pagination()?.pages ?? 1;
-    if (page < 1 || page > pages) return;
+    const totalPages = this.pagination()?.totalPages ?? this.pagination()?.pages ?? 1;
+    if (page < 1 || page > totalPages) return;
     this.loadProducts(page);
   }
 

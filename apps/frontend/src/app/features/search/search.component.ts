@@ -19,6 +19,9 @@ export class SearchComponent implements OnInit {
   protected readonly categories = signal<Category[]>([]);
   protected readonly isLoading = signal(true);
   protected readonly error = signal<string | null>(null);
+  protected readonly currentPage = signal(1);
+  protected readonly totalPages = signal(1);
+  protected readonly totalResults = signal(0);
 
   // Filters
   protected readonly searchQuery = signal('');
@@ -26,6 +29,7 @@ export class SearchComponent implements OnInit {
   protected readonly minPrice = signal<number | null>(null);
   protected readonly maxPrice = signal<number | null>(null);
   protected readonly sortBy = signal<ProductSearchFilters['sort']>('newest');
+  private readonly pageSize = 20;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -34,9 +38,11 @@ export class SearchComponent implements OnInit {
   ) {
     // React to query param changes
     this.route.queryParamMap.subscribe((params) => {
+      const pageParam = Number(params.get('page') || 1);
       this.searchQuery.set(params.get('q') || '');
       this.activeCategory.set(params.get('category'));
       this.sortBy.set((params.get('sort') as ProductSearchFilters['sort']) || 'newest');
+      this.currentPage.set(Number.isFinite(pageParam) && pageParam > 0 ? Math.trunc(pageParam) : 1);
       this.loadResults();
     });
   }
@@ -59,13 +65,19 @@ export class SearchComponent implements OnInit {
       minPrice: this.minPrice() || undefined,
       maxPrice: this.maxPrice() || undefined,
       sort: this.sortBy(),
-      limit: 20,
+      page: this.currentPage(),
+      limit: this.pageSize,
     };
 
     this.productService.searchProducts(filters).subscribe({
       next: (res: ApiResponse<PaginatedProducts>) => {
         const prods = res.data?.products ?? [];
+        const pagination = res.data?.pagination;
+
         this.products.set(prods);
+        this.totalResults.set(pagination?.total ?? prods.length);
+        this.currentPage.set(pagination?.page ?? this.currentPage());
+        this.totalPages.set(pagination?.totalPages ?? 1);
         this.isLoading.set(false);
 
         prods.forEach((prod: Product) => {
@@ -96,12 +108,44 @@ export class SearchComponent implements OnInit {
 
   protected applySort(event: Event): void {
     const sort = (event.target as HTMLSelectElement).value as ProductSearchFilters['sort'];
-    this.updateQuery({ sort });
+    this.updateQuery({ sort, page: 1 });
   }
 
   protected toggleCategory(id: string): void {
     const next = this.activeCategory() === id ? null : id;
-    this.updateQuery({ category: next || undefined });
+    this.updateQuery({ category: next || undefined, page: 1 });
+  }
+
+  protected updateMinPrice(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.minPrice.set(value ? Number(value) : null);
+    this.currentPage.set(1);
+    this.loadResults();
+  }
+
+  protected updateMaxPrice(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.maxPrice.set(value ? Number(value) : null);
+    this.currentPage.set(1);
+    this.loadResults();
+  }
+
+  protected goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages() || page === this.currentPage()) return;
+    this.updateQuery({ page });
+  }
+
+  protected getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const total = this.totalPages();
+    const current = this.currentPage();
+    const delta = 2;
+
+    for (let i = Math.max(1, current - delta); i <= Math.min(total, current + delta); i++) {
+      pages.push(i);
+    }
+
+    return pages;
   }
 
   private updateQuery(params: any): void {

@@ -99,6 +99,9 @@ export interface SellerProductsPagination {
   page: number;
   limit: number;
   pages: number;
+  totalPages?: number;
+  hasNextPage?: boolean;
+  hasPrevPage?: boolean;
 }
 
 export interface SellerProductsResponse {

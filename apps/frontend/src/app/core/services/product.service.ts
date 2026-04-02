@@ -2,13 +2,9 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import {
-  Category,
-  PaginatedProducts,
-  Product,
-  ProductSearchFilters,
-} from '../types/product.types';
+import { Category, PaginatedProducts, Product, ProductSearchFilters } from '../types/product.types';
 import { ApiResponse } from '../types/auth.types';
+import { normalizePagination } from '../utils/pagination.util';
 
 @Injectable({ providedIn: 'root' })
 export class ProductService {
@@ -23,7 +19,7 @@ export class ProductService {
     if (p && typeof p.discount === 'object' && p.discount !== null && (p.discount as any).$numberDecimal) {
       p.discount = Number((p.discount as any).$numberDecimal);
     }
-    
+
     if (p && typeof p.price === 'number') {
       if (p.discount && p.discount > 0 && p.discount <= 100) {
         p.calculatedPrice = p.price * (1 - p.discount / 100);
@@ -38,8 +34,19 @@ export class ProductService {
   getProducts(page = 1, limit = 8): Observable<ApiResponse<PaginatedProducts>> {
     const params = new HttpParams().set('page', page).set('limit', limit);
     return this.http.get<ApiResponse<PaginatedProducts>>(`${this.base}/products`, { params }).pipe(
-      map(res => {
-        if (res.data?.products) res.data.products = res.data.products.map(this.normalizeProduct);
+      map((res) => {
+        const rawProducts = res.data?.products ?? [];
+        const products = rawProducts.map(this.normalizeProduct);
+        const pagination = normalizePagination(res.data?.pagination, {
+          fallbackPage: page,
+          fallbackLimit: limit,
+          fallbackTotal: products.length,
+        });
+
+        res.data = {
+          products,
+          pagination,
+        };
         return res;
       })
     );
@@ -53,7 +60,7 @@ export class ProductService {
   /** Returns a single product by ID */
   getProductById(id: string): Observable<ApiResponse<{ product: Product }>> {
     return this.http.get<ApiResponse<{ product: Product }>>(`${this.base}/products/${id}`).pipe(
-      map(res => {
+      map((res) => {
         if (res.data?.product) res.data.product = this.normalizeProduct(res.data.product);
         return res;
       })
@@ -62,18 +69,32 @@ export class ProductService {
 
   /** Full-text + filter search across products */
   searchProducts(filters: ProductSearchFilters): Observable<ApiResponse<PaginatedProducts>> {
+    const page = filters.page ?? 1;
+    const limit = filters.limit ?? 20;
+
     let params = new HttpParams();
-    if (filters.search)   params = params.set('search',   filters.search);
+    if (filters.search) params = params.set('search', filters.search);
     if (filters.category) params = params.set('category', filters.category);
     if (filters.minPrice != null) params = params.set('minPrice', filters.minPrice);
     if (filters.maxPrice != null) params = params.set('maxPrice', filters.maxPrice);
-    if (filters.sort)     params = params.set('sort',     filters.sort);
-    if (filters.page)     params = params.set('page',     filters.page);
-    if (filters.limit)    params = params.set('limit',    filters.limit ?? 12);
+    if (filters.sort) params = params.set('sort', filters.sort);
+    params = params.set('page', page);
+    params = params.set('limit', limit);
 
     return this.http.get<ApiResponse<PaginatedProducts>>(`${this.base}/products/search`, { params }).pipe(
-      map(res => {
-        if (res.data?.products) res.data.products = res.data.products.map(this.normalizeProduct);
+      map((res) => {
+        const rawProducts = res.data?.products ?? (res.data as unknown as { data?: Product[] })?.data ?? [];
+        const products = rawProducts.map(this.normalizeProduct);
+        const pagination = normalizePagination(res.data?.pagination, {
+          fallbackPage: page,
+          fallbackLimit: limit,
+          fallbackTotal: products.length,
+        });
+
+        res.data = {
+          products,
+          pagination,
+        };
         return res;
       })
     );

@@ -1,8 +1,9 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { ApiResponse } from '../../../core/types/auth.types';
+import { normalizePagination } from '../../../core/utils/pagination.util';
 import {
   SellerCategory,
   SellerProduct,
@@ -25,7 +26,26 @@ export class SellerProductApiService {
       params = params.set('search', search.trim());
     }
 
-    return this.http.get<ApiResponse<SellerProductsResponse>>(this.baseUrl, { params });
+    return this.http.get<ApiResponse<SellerProductsResponse>>(this.baseUrl, { params }).pipe(
+      map((res) => {
+        const products = res.data?.products ?? [];
+        const pagination = normalizePagination(res.data?.pagination, {
+          fallbackPage: page,
+          fallbackLimit: limit,
+          fallbackTotal: products.length,
+        });
+
+        res.data = {
+          products,
+          pagination: {
+            ...pagination,
+            pages: pagination.totalPages,
+          },
+        };
+
+        return res;
+      })
+    );
   }
 
   getById(productId: string): Observable<ApiResponse<{ product: SellerProduct }>> {

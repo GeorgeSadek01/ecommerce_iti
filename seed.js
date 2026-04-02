@@ -167,6 +167,126 @@ const seedCatalog = async (sellerProfileId) => {
     isActive: true,
   });
 
+  const laptop = await Product.create({
+    sellerProfileId,
+    categoryId: electronics._id,
+    name: 'ZenBook Pro 14 Laptop',
+    slug: 'zenbook-pro-14-laptop',
+    description: '14-inch OLED, Intel i7, 16GB RAM, 1TB SSD — lightweight performance.',
+    price: toDecimal(1499.99),
+    discount: toDecimal(100),
+    stock: 15,
+    isActive: true,
+  });
+
+  const smartwatch = await Product.create({
+    sellerProfileId,
+    categoryId: accessories._id,
+    name: 'Orbit X Smartwatch',
+    slug: 'orbit-x-smartwatch',
+    description: 'Heart-rate monitoring, GPS, 7-day battery life, water resistant.',
+    price: toDecimal(199.99),
+    discount: toDecimal(20),
+    stock: 80,
+    isActive: true,
+  });
+
+  const tablet = await Product.create({
+    sellerProfileId,
+    categoryId: electronics._id,
+    name: 'Slate 11 Tablet 64GB',
+    slug: 'slate-11-tablet-64gb',
+    description: '11-inch tablet with pen support, ideal for media and notes.',
+    price: toDecimal(329.99),
+    discount: toDecimal(15),
+    stock: 40,
+    isActive: true,
+  });
+
+  const powerbank = await Product.create({
+    sellerProfileId,
+    categoryId: accessories._id,
+    name: 'ChargeMax 20000mAh Powerbank',
+    slug: 'chargemax-20000mah-powerbank',
+    description: 'High-capacity powerbank with dual USB-C fast charging.',
+    price: toDecimal(69.99),
+    discount: toDecimal(0),
+    stock: 120,
+    isActive: true,
+  });
+
+  const speaker = await Product.create({
+    sellerProfileId,
+    categoryId: accessories._id,
+    name: 'Breeze Portable Bluetooth Speaker',
+    slug: 'breeze-portable-bluetooth-speaker',
+    description: 'Compact speaker with rich bass, 12-hour battery life.',
+    price: toDecimal(89.99),
+    discount: toDecimal(10),
+    stock: 75,
+    isActive: true,
+  });
+
+  const camera = await Product.create({
+    sellerProfileId,
+    categoryId: electronics._id,
+    name: 'AstraMirror 24MP Camera',
+    slug: 'astramirror-24mp-camera',
+    description: 'Compact mirrorless camera with interchangeable lenses and 4K video.',
+    price: toDecimal(999.99),
+    discount: toDecimal(50),
+    stock: 20,
+    isActive: true,
+  });
+
+  const monitor = await Product.create({
+    sellerProfileId,
+    categoryId: electronics._id,
+    name: 'VividView 27" 144Hz Monitor',
+    slug: 'vividview-27-144hz-monitor',
+    description: '27-inch QHD IPS panel, 144Hz, 1ms response — great for gaming and design.',
+    price: toDecimal(399.99),
+    discount: toDecimal(30),
+    stock: 25,
+    isActive: true,
+  });
+
+  const keyboard = await Product.create({
+    sellerProfileId,
+    categoryId: accessories._id,
+    name: 'Titan Mechanical Keyboard',
+    slug: 'titan-mechanical-keyboard',
+    description: 'RGB mechanical keyboard with hot-swappable switches.',
+    price: toDecimal(129.99),
+    discount: toDecimal(10),
+    stock: 90,
+    isActive: true,
+  });
+
+  const mouse = await Product.create({
+    sellerProfileId,
+    categoryId: accessories._id,
+    name: 'SwiftPro Wireless Mouse',
+    slug: 'swiftpro-wireless-mouse',
+    description: 'Ergonomic wireless mouse with adjustable DPI and long battery life.',
+    price: toDecimal(49.99),
+    discount: toDecimal(5),
+    stock: 150,
+    isActive: true,
+  });
+
+  const headset = await Product.create({
+    sellerProfileId,
+    categoryId: accessories._id,
+    name: 'PulseWave Gaming Headset',
+    slug: 'pulsewave-gaming-headset',
+    description: 'Surround sound gaming headset with noise-cancelling mic.',
+    price: toDecimal(119.99),
+    discount: toDecimal(15),
+    stock: 60,
+    isActive: true,
+  });
+
   await ProductImage.insertMany([
     {
       productId: phone._id,
@@ -196,11 +316,128 @@ const seedCatalog = async (sellerProfileId) => {
       isPrimary: true,
       sortOrder: 0,
     },
+    {
+      productId: laptop._id,
+      url: 'https://images.pexels.com/photos/18105/pexels-photo.jpg',
+      cloudinaryPublicId: 'seed/products/zenbook-pro-1',
+      isPrimary: true,
+      sortOrder: 0,
+    },
+    {
+      productId: smartwatch._id,
+      url: 'https://images.pexels.com/photos/277406/pexels-photo-277406.jpeg',
+      cloudinaryPublicId: 'seed/products/orbit-x-1',
+      isPrimary: true,
+      sortOrder: 0,
+    },
+    {
+      productId: tablet._id,
+      url: 'https://images.pexels.com/photos/5082575/pexels-photo-5082575.jpeg',
+      cloudinaryPublicId: 'seed/products/slate-11-1',
+      isPrimary: true,
+      sortOrder: 0,
+    },
+    {
+      productId: powerbank._id,
+      url: 'https://images.pexels.com/photos/3945682/pexels-photo-3945682.jpeg',
+      cloudinaryPublicId: 'seed/products/chargemax-1',
+      isPrimary: true,
+      sortOrder: 0,
+    },
+    {
+      productId: speaker._id,
+      url: 'https://images.pexels.com/photos/164853/pexels-photo-164853.jpeg',
+      cloudinaryPublicId: 'seed/products/breeze-1',
+      isPrimary: true,
+      sortOrder: 0,
+    },
+    {
+      productId: camera._id,
+      url: 'https://images.pexels.com/photos/274973/pexels-photo-274973.jpeg',
+      cloudinaryPublicId: 'seed/products/astramirror-1',
+      isPrimary: true,
+      sortOrder: 0,
+    },
+    {
+      productId: monitor._id,
+      url: 'https://images.pexels.com/photos/572056/pexels-photo-572056.jpeg',
+      cloudinaryPublicId: 'seed/products/vividview-1',
+      isPrimary: true,
+      sortOrder: 0,
+    },
+    {
+      productId: keyboard._id,
+      url: 'https://images.pexels.com/photos/735911/pexels-photo-735911.jpeg',
+      cloudinaryPublicId: 'seed/products/titan-keyboard-1',
+      isPrimary: true,
+      sortOrder: 0,
+    },
+    {
+      productId: mouse._id,
+      url: 'https://images.pexels.com/photos/211521/pexels-photo-211521.jpeg',
+      cloudinaryPublicId: 'seed/products/swiftpro-mouse-1',
+      isPrimary: true,
+      sortOrder: 0,
+    },
+    {
+      productId: headset._id,
+      url: 'https://images.pexels.com/photos/3394651/pexels-photo-3394651.jpeg',
+      cloudinaryPublicId: 'seed/products/pulsewave-headset-1',
+      isPrimary: true,
+      sortOrder: 0,
+    },
   ]);
+
+  // Add bulk products for pagination testing
+  const extraProducts = [];
+  const bulkCount = 60;
+  for (let i = 1; i <= bulkCount; i++) {
+    // alternate category for variety
+    const categoryId = i % 2 === 0 ? accessories._id : electronics._id;
+    const prod = await Product.create({
+      sellerProfileId,
+      categoryId,
+      name: `Bulk Product ${i}`,
+      slug: `bulk-product-${i}`,
+      description: `Bulk seeded product number ${i} for pagination testing.`,
+      price: toDecimal(Math.round((Math.random() * 490 + 10) * 100) / 100),
+      discount: toDecimal(0),
+      stock: Math.floor(Math.random() * 100) + 1,
+      isActive: true,
+    });
+    extraProducts.push(prod);
+  }
+
+  // Insert one image per bulk product
+  if (extraProducts.length) {
+    const extraImages = extraProducts.map((prod, idx) => ({
+      productId: prod._id,
+      url: `https://picsum.photos/seed/bulk-${idx + 1}/600/400`,
+      cloudinaryPublicId: `seed/products/bulk-${idx + 1}`,
+      isPrimary: true,
+      sortOrder: 0,
+    }));
+    await ProductImage.insertMany(extraImages);
+  }
 
   return {
     categories: { electronics, smartphones, accessories },
-    products: { phone, earbuds, charger },
+    products: {
+      phone,
+      earbuds,
+      charger,
+      laptop,
+      smartwatch,
+      tablet,
+      powerbank,
+      speaker,
+      camera,
+      monitor,
+      keyboard,
+      mouse,
+      headset,
+      extraProducts,
+    },
   };
 };
 

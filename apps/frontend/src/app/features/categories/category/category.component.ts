@@ -18,10 +18,14 @@ export class CategoryComponent implements OnInit {
   protected readonly categoriesList = signal<Category[]>([]);
   protected readonly isLoading = signal(true);
   protected readonly error = signal<string | null>(null);
+  protected readonly currentPage = signal(1);
+  protected readonly totalPages = signal(1);
+  protected readonly totalResults = signal(0);
 
   protected readonly minPrice = signal<number | null>(null);
   protected readonly maxPrice = signal<number | null>(null);
   protected readonly sortBy = signal<any>('newest');
+  private readonly pageSize = 24;
 
   constructor(private readonly route: ActivatedRoute, private readonly productService: ProductService) {}
 
@@ -33,7 +37,8 @@ export class CategoryComponent implements OnInit {
         this.minPrice.set(null);
         this.maxPrice.set(null);
         this.sortBy.set('newest');
-        this.loadCategoryData(id);
+        this.currentPage.set(1);
+        this.loadCategoryData(id, 1);
       } else {
         this.error.set('No category ID provided');
         this.isLoading.set(false);
@@ -43,7 +48,10 @@ export class CategoryComponent implements OnInit {
 
   protected onFilterChange(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    if (id) this.loadCategoryData(id);
+    if (!id) return;
+
+    this.currentPage.set(1);
+    this.loadCategoryData(id, 1);
   }
 
   protected updateSort(event: Event): void {
@@ -64,7 +72,30 @@ export class CategoryComponent implements OnInit {
     this.onFilterChange();
   }
 
-  private loadCategoryData(id: string): void {
+  protected goToPage(page: number): void {
+    if (page < 1 || page > this.totalPages() || page === this.currentPage()) return;
+
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) return;
+
+    this.currentPage.set(page);
+    this.loadCategoryData(id, page);
+  }
+
+  protected getPageNumbers(): number[] {
+    const pages: number[] = [];
+    const total = this.totalPages();
+    const current = this.currentPage();
+    const delta = 2;
+
+    for (let i = Math.max(1, current - delta); i <= Math.min(total, current + delta); i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  }
+
+  private loadCategoryData(id: string, page = this.currentPage()): void {
     this.isLoading.set(true);
 
     this.productService.getCategories().subscribe({
@@ -78,7 +109,8 @@ export class CategoryComponent implements OnInit {
 
     const filters = {
       category: id,
-      limit: 24,
+      page,
+      limit: this.pageSize,
       minPrice: this.minPrice() || undefined,
       maxPrice: this.maxPrice() || undefined,
       sort: this.sortBy(),
@@ -87,7 +119,12 @@ export class CategoryComponent implements OnInit {
     this.productService.searchProducts(filters).subscribe({
       next: (res) => {
         const prods = res.data?.products ?? [];
+        const pagination = res.data?.pagination;
+
         this.products.set(prods);
+        this.totalResults.set(pagination?.total ?? prods.length);
+        this.currentPage.set(pagination?.page ?? page);
+        this.totalPages.set(pagination?.totalPages ?? 1);
         this.isLoading.set(false);
 
         prods.forEach((prod: Product) => {

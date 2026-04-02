@@ -112,8 +112,8 @@ export class OrdersComponent implements OnInit {
         const data = res.data;
         this.orders.set(data?.orders ?? []);
         this.total.set(data?.total ?? 0);
-        const limit = data?.limit ?? 10;
-        this.totalPages.set(Math.ceil((data?.total ?? 0) / limit) || 1);
+        this.currentPage.set(data?.page ?? this.currentPage());
+        this.totalPages.set(data?.totalPages ?? 1);
         this.isLoading.set(false);
       },
       error: () => {

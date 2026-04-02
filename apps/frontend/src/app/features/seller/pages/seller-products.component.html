@@ -97,8 +97,10 @@
                 (click)="goToPage(pageInfo.page - 1)">
                 Previous
             </button>
-            <span class="small text-secondary">Page {{ pageInfo.page }} of {{ pageInfo.pages }}</span>
-            <button class="btn btn-sm btn-outline-secondary" type="button" [disabled]="pageInfo.page >= pageInfo.pages"
+            <span class="small text-secondary">Page {{ pageInfo.page }} of {{ pageInfo.totalPages ?? pageInfo.pages
+                }}</span>
+            <button class="btn btn-sm btn-outline-secondary" type="button"
+                [disabled]="pageInfo.page >= (pageInfo.totalPages ?? pageInfo.pages)"
                 (click)="goToPage(pageInfo.page + 1)">
                 Next
             </button>
